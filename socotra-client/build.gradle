@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    // TODO: Use it when run command 'gradle build' or 'gradle uploadArchives'
+//    id 'org.openjfx.javafxplugin' version '0.0.8'
+}
+
+group 'bham.socotra'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'org.openjfx', name: 'javafx-controls', version: '11.0.2'
+    compile group: 'org.openjfx', name: 'javafx-fxml', version: '11.0.2'
+}
+
+// TODO: Use it when run command 'gradle build' or 'gradle uploadArchives'
+//javafx {
+//    modules = ['javafx.controls', 'javafx.fxml']
+//}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'socotra.Client'
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+uploadArchives {
+    repositories {
+        flatDir {
+            dirs 'repos'
+        }
+    }
+}

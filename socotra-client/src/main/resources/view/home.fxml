@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<?import javafx.scene.text.* ?>
+<?import javafx.scene.control.* ?>
+<?import java.lang.* ?>
+<?import javafx.scene.layout.* ?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
+            prefWidth="300.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="socotra.controller.HomeController">
+    <children>
+        <Label layoutX="50.0" layoutY="30.0" text="Home">
+            <font>
+                <Font size="24.0"/>
+            </font>
+        </Label>
+        <Label layoutX="50.0" layoutY="60.0" text="${'Connected to: ' + server}"/>
+        <Text fx:id="messageText" layoutX="50" layoutY="100" text="Start to chat!"/>
+        <TextField fx:id="messageField" prefWidth="150" layoutX="50.0" layoutY="160"/>
+        <Button onAction="#sendText" fx:id="sendTextButton" prefWidth="60" layoutX="200" layoutY="160"
+                mnemonicParsing="false"
+                text="send"/>
+        <Button onAction="#capture" fx:id="captureButton" prefWidth="80" layoutX="50.0" layoutY="220.0"
+                mnemonicParsing="false" text="capture"/>
+        <Button onAction="#stop" fx:id="stopButton" prefWidth="80" layoutX="150.0" layoutY="220.0"
+                mnemonicParsing="false"
+                text="stop"/>
+        <Button onAction="#play" fx:id="playButton" prefWidth="80" layoutX="50.0" layoutY="280.0"
+                mnemonicParsing="false"
+                text="play"/>
+        <Button onAction="#sendAudio" fx:id="sendAudioButton" prefWidth="80" layoutX="150.0" layoutY="280.0"
+                mnemonicParsing="false"
+                text="send audio"/>
+    </children>
+</AnchorPane>
