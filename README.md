@@ -12,10 +12,18 @@ The whole project is divided into two parts: server and client. Both projects ar
 
 For server project, first you need to add a 'jdbc-properties' file which includes the ssh connection information and database information in 'src/main/resources'.
 
-The two projects both use gradle-wrapper, so if you don't install the gradle and want to use gradle to build or archive, just run the following command in the project root folder like 'socotra-server' or 'socotra-client'
+The two projects both use gradle-wrapper, you can just open either of them in intellij or eclipse simply, and run the main java file 'Server.java' or 'Client.java' to run the application. 
+
+Or alternatively you can run it with gradle, but currently there are some problems with gradle in client, so don't use gradle to run the client application. If you don't install the gradle and want to use gradle to build or archive, just run the following command in the project root folder like 'socotra-server' or 'socotra-client':
 
 ```bash
 ./gradlew build
+```
+
+and then run the application:
+
+```bash
+./gradlew run
 ```
 
 ```bash
@@ -27,7 +35,13 @@ If you have the gradle, just use the command to build the server project:
 ```bash
 gradle build
 ```
-and then run the main class file Server.class.
+and then run the application:
+
+```bash
+gradle run
+```
+
+But there are some problems with 'gradle run' in client. So just open the project in the intellij or eclipse to run the project.
 
 Or simply run the Server.java in IDEA.
 

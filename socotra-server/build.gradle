@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'bham.socotra'
@@ -16,6 +17,8 @@ dependencies {
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.10'
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
 }
+
+mainClassName = 'socotra.service.Server'
 
 jar {
     manifest {

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
     // TODO: Use it when run command 'gradle build' or 'gradle uploadArchives'
 //    id 'org.openjfx.javafxplugin' version '0.0.8'
 }
@@ -16,14 +17,19 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile group: 'org.openjfx', name: 'javafx-controls', version: '11.0.2'
-    compile group: 'org.openjfx', name: 'javafx-fxml', version: '11.0.2'
+    compile group: 'org.openjfx', name: 'javafx-controls', version: '15-ea+1'
+    compile group: 'org.openjfx', name: 'javafx-fxml', version: '15-ea+1'
 }
+
+mainClassName = 'socotra.Client'
+
+compileJava.options.encoding = 'UTF-8'
 
 // TODO: Use it when run command 'gradle build' or 'gradle uploadArchives'
 //javafx {
 //    modules = ['javafx.controls', 'javafx.fxml']
 //}
+
 
 jar {
     manifest {
