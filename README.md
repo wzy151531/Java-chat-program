@@ -4,17 +4,17 @@ This java project is about a client-server mode program based on socket.
 
 ## Alias
 
-The whole project is divided into two parts: server and client. Both projects are built with gradle6 and jdk11.
+The whole project is divided into two parts: server and client. Both projects are built with `gradle6` and `jdk11`.
 
 ## Quick Start
 
 ### Build and run
 
-For server project, first you need to add a 'jdbc-properties' file which includes the ssh connection information and database information in 'src/main/resources'.
+For server project, first you need to add a `jdbc-properties` file which includes the ssh connection information and database information in `src/main/resources`.
 
 The two projects both use gradle-wrapper, you can just open either of them in intellij or eclipse simply, and use the gradle tool inside the IDE to build and run the project.
 
-You don't need to install the gradle, just run the following command in the project root folder like 'socotra-server' or 'socotra-client':
+You don't need to install the gradle, just run the following command in the project root folder like `socotra-server` or `socotra-client`:
 
 ```bash
 ./gradlew build
@@ -46,7 +46,7 @@ For client project, it's a modular project because of the requires for javafx13 
 
 Or just use the gradle gui tool inside the IDE(for intellij it's on the right side bar) to run this task.
 
-And all related .jar files will be generated in '/build/jlinkbase/jlinkjars', to run this .jar file, use the following command under that folder:
+And all related .jar files will be generated in `/build/jlinkbase/jlinkjars`, to run this .jar file, use the following command under that folder:
 
 ```bash
 java --module-path "." --module "socotra.client.main/socotra.Client"
