@@ -67,7 +67,7 @@ public class LoginController {
             alert.show();
         } else {
             // load .fxml file
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/home.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/socotra/home.fxml"));
             loader.getNamespace().put("server", isEmpty(serverStr) ? "localhost" : serverStr);
             Pane tempPane = null;
             try {

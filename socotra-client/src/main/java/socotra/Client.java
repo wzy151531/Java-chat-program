@@ -30,7 +30,7 @@ public class Client extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // load .fxml file
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/socotra/login.fxml"));
         Pane tempPane = loader.load();
 
         // create scene

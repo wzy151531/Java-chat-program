@@ -46,7 +46,6 @@ public class JdbcUtil {
         session = jsch.getSession(sshUser, sshIP, 22);
         session.setPassword(sshPassword);
         session.setConfig("StrictHostKeyChecking", "no");
-        System.out.println(sshUser + " " + sshPassword);
         session.connect();
         System.out.println(session.getServerVersion());
         forwardPort = session.setPortForwardingL(50001, "dbteach2", 5432);
