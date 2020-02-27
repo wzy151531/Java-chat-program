@@ -48,7 +48,7 @@ public class JdbcUtil {
         session.setConfig("StrictHostKeyChecking", "no");
         session.connect();
         System.out.println(session.getServerVersion());
-        forwardPort = session.setPortForwardingL(50001, "dbteach2", 5432);
+        forwardPort = session.setPortForwardingL(50001, "mod-msc-sw1.cs.bham.ac.uk", 5432);
         System.out.println("localhost:" + forwardPort);
     }
 

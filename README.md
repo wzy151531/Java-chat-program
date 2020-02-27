@@ -10,7 +10,14 @@ The whole project is divided into two parts: server and client. Both projects ar
 
 ### Build and run
 
-For server project, first you need to add a `jdbc-properties` file which includes the ssh connection information and database information in `src/main/resources`.
+For server project, first you need to add a `jdbc.properties` file which includes the ssh connection information and database information in `src/main/resources` like:
+
+```bash
+sshUser=aaa111
+sshPassword=password
+dbUser=socotra
+dbPassword=password
+```
 
 The two projects both use gradle-wrapper, you can just open either of them in intellij or eclipse simply, and use the gradle tool inside the IDE to build and run the project.
 
@@ -53,7 +60,39 @@ java --module-path "." --module "socotra.client.main/socotra.Client"
 ```
 
 ## Contributing
-Pull requests are welcome. At this moment, maybe it should be more considered about the branch, like everyone should only work on his branch, once the whole function is completed and tested by him, his branch can be merged to the master branch. So, just pull the codes and read them now, push your own code is not recommended.
+First clone the project, and in your local git repository, create a new branch named as your name, for example:
+
+```bash
+git branch yourname
+```
+
+and then checkout to that branch:
+
+```bash
+git checkout yourname
+```
+
+Now, to check if you are in the right branch, use the command:
+
+```bash
+git branch -a
+```
+
+and the '*' will be infront of the current branch.
+
+Now you can do some change to your branch, once you have done your task, after testing the new function and commiting the change, first use command:
+
+```bash
+git checkout master
+```
+
+to checkout to the master branch, and then use the command to merge your branch to the master branch:
+
+```bash
+git merge yourname
+```
+Make sure before each commit, checkout your current branch first.
+
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
