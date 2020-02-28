@@ -4,7 +4,7 @@ This java project is about a client-server mode program based on socket.
 
 ## Alias
 
-The whole project is divided into two parts: server and client. Both projects are built with `gradle6` and `jdk11`.
+The whole project is divided into two parts: server and client. Both projects are built with `gradle6` and `jdk13`.
 
 ## Quick Start
 
@@ -43,20 +43,12 @@ For server project, you can release the .jar file, you can archive the server pr
 ./gradlew uploadArchives
 ```
 
-then the repos foler will be generated with serveral .jar files.
+then the `repos` foler will be generated with serveral .jar files.
 
-For client project, it's a modular project because of the requires for javafx13 modules, you can use the command to archive client project .jar file and its related module .jar files:
-
-```bash
-./gradlew jlink
-```
-
-Or just use the gradle gui tool inside the IDE(for intellij it's on the right side bar) to run this task.
-
-And all related .jar files will be generated in `/build/jlinkbase/jlinkjars`, to run this .jar file, use the following command under that folder:
+For client project, it use `javafx13` to build the GUI, so once you use the gradle to generate a .jar file, you need to download javafx13 sdk first, and run it as following:
 
 ```bash
-java --module-path "." --module "socotra.client.main/socotra.Client"
+java --module-path $PATHTOJAVAFXSDK13 --add-modules javafx.controls,javafx.fxml,javafx.base -jar $YOURCLIENT.jar
 ```
 
 ## Contributing

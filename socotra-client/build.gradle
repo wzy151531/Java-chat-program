@@ -2,13 +2,12 @@ plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.0.8'
-    id 'org.beryx.jlink' version '2.12.0'
 }
 
 group 'bham.socotra'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.11
+sourceCompatibility = 13
 
 repositories {
     mavenCentral()
@@ -19,12 +18,10 @@ javafx {
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.base']
 }
 
-mainClassName = "$moduleName/socotra.Client"
+mainClassName = 'socotra.Client'
 
-
-
-jlink {
-    launcher {
-        name = 'socotra-client'
+jar {
+    manifest {
+        attributes 'Main-Class': 'socotra.Client'
     }
 }
