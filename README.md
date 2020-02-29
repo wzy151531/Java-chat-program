@@ -6,6 +6,12 @@ This java project is about a client-server mode program based on socket.
 
 The whole project is divided into two parts: server and client. Both projects are built with `gradle6` and `jdk13`.
 
+## Current Function
+
+* Login validation via jdbc.
+* Send text message or audio to all connected clients
+* Local chat history in client.
+
 ## Quick Start
 
 ### Build and run
