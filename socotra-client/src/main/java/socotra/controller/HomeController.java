@@ -7,9 +7,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import socotra.common.ConnectionData;
 import socotra.service.ClientThread;
 
@@ -32,14 +30,11 @@ public class HomeController {
     @FXML
     private Button sendAudioButton;
     @FXML
-    private Button sendTextButton;
-    @FXML
     private TextField messageField;
     @FXML
     private ListView<ConnectionData> chatList;
 
     private boolean stopCapture = false;
-    private boolean isPlaying = false;
     private ByteArrayOutputStream byteArrayOutputStream;
     private TargetDataLine targetDataLine;
     private AudioFormat audioFormat;
@@ -98,8 +93,7 @@ public class HomeController {
 
         });
 
-        ObservableList<ConnectionData> dataList = FXCollections.observableArrayList();
-        dataList.addAll(historyData);
+        ObservableList<ConnectionData> dataList = FXCollections.observableArrayList(historyData);
         Platform.runLater(() -> { // runLater keep thread synchronize
             chatList.setItems(null);
             chatList.setItems(dataList);

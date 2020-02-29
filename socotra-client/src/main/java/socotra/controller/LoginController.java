@@ -60,16 +60,17 @@ public class LoginController {
             alert.setHeaderText("Invalidated Server.");
             alert.setContentText("Try again.");
             alert.show();
+            loginButton.setText("login");
         } else if (Client.getErrorType() == 2) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Validation Error");
             alert.setHeaderText("Invalidated user.");
             alert.setContentText("Try again.");
             alert.show();
+            loginButton.setText("login");
         } else {
             // load .fxml file
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/home.fxml"));
-//            loader.getNamespace().put("server", isEmpty(serverStr) ? EmojiParser.parseToUnicode("localhost:wink:") : serverStr);
             Pane tempPane = null;
             try {
                 tempPane = loader.load();

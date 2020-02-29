@@ -32,9 +32,6 @@ public class Client extends Application {
     public void start(Stage primaryStage) throws Exception {
         // load .fxml file
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
-        String tmp = EmojiParser.parseToUnicode("Login Hi:grinning:");
-        loader.getNamespace().put("emoji", tmp);
-        System.out.println(tmp);
         Pane tempPane = loader.load();
 
         // create scene

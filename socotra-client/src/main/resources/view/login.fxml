@@ -8,7 +8,7 @@
             prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="socotra.controller.LoginController">
     <children>
-        <Label layoutX="174.0" layoutY="34.0" prefHeight="80.0" prefWidth="134.0" text="${emoji}">
+        <Label layoutX="174.0" layoutY="34.0" prefHeight="80.0" prefWidth="134.0" text="Login">
             <font>
                 <Font size="28.0"/>
             </font>
