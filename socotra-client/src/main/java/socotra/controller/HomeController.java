@@ -1,10 +1,14 @@
 package socotra.controller;
 
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import socotra.common.ConnectionData;
 import socotra.service.ClientThread;
@@ -14,16 +18,17 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 
 public class HomeController {
 
-    private ConnectionData connectionData;
+    private ArrayList<ConnectionData> historyData = new ArrayList<>();
+    private ArrayList<Button> allAudioButton = new ArrayList<>();
+    private boolean forceStop = false;
     @FXML
     private Button captureButton;
     @FXML
     private Button stopButton;
-    @FXML
-    private Button playButton;
     @FXML
     private Button sendAudioButton;
     @FXML
@@ -31,8 +36,10 @@ public class HomeController {
     @FXML
     private TextField messageField;
     @FXML
-    private Text messageText;
+    private ListView<ConnectionData> chatList;
+
     private boolean stopCapture = false;
+    private boolean isPlaying = false;
     private ByteArrayOutputStream byteArrayOutputStream;
     private TargetDataLine targetDataLine;
     private AudioFormat audioFormat;
@@ -41,14 +48,64 @@ public class HomeController {
     private ClientThread clientThread;
 
     public void setConnectionData(ConnectionData connectionData) {
-        this.connectionData = connectionData;
-        if (connectionData.getType() == 2) {
-            playButton.setDisable(false);
-            messageText.setText("Got a audio from " + connectionData.getUserSignature());
-        } else if (connectionData.getType() == 1) {
-            playButton.setDisable(true);
-            messageText.setText("Got: " + connectionData.getTextData() + "  from " + connectionData.getUserSignature());
-        }
+        this.historyData.add(connectionData);
+        updateChatView();
+    }
+
+    /**
+     * Update the ListView in home page.
+     */
+    private void updateChatView() {
+        chatList.setCellFactory(l -> new ListCell<>() {
+
+            private final Button button = new Button("play");
+            {
+                button.setPrefSize(50.0, 15.0);
+                button.setFont(new Font(10));
+                allAudioButton.add(button);
+                button.setOnAction(evt -> {
+                    forceStop = false;
+                    captureButton.setDisable(true);
+                    stopButton.setDisable(false);
+                    allAudioButton.forEach(n -> {
+                        if (!n.equals(button)) {
+                            n.setDisable(true);
+                        }
+                    });
+                    ConnectionData item = getItem();
+                    if (item.getType() == 2) {
+                        playAudio(item.getAudioData());
+                    }
+                });
+
+            }
+
+            @Override
+            protected void updateItem(ConnectionData item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (item == null) {
+                    setGraphic(null);
+                    setText("");
+                } else if (item.getType() == 2) {
+                    Label signature = new Label(item.getUserSignature() + ": ");
+                    HBox content = new HBox(signature, button);
+                    setGraphic(content);
+                } else if (item.getType() == 1) {
+                    setText(item.getUserSignature() + ": " + item.getTextData());
+                }
+            }
+
+        });
+
+        ObservableList<ConnectionData> dataList = FXCollections.observableArrayList();
+        dataList.addAll(historyData);
+        Platform.runLater(() -> { // runLater keep thread synchronize
+            chatList.setItems(null);
+            chatList.setItems(dataList);
+            chatList.refresh();
+            chatList.scrollTo(chatList.getItems().size() - 1);
+        });
     }
 
     public void setClientThread(ClientThread clientThread) {
@@ -58,7 +115,6 @@ public class HomeController {
     @FXML
     private void initialize() {
         stopButton.setDisable(true);
-        playButton.setDisable(true);
         sendAudioButton.setDisable(true);
     }
 
@@ -91,8 +147,8 @@ public class HomeController {
             alert.show();
         } else {
             try {
-                connectionData = new ConnectionData(messageField.getText(), clientThread.getUsername());
-                new SendThread().start();
+                ConnectionData connectionData = new ConnectionData(messageField.getText(), clientThread.getUsername());
+                new SendThread(connectionData).start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -104,7 +160,6 @@ public class HomeController {
     public void capture(ActionEvent event) {
         captureButton.setDisable(true);
         stopButton.setDisable(false);
-        playButton.setDisable(true);
         sendAudioButton.setDisable(true);
         try {
             // Get everything set up for capture
@@ -129,19 +184,14 @@ public class HomeController {
         stopCapture = true;
         targetDataLine.stop();
         targetDataLine.close();
+        forceStop = true;
     }
 
-    @FXML
-    public void play(ActionEvent event) {
-        captureButton.setDisable(true);
-        stopButton.setDisable(false);
-        playButton.setDisable(true);
-        sendAudioButton.setDisable(true);
+    private void playAudio(byte[] audioData) {
         try {
             // Get everything set up for playback.
             // Get the previously-saved data into a byte array object.
             // Get an input stream on the byte array containing the data
-            byte[] audioData = connectionData.getAudioData();
             InputStream byteArrayInputStream = new ByteArrayInputStream(audioData);
             audioFormat = getAudioFormat();
             audioInputStream = new AudioInputStream(byteArrayInputStream, audioFormat,
@@ -162,8 +212,8 @@ public class HomeController {
     public void sendAudio(ActionEvent event) {
         try {
             byte[] audioData = byteArrayOutputStream.toByteArray();
-            connectionData = new ConnectionData(audioData, clientThread.getUsername());
-            new SendThread().start();
+            ConnectionData connectionData = new ConnectionData(audioData, clientThread.getUsername());
+            new SendThread(connectionData).start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -206,7 +256,8 @@ public class HomeController {
     }
 
     class PlayThread extends Thread {
-        byte[] tempBuffer = new byte[10000];
+        //byte[] tempBuffer = new byte[10000];
+        byte[] tempBuffer = new byte[10];
 
         public void run() {
             try {
@@ -215,7 +266,7 @@ public class HomeController {
 
                 int cnt;
                 // Keep looping until the input read method returns -1 for empty stream.
-                while ((cnt = audioInputStream.read(tempBuffer, 0, tempBuffer.length)) != -1) {
+                while ((cnt = audioInputStream.read(tempBuffer, 0, tempBuffer.length)) != -1 && !forceStop) {
                     if (cnt > 0) {
                         // Write data to the internal buffer of the data line where it will be delivered
                         // to the speaker.
@@ -225,10 +276,12 @@ public class HomeController {
                 // Block and wait for internal buffer of the data line to empty.
                 sourceDataLine.drain();
                 sourceDataLine.close();
-                playButton.setDisable(false);
                 stopButton.setDisable(true);
                 captureButton.setDisable(false);
                 sendAudioButton.setDisable(false);
+                allAudioButton.forEach(n -> {
+                    n.setDisable(false);
+                });
             } catch (Exception e) {
                 e.printStackTrace(System.out);
                 System.exit(0);
@@ -237,6 +290,12 @@ public class HomeController {
     }
 
     class SendThread extends Thread {
+        private ConnectionData connectionData;
+
+        public SendThread(ConnectionData connectionData) {
+            this.connectionData = connectionData;
+        }
+
         public void run() {
             try {
                 ObjectOutputStream toServer = clientThread.getToServer();

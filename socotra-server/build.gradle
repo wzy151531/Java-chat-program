@@ -18,6 +18,7 @@ dependencies {
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
 }
 
+
 mainClassName = 'socotra.service.Server'
 
 jar {

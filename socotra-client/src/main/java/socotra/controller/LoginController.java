@@ -1,5 +1,6 @@
 package socotra.controller;
 
+import com.vdurmont.emoji.EmojiParser;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -67,8 +68,8 @@ public class LoginController {
             alert.show();
         } else {
             // load .fxml file
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/socotra/home.fxml"));
-            loader.getNamespace().put("server", isEmpty(serverStr) ? "localhost" : serverStr);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/home.fxml"));
+//            loader.getNamespace().put("server", isEmpty(serverStr) ? EmojiParser.parseToUnicode("localhost:wink:") : serverStr);
             Pane tempPane = null;
             try {
                 tempPane = loader.load();
@@ -79,7 +80,6 @@ public class LoginController {
 
                 // construct scene
                 Scene tempScene = new Scene(tempPane);
-
                 // set scene
                 Client.setScene(tempScene);
             } catch (Exception e) {

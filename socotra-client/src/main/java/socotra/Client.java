@@ -1,5 +1,6 @@
 package socotra;
 
+import com.vdurmont.emoji.EmojiParser;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -30,7 +31,10 @@ public class Client extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         // load .fxml file
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/socotra/login.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
+        String tmp = EmojiParser.parseToUnicode("Login Hi:grinning:");
+        loader.getNamespace().put("emoji", tmp);
+        System.out.println(tmp);
         Pane tempPane = loader.load();
 
         // create scene
