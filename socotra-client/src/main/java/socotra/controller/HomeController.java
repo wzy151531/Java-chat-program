@@ -1,13 +1,17 @@
 package socotra.controller;
 
+import com.vdurmont.emoji.Emoji;
+import com.vdurmont.emoji.EmojiManager;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import socotra.common.ConnectionData;
 import socotra.service.ClientThread;
 
@@ -17,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class HomeController {
 
@@ -30,9 +36,17 @@ public class HomeController {
     @FXML
     private Button sendAudioButton;
     @FXML
+    private Button sendTextButton;
+    @FXML
     private TextField messageField;
     @FXML
     private ListView<ConnectionData> chatList;
+    @FXML
+    private Button emojiButton;
+    @FXML
+    private ListView<ArrayList<String>> emojiList;
+    @FXML
+    private ScrollPane emojiScrollPane;
 
     private boolean stopCapture = false;
     private ByteArrayOutputStream byteArrayOutputStream;
@@ -42,18 +56,80 @@ public class HomeController {
     private SourceDataLine sourceDataLine;
     private ClientThread clientThread;
 
+    @FXML
+    private void initialize() {
+        stopButton.setDisable(true);
+        sendAudioButton.setDisable(true);
+        emojiList.setVisible(false);
+        emojiList.setManaged(false);
+        emojiScrollPane.setVisible(false);
+        emojiScrollPane.setManaged(false);
+        emojiList.setCellFactory(l -> new ListCell<>() {
+            @Override
+            protected void updateItem(ArrayList<String> item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null) {
+                    setGraphic(null);
+                    setText("");
+                } else {
+                    HBox row = new HBox();
+                    item.forEach(n -> {
+                        Button button = new Button(n);
+                        button.setPrefSize(30.0, 20.0);
+                        button.setPadding(Insets.EMPTY);
+                        button.setTextAlignment(TextAlignment.CENTER);
+                        button.setFont(new Font("Apple Color Emoji", 28));
+                        button.setOnAction(evt -> {
+//                            System.out.println(button.getText());
+                            messageField.setText(messageField.getText() + " " + button.getText());
+                        });
+                        row.getChildren().add(button);
+                    });
+                    setGraphic(row);
+                }
+            }
+        });
+        generateEmojiListView();
+    }
+
     public void setConnectionData(ConnectionData connectionData) {
         this.historyData.add(connectionData);
         updateChatView();
     }
 
+    private ArrayList<ArrayList<String>> generateEmojiList(Collection<Emoji> emojiData) {
+        List<Emoji> emojiDataList = (List<Emoji>) emojiData;
+        ArrayList<ArrayList<String>> result = new ArrayList<>();
+        for (int i = 0; i < emojiDataList.size(); i = i + 10) {
+            ArrayList<String> row = new ArrayList<>();
+            for (int j = 0; j < 10; j++) {
+                if (i + j >= emojiDataList.size()) continue;
+                row.add(emojiDataList.get(i + j).getUnicode());
+            }
+            result.add(row);
+        }
+        return result;
+    }
+
+    private void generateEmojiListView() {
+        ArrayList<ArrayList<String>> emojiData = generateEmojiList(EmojiManager.getAll());
+        ObservableList<ArrayList<String>> dataList = FXCollections.observableArrayList(emojiData);
+        Platform.runLater(() -> { // runLater keep thread synchronize
+            emojiList.setItems(null);
+            emojiList.setItems(dataList);
+            emojiList.refresh();
+            emojiList.scrollTo(0);
+        });
+    }
+
     /**
-     * Update the ListView in home page.
+     * Update the ChatListView in home page.
      */
     private void updateChatView() {
         chatList.setCellFactory(l -> new ListCell<>() {
 
             private final Button button = new Button("play");
+
             {
                 button.setPrefSize(50.0, 15.0);
                 button.setFont(new Font(10));
@@ -104,12 +180,6 @@ public class HomeController {
 
     public void setClientThread(ClientThread clientThread) {
         this.clientThread = clientThread;
-    }
-
-    @FXML
-    private void initialize() {
-        stopButton.setDisable(true);
-        sendAudioButton.setDisable(true);
     }
 
     // This method creates and returns an AudioFormat object for a given set of
@@ -179,6 +249,14 @@ public class HomeController {
         targetDataLine.stop();
         targetDataLine.close();
         forceStop = true;
+    }
+
+    @FXML
+    public void showEmojiList(ActionEvent event) {
+        emojiList.setVisible(!emojiList.isVisible());
+        emojiList.setManaged(!emojiList.isManaged());
+        emojiScrollPane.setVisible(!emojiScrollPane.isVisible());
+        emojiScrollPane.setManaged(!emojiScrollPane.isManaged());
     }
 
     private void playAudio(byte[] audioData) {

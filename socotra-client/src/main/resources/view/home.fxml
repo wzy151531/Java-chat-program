@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -8,7 +9,7 @@
 <?import javafx.scene.control.* ?>
 <?import javafx.scene.layout.* ?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="514.0" prefWidth="351.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="socotra.controller.HomeController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="691.0" prefWidth="350.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="socotra.controller.HomeController">
     <children>
         <Label layoutX="50.0" layoutY="30.0" text="Home">
             <font>
@@ -19,11 +20,17 @@
         <TextField fx:id="messageField" layoutX="31.0" layoutY="413.0" prefHeight="27.0" prefWidth="213.0" />
         <Button fx:id="sendTextButton" layoutX="244.0" layoutY="413.0" mnemonicParsing="false" onAction="#sendText" prefHeight="27.0" prefWidth="49.0" text="send" />
         <Button fx:id="captureButton" layoutX="31.0" layoutY="462.0" mnemonicParsing="false" onAction="#capture" prefHeight="27.0" prefWidth="60.0" text="capture" />
-        <Button fx:id="stopButton" layoutX="104.0" layoutY="462.0" mnemonicParsing="false" onAction="#stop" prefHeight="27.0" prefWidth="49.0" text="stop" />
-        <Button fx:id="sendAudioButton" layoutX="162.0" layoutY="462.0" mnemonicParsing="false" onAction="#sendAudio" prefWidth="80" text="send audio" />
+        <Button fx:id="stopButton" layoutX="97.0" layoutY="462.0" mnemonicParsing="false" onAction="#stop" prefHeight="27.0" prefWidth="49.0" text="stop" />
+        <Button fx:id="sendAudioButton" layoutX="152.0" layoutY="462.0" mnemonicParsing="false" onAction="#sendAudio" prefWidth="80" text="send audio" />
       <ScrollPane layoutX="31.0" layoutY="69.0" prefHeight="331.0" prefWidth="261.0">
          <content>
             <ListView fx:id="chatList" prefHeight="330.0" prefWidth="261.0" />
+         </content>
+      </ScrollPane>
+      <Button fx:id="emojiButton" layoutX="238.0" layoutY="462.0" mnemonicParsing="false" onAction="#showEmojiList" prefHeight="27.0" prefWidth="49.0" text="Emoji" />
+      <ScrollPane fx:id="emojiScrollPane" layoutX="-1.0" layoutY="489.0" prefHeight="200.0" prefWidth="350.0">
+         <content>
+            <ListView fx:id="emojiList" prefHeight="200.0" prefWidth="349.0" />
          </content>
       </ScrollPane>
     </children>
