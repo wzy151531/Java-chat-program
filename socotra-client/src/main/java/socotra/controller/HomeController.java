@@ -76,8 +76,7 @@ public class HomeController {
                         button.setTextAlignment(TextAlignment.CENTER);
                         button.setFont(new Font("NotoEmoji-Regular", 25));
                         button.setOnAction(evt -> {
-                            System.out.println(button.getText());
-                            messageField.setText(messageField.getText() + " " + button.getText());
+                            messageField.setText(messageField.getText() + button.getText());
                         });
                         row.getChildren().add(button);
                     });
@@ -96,6 +95,9 @@ public class HomeController {
     private ArrayList<ArrayList<String>> generateEmojiList(Collection<Emoji> emojiData) {
         List<Emoji> emojiDataList = (List<Emoji>) emojiData;
         List<Emoji> filteredEmojiDataList = new ArrayList<>();
+        /**
+         * filter the emoji from 'smile' to 'regional_indicator_symbol_z' because of the wrong display
+         */
         boolean start = false;
         for (Emoji e : emojiDataList) {
             if (e.getAliases().contains("smile")) {
@@ -215,13 +217,14 @@ public class HomeController {
         if (isEmpty(messageField.getText())) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
-            alert.setHeaderText("Unexpected Error.");
+            alert.setHeaderText("Cannot send empty message.");
             alert.setContentText("Try again.");
             alert.show();
         } else {
             try {
                 ConnectionData connectionData = new ConnectionData(messageField.getText(), clientThread.getUsername());
                 new SendThread(connectionData).start();
+                messageField.setText("");
             } catch (Exception e) {
                 e.printStackTrace();
             }
