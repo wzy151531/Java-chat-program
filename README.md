@@ -4,13 +4,14 @@ This java project is about a client-server mode program based on socket.
 
 ## Alias
 
-The whole project is divided into two parts: server and client. Both projects are built with `gradle6` and `jdk13`.
+The whole project is divided into two parts: server and client. Both projects are built with `gradle6` and `jdk11`.
 
 ## Current Function
 
 * Login validation via jdbc.
 * Send text message or audio to all connected clients
 * Local chat history in client.
+* Can send some emoji in chat.
 
 ## Quick Start
 
@@ -61,13 +62,13 @@ java --module-path $PATHTOJAVAFXSDK13 --add-modules javafx.controls,javafx.fxml,
 First clone the project, and in your local git repository, create a new branch named as your name, for example:
 
 ```bash
-git branch yourname
+git branch $YOURBRANCH
 ```
 
 and then checkout to that branch:
 
 ```bash
-git checkout yourname
+git checkout $YOURBRANCH
 ```
 
 Now, to check if you are in the right branch, use the command:
@@ -78,6 +79,12 @@ git branch -a
 
 and the '*' will be infront of the current branch.
 
+If you want to push your branch to the git repository, use the command:
+
+```bash
+git push origin $YOURBRANCH
+```
+
 Now you can do some change to your branch, once you have done your task, after testing the new function and commiting the change, first use command:
 
 ```bash
@@ -87,8 +94,9 @@ git checkout master
 to checkout to the master branch, and then use the command to merge your branch to the master branch:
 
 ```bash
-git merge yourname
+git merge $YOURBRANCH
 ```
+
 Make sure before each commit, checkout your current branch first.
 
 
