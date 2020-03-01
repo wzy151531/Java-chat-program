@@ -45,8 +45,6 @@ public class HomeController {
     private Button emojiButton;
     @FXML
     private ListView<ArrayList<String>> emojiList;
-    @FXML
-    private ScrollPane emojiScrollPane;
 
     private boolean stopCapture = false;
     private ByteArrayOutputStream byteArrayOutputStream;
@@ -62,8 +60,6 @@ public class HomeController {
         sendAudioButton.setDisable(true);
         emojiList.setVisible(false);
         emojiList.setManaged(false);
-        emojiScrollPane.setVisible(false);
-        emojiScrollPane.setManaged(false);
         emojiList.setCellFactory(l -> new ListCell<>() {
             @Override
             protected void updateItem(ArrayList<String> item, boolean empty) {
@@ -75,12 +71,12 @@ public class HomeController {
                     HBox row = new HBox();
                     item.forEach(n -> {
                         Button button = new Button(n);
-                        button.setPrefSize(30.0, 20.0);
+                        button.setPrefSize(40.0, 20.0);
                         button.setPadding(Insets.EMPTY);
                         button.setTextAlignment(TextAlignment.CENTER);
-                        button.setFont(new Font("Apple Color Emoji", 28));
+                        button.setFont(new Font("NotoEmoji-Regular", 25));
                         button.setOnAction(evt -> {
-//                            System.out.println(button.getText());
+                            System.out.println(button.getText());
                             messageField.setText(messageField.getText() + " " + button.getText());
                         });
                         row.getChildren().add(button);
@@ -99,12 +95,25 @@ public class HomeController {
 
     private ArrayList<ArrayList<String>> generateEmojiList(Collection<Emoji> emojiData) {
         List<Emoji> emojiDataList = (List<Emoji>) emojiData;
+        List<Emoji> filteredEmojiDataList = new ArrayList<>();
+        boolean start = false;
+        for (Emoji e : emojiDataList) {
+            if (e.getAliases().contains("smile")) {
+                start = true;
+            }
+            if (e.getAliases().contains("regional_indicator_symbol_z")) {
+                start = false;
+            }
+            if (start) {
+                filteredEmojiDataList.add(e);
+            }
+        }
         ArrayList<ArrayList<String>> result = new ArrayList<>();
-        for (int i = 0; i < emojiDataList.size(); i = i + 10) {
+        for (int i = 0; i < filteredEmojiDataList.size(); i = i + 10) {
             ArrayList<String> row = new ArrayList<>();
             for (int j = 0; j < 10; j++) {
-                if (i + j >= emojiDataList.size()) continue;
-                row.add(emojiDataList.get(i + j).getUnicode());
+                if (i + j >= filteredEmojiDataList.size()) continue;
+                row.add(filteredEmojiDataList.get(i + j).getUnicode());
             }
             result.add(row);
         }
@@ -255,8 +264,6 @@ public class HomeController {
     public void showEmojiList(ActionEvent event) {
         emojiList.setVisible(!emojiList.isVisible());
         emojiList.setManaged(!emojiList.isManaged());
-        emojiScrollPane.setVisible(!emojiScrollPane.isVisible());
-        emojiScrollPane.setManaged(!emojiScrollPane.isManaged());
     }
 
     private void playAudio(byte[] audioData) {

@@ -1,3 +1,10 @@
+@font-face {
+    -fx-font-family: 'NotoEmoji-Regular';
+    src: url('/font/NotoEmoji-Regular.ttf');
+}
+
 .list-cell {
-     -fx-font-size: 20;
+    -fx-font-family: 'NotoEmoji-Regular';
+    src: url('/font/NotoEmoji-Regular.ttf');
+    -fx-font-size: 20;
  }
