@@ -8,6 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
@@ -170,11 +171,26 @@ public class HomeController {
                     setGraphic(null);
                     setText("");
                 } else if (item.getType() == 2) {
-                    Label signature = new Label(item.getUserSignature() + ": ");
-                    HBox content = new HBox(signature, button);
-                    setGraphic(content);
+                    if (item.getUserSignature().equals(clientThread.getUsername())) {
+                        Label signature = new Label(" :" + item.getUserSignature());
+                        HBox content = new HBox(button, signature);
+                        content.setAlignment(Pos.CENTER_RIGHT);
+                        setGraphic(content);
+                    } else {
+                        Label signature = new Label(item.getUserSignature() + ": ");
+                        HBox content = new HBox(signature, button);
+                        setGraphic(content);
+                    }
                 } else if (item.getType() == 1) {
-                    setText(item.getUserSignature() + ": " + item.getTextData());
+                    /**
+                     * If user received own messages, show in right.
+                     */
+                    if (item.getUserSignature().equals(clientThread.getUsername())) {
+                        setText(item.getTextData() + " :" + item.getUserSignature());
+                        setAlignment(Pos.CENTER_RIGHT);
+                    } else {
+                        setText(item.getUserSignature() + ": " + item.getTextData());
+                    }
                 }
             }
 
