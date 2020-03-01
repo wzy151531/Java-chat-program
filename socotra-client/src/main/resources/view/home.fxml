@@ -9,7 +9,7 @@
 <?import javafx.scene.control.* ?>
 <?import javafx.scene.layout.* ?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="691.0" prefWidth="487.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="socotra.controller.HomeController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="519.0" prefWidth="487.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="socotra.controller.HomeController">
     <children>
         <Label layoutX="50.0" layoutY="30.0" text="Home">
             <font>
@@ -17,14 +17,14 @@
             </font>
         </Label>
         <Label layoutX="50.0" layoutY="60.0" />
-        <TextField fx:id="messageField" layoutX="31.0" layoutY="413.0" prefHeight="27.0" prefWidth="358.0" />
+        <TextField fx:id="messageField" layoutX="31.0" layoutY="413.0" prefHeight="27.0" prefWidth="291.0" />
         <Button fx:id="sendTextButton" layoutX="391.0" layoutY="413.0" mnemonicParsing="false" onAction="#sendText" prefHeight="27.0" prefWidth="62.0" text="send" />
         <Button fx:id="captureButton" layoutX="31.0" layoutY="462.0" mnemonicParsing="false" onAction="#capture" prefHeight="27.0" prefWidth="74.0" text="capture" />
         <Button fx:id="stopButton" layoutX="120.0" layoutY="462.0" mnemonicParsing="false" onAction="#stop" prefHeight="27.0" prefWidth="49.0" text="stop" />
         <Button fx:id="sendAudioButton" layoutX="184.0" layoutY="462.0" mnemonicParsing="false" onAction="#sendAudio" prefHeight="27.0" prefWidth="97.0" text="send audio" />
       <ListView fx:id="chatList" layoutX="30.0" layoutY="69.0" prefHeight="330.0" prefWidth="421.0" />
-      <Button fx:id="emojiButton" layoutX="390.0" layoutY="462.0" mnemonicParsing="false" onAction="#showEmojiList" prefHeight="27.0" prefWidth="62.0" text="Emoji" />
-      <ListView fx:id="emojiList" layoutX="2.0" layoutY="489.0" prefHeight="200.0" prefWidth="481.0" />
+      <Button fx:id="emojiButton" layoutX="322.0" layoutY="413.0" mnemonicParsing="false" onAction="#showEmojiList" prefHeight="27.0" prefWidth="62.0" text="Emoji" />
+      <ListView fx:id="emojiList" layoutY="213.0" prefHeight="200.0" prefWidth="481.0" />
     </children>
     <stylesheets>
         <URL value="@/css/home.css" />
