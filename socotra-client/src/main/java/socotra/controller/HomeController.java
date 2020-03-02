@@ -14,7 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import socotra.common.ConnectionData;
-import socotra.service.ClientThread;
+import socotra.model.ClientThread;
 
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
@@ -27,8 +27,17 @@ import java.util.List;
 
 public class HomeController {
 
+    /**
+     * Local history message.
+     */
     private ArrayList<ConnectionData> historyData = new ArrayList<>();
+    /**
+     * All audio button in local history message.
+     */
     private ArrayList<Button> allAudioButton = new ArrayList<>();
+    /**
+     * The force stop flag.
+     */
     private boolean forceStop = false;
     @FXML
     private Button captureButton;
@@ -44,23 +53,50 @@ public class HomeController {
     private ListView<ConnectionData> chatList;
     @FXML
     private Button emojiButton;
+    /**
+     * The emoji list, each list stores a length of 10 arrayList.
+     */
     @FXML
     private ListView<ArrayList<String>> emojiList;
-
+    /**
+     * The stop capture flag.
+     */
     private boolean stopCapture = false;
+    /**
+     * Captures audio input from a microphone and saves it in a this object to output.
+     */
     private ByteArrayOutputStream byteArrayOutputStream;
+    /**
+     * Capture audio input in this data line.
+     */
     private TargetDataLine targetDataLine;
+    /**
+     * An AudioFormat object for a given set of format parameters.
+     */
     private AudioFormat audioFormat;
+    /**
+     * Get an input stream on the byte array containing the data.
+     */
     private AudioInputStream audioInputStream;
+    /**
+     * The data line where it will be delivered to the speaker.
+     */
     private SourceDataLine sourceDataLine;
+    /**
+     * Injected clientThread to get some information of user.
+     */
     private ClientThread clientThread;
 
+    /**
+     * Initialize code when controller initializing.
+     */
     @FXML
     private void initialize() {
         stopButton.setDisable(true);
         sendAudioButton.setDisable(true);
         emojiList.setVisible(false);
         emojiList.setManaged(false);
+        // Define the render logic of the emojiList.
         emojiList.setCellFactory(l -> new ListCell<>() {
             @Override
             protected void updateItem(ArrayList<String> item, boolean empty) {
@@ -70,6 +106,7 @@ public class HomeController {
                     setText("");
                 } else {
                     HBox row = new HBox();
+                    // Add each emoji in one line into the HBox.
                     item.forEach(n -> {
                         Button button = new Button(n);
                         button.setPrefSize(40.0, 20.0);
@@ -85,20 +122,30 @@ public class HomeController {
                 }
             }
         });
+        // Generate emojiList view according to the render logic of it.
         generateEmojiListView();
     }
 
+    /**
+     * Setter for clientThread to set received connection data.
+     *
+     * @param connectionData The connection data set by clientThread.
+     */
     public void setConnectionData(ConnectionData connectionData) {
         this.historyData.add(connectionData);
         updateChatView();
     }
 
+    /**
+     * Generate emojiList data of all the emoji.
+     *
+     * @param emojiData All the emoji got by EmojiManager.
+     * @return
+     */
     private ArrayList<ArrayList<String>> generateEmojiList(Collection<Emoji> emojiData) {
         List<Emoji> emojiDataList = (List<Emoji>) emojiData;
         List<Emoji> filteredEmojiDataList = new ArrayList<>();
-        /**
-         * filter the emoji from 'smile' to 'regional_indicator_symbol_z' because of the wrong display
-         */
+        // Filter the emoji from 'smile' to 'regional_indicator_symbol_z' because of the wrong display.
         boolean start = false;
         for (Emoji e : emojiDataList) {
             if (e.getAliases().contains("smile")) {
@@ -111,6 +158,7 @@ public class HomeController {
                 filteredEmojiDataList.add(e);
             }
         }
+        // Add the emoji's unicode to the ArrayList by 10.
         ArrayList<ArrayList<String>> result = new ArrayList<>();
         for (int i = 0; i < filteredEmojiDataList.size(); i = i + 10) {
             ArrayList<String> row = new ArrayList<>();
@@ -123,10 +171,14 @@ public class HomeController {
         return result;
     }
 
+    /**
+     * Generate emojiList view according to the render logic of it.
+     */
     private void generateEmojiListView() {
         ArrayList<ArrayList<String>> emojiData = generateEmojiList(EmojiManager.getAll());
         ObservableList<ArrayList<String>> dataList = FXCollections.observableArrayList(emojiData);
-        Platform.runLater(() -> { // runLater keep thread synchronize
+        // 'runLater' keep thread synchronize.
+        Platform.runLater(() -> {
             emojiList.setItems(null);
             emojiList.setItems(dataList);
             emojiList.refresh();
@@ -160,7 +212,6 @@ public class HomeController {
                         playAudio(item.getAudioData());
                     }
                 });
-
             }
 
             @Override
@@ -182,9 +233,7 @@ public class HomeController {
                         setGraphic(content);
                     }
                 } else if (item.getType() == 1) {
-                    /**
-                     * If user received own messages, show in right.
-                     */
+                    // If user received own messages, show in right.
                     if (item.getUserSignature().equals(clientThread.getUsername())) {
                         setText(item.getTextData() + " :" + item.getUserSignature());
                         setAlignment(Pos.CENTER_RIGHT);
@@ -205,15 +254,20 @@ public class HomeController {
         });
     }
 
+    /**
+     * Setter for clientThread to let clientThread inject itself.
+     *
+     * @param clientThread Injected clientThread for get some user information.
+     */
     public void setClientThread(ClientThread clientThread) {
         this.clientThread = clientThread;
     }
 
-    // This method creates and returns an AudioFormat object for a given set of
-    // format parameters. If these
-    // parameters don't work well for you, try some of the other allowable parameter
-    // values, which
-    // are shown in comments following the declarations.
+    /**
+     * Creates an AudioFormat object for a given set of format parameters.
+     *
+     * @return An AudioFormat object for a given set of format parameters.
+     */
     private AudioFormat getAudioFormat() {
         float sampleRate = 8000.0F;
         // 8000,11025,16000,22050,44100
@@ -228,6 +282,11 @@ public class HomeController {
         return new AudioFormat(sampleRate, sampleSizeInBits, channels, signed, bigEndian);
     }
 
+    /**
+     * Send text message to server.
+     *
+     * @param event The event ot sendTextButton.
+     */
     @FXML
     public void sendText(ActionEvent event) {
         if (isEmpty(messageField.getText())) {
@@ -237,30 +296,29 @@ public class HomeController {
             alert.setContentText("Try again.");
             alert.show();
         } else {
-            try {
-                ConnectionData connectionData = new ConnectionData(messageField.getText(), clientThread.getUsername());
-                new SendThread(connectionData).start();
-                messageField.setText("");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            ConnectionData connectionData = new ConnectionData(messageField.getText(), clientThread.getUsername());
+            new SendThread(connectionData).start();
+            messageField.setText("");
         }
     }
 
+    /**
+     * Capture audio input from a microphone and save it in a ByteArrayOutputStream object.
+     *
+     * @param event The capture event of captureButton.
+     */
     @FXML
-    // This method captures audio input from a microphone and saves it in a ByteArrayOutputStream object.
     public void capture(ActionEvent event) {
         captureButton.setDisable(true);
         stopButton.setDisable(false);
         sendAudioButton.setDisable(true);
         try {
-            // Get everything set up for capture
+            // Get everything set up for capture.
             AudioFormat audioFormat = getAudioFormat();
             DataLine.Info dataLineInfo = new DataLine.Info(TargetDataLine.class, audioFormat);
             targetDataLine = (TargetDataLine) AudioSystem.getLine(dataLineInfo);
 
-            // Create a thread to capture the microphone data and start it running. It will
-            // run until the Stop button is clicked.
+            // Create a thread to capture the microphone data and start it running. It will run until the stopButton is clicked.
             new CaptureThread().start();
         } catch (Exception e) {
             e.printStackTrace(System.out);
@@ -268,6 +326,11 @@ public class HomeController {
         }
     }
 
+    /**
+     * Stop capturing the audio.
+     *
+     * @param event The stop event of the stopButton.
+     */
     @FXML
     public void stop(ActionEvent event) {
         captureButton.setDisable(false);
@@ -279,17 +342,27 @@ public class HomeController {
         forceStop = true;
     }
 
+    /**
+     * Show emoji pane.
+     *
+     * @param event The event of emojiButton.
+     */
     @FXML
     public void showEmojiList(ActionEvent event) {
         emojiList.setVisible(!emojiList.isVisible());
         emojiList.setManaged(!emojiList.isManaged());
     }
 
+    /**
+     * Play audio in history data.
+     *
+     * @param audioData The audio needs to be played.
+     */
     private void playAudio(byte[] audioData) {
         try {
             // Get everything set up for playback.
             // Get the previously-saved data into a byte array object.
-            // Get an input stream on the byte array containing the data
+            //
             InputStream byteArrayInputStream = new ByteArrayInputStream(audioData);
             audioFormat = getAudioFormat();
             audioInputStream = new AudioInputStream(byteArrayInputStream, audioFormat,
@@ -306,6 +379,11 @@ public class HomeController {
         }
     }
 
+    /**
+     * Send audio data to the server.
+     *
+     * @param event The event of the sendAudioButton.
+     */
     @FXML
     public void sendAudio(ActionEvent event) {
         try {
@@ -327,6 +405,9 @@ public class HomeController {
         return str == null || str.trim().length() == 0;
     }
 
+    /**
+     * The capture thread to run the capture audio job.
+     */
     class CaptureThread extends Thread {
         // An arbitrary-size temporary holding buffer
         byte[] tempBuffer = new byte[10000];
@@ -353,6 +434,9 @@ public class HomeController {
         }
     }
 
+    /**
+     * The play thread to run the play audio job.
+     */
     class PlayThread extends Thread {
         //byte[] tempBuffer = new byte[10000];
         byte[] tempBuffer = new byte[10];
@@ -387,6 +471,9 @@ public class HomeController {
         }
     }
 
+    /**
+     * The send thread to run the send either audio or text message job.
+     */
     class SendThread extends Thread {
         private ConnectionData connectionData;
 

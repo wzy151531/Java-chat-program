@@ -1,7 +1,4 @@
-package socotra.service;// Usage:
-//        java Client hostname
-// type a non-zero integer on a line to send it to server
-// type a blank line to end client
+package socotra.model;
 
 import socotra.Client;
 import socotra.common.ConnectionData;
@@ -12,22 +9,47 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class ClientThread extends Thread {
 
+    /**
+     * The controller of login page.
+     */
     private final LoginController loginController;
-    private Socket server;
+    /**
+     * Current connected server name.
+     */
+    private final String serverName;
+    /**
+     * Current user's username.
+     */
+    private final String username;
+    /**
+     * Current user's password.
+     */
+    private final String password;
+    /**
+     * The output stream of connection.
+     */
     private ObjectOutputStream toServer;
+    /**
+     * The input stream of connection.
+     */
     private ObjectInputStream fromServer;
-    private String serverName;
-    private String username;
-    private String password;
+    /**
+     * The controller of home page.
+     */
     private HomeController homeController;
 
-    // The constructor is given the server's name It opens a socket
-    // connection to the server and extracts it input and out streams.
-
+    /**
+     * The constructor is given the server's name. It opens a socket connection to the server and extracts it input and
+     * out streams.
+     *
+     * @param serverName      The server want to connect.
+     * @param loginController The controller of login page.
+     * @param username        The user's username.
+     * @param password        The user's password.
+     */
     public ClientThread(String serverName, LoginController loginController, String username, String password) {
         this.serverName = serverName;
         this.loginController = loginController;
@@ -36,46 +58,39 @@ public class ClientThread extends Thread {
 
     }
 
+    /**
+     * Inject homeController to ClientThread.
+     *
+     * @param homeController The controller of home page.
+     */
     public void setHomeController(HomeController homeController) {
-        System.out.println("setHomeController");
         this.homeController = homeController;
     }
 
+    /**
+     * Getter for username.
+     *
+     * @return The user's username.
+     */
     public String getUsername() {
         return username;
     }
 
-    // finalize method (also called the "destructor")
-    // closes all the resources used by the Client before the Client
-    // gets destroyed (reclaimed by the garbage collector)
-    public void finalize() {
-        try {
-            // Let server know we are done.
-            // Our convention is to send "0" to indicate this.
-
-            // toServer.writeInt(0);
-
-            // Close the streams:
-
-            toServer.close();
-            fromServer.close();
-
-            // Close the connection:
-
-            server.close();
-        } catch (IOException e) {
-            error("Something went wrong ending the client");
-        }
-    }
-
+    /**
+     * Getter for toServer.
+     *
+     * @return The output stream of connection.
+     */
     public ObjectOutputStream getToServer() {
         return toServer;
     }
 
-    // This is what this class does:
+    /**
+     * The thread's job.
+     */
     public void run() {
         try {
-            server = new Socket(serverName, 50000);
+            Socket server = new Socket(serverName, 50000);
             toServer = new ObjectOutputStream(server.getOutputStream());
             fromServer = new ObjectInputStream(server.getInputStream());
             Client.setErrorType(0);
@@ -83,6 +98,7 @@ public class ClientThread extends Thread {
             while (true) {
                 ConnectionData connectionData = (ConnectionData) fromServer.readObject();
                 System.out.println("Received connectionData.");
+                // If receive the result about user's validation.
                 if (connectionData.getType() == -1) {
                     if (!connectionData.getValidated()) {
                         Client.setErrorType(2);
@@ -90,38 +106,32 @@ public class ClientThread extends Thread {
                         fromServer.close();
                         server.close();
                     }
+                    // Notify the loginController thread to redirect to the home page.
                     synchronized (loginController) {
                         loginController.notify();
                     }
                 } else {
+                    // Receive the normal messages from server.
                     homeController.setConnectionData(connectionData);
                 }
             }
-        } catch (UnknownHostException e) {
-            error("Unknown host: " + serverName);
         } catch (IOException e) {
             Client.setErrorType(1);
             e.printStackTrace();
-            tell("Socket commmunication broke");
-            // finalize();
-        } catch (ClassNotFoundException e) {
+            System.out.println("Socket communication broke.");
+        } catch (IllegalStateException e) {
             e.printStackTrace();
+            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Unexpected Error.");
         } finally {
+            System.out.println("Finally handled.");
+            // Notify the loginController thread anyway.
             synchronized (loginController) {
                 loginController.notify();
             }
         }
-    }
-
-    // helper method to print error messages
-    private void error(String message) {
-        System.err.println(message);
-        System.exit(1); // Don't do this in practice! (Why?)
-    }
-
-    // helper method to talk to the user
-    private void tell(String message) {
-        System.out.println(message);
     }
 
 }

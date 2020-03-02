@@ -1,6 +1,5 @@
 package socotra.controller;
 
-import com.vdurmont.emoji.EmojiParser;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -11,7 +10,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import socotra.Client;
-import socotra.service.ClientThread;
+import socotra.model.ClientThread;
 
 public class LoginController {
 
@@ -28,7 +27,7 @@ public class LoginController {
     private Button loginButton;
 
     /**
-     * Login event.
+     * Login event of loginButton.
      *
      * @param event The login event.
      */
@@ -47,6 +46,7 @@ public class LoginController {
         loginButton.setText("login...");
         ClientThread clientThread = new ClientThread(isEmpty(serverStr) ? "localhost" : serverStr, this, usernameStr, passwordStr);
         clientThread.start();
+        // Wait until the ClientThread notify it.
         synchronized (this) {
             try {
                 this.wait();
@@ -54,6 +54,7 @@ public class LoginController {
                 e.printStackTrace();
             }
         }
+        // If the server name is not correct.
         if (Client.getErrorType() == 1) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Connection Error");
@@ -62,6 +63,7 @@ public class LoginController {
             alert.show();
             loginButton.setText("login");
         } else if (Client.getErrorType() == 2) {
+            // If the user is invalidated.
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Validation Error");
             alert.setHeaderText("Invalidated user.");
@@ -69,7 +71,7 @@ public class LoginController {
             alert.show();
             loginButton.setText("login");
         } else {
-            // load .fxml file
+            // Load .fxml file
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/home.fxml"));
             Pane tempPane = null;
             try {
@@ -79,13 +81,12 @@ public class LoginController {
                 clientThread.setHomeController(homeController);
                 homeController.setClientThread(clientThread);
 
-                // construct scene
+                // Construct scene
                 Scene tempScene = new Scene(tempPane);
-                // set scene
+                // Set scene
                 Client.setScene(tempScene);
             } catch (Exception e) {
                 e.printStackTrace();
-                // TODO: hint if error
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText("Unexpected Error.");
