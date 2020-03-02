@@ -1,6 +1,7 @@
-package socotra.service;
+package socotra;
 
 import socotra.jdbc.JdbcUtil;
+import socotra.service.ServerThread;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;

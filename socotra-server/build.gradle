@@ -19,11 +19,11 @@ dependencies {
 }
 
 
-mainClassName = 'socotra.service.Server'
+mainClassName = 'socotra.Server'
 
 jar {
     manifest {
-        attributes 'Main-Class': 'socotra.service.Server'
+        attributes 'Main-Class': 'socotra.Server'
     }
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
