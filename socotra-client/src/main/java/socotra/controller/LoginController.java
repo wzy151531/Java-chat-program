@@ -37,11 +37,9 @@ public class LoginController {
         String usernameStr = usernameField.getText();
         String passwordStr = passwordField.getText();
         if (isEmpty(usernameStr) || isEmpty(passwordStr)) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Warning");
-            alert.setHeaderText("Validate Error.");
-            alert.setContentText("Please input the info.");
+            Alert alert = generateAlert(Alert.AlertType.WARNING, "Warning", "Validate Error.", "Please input the info.");
             alert.show();
+            return;
         }
         loginButton.setText("login...");
         ClientThread clientThread = new ClientThread(isEmpty(serverStr) ? "localhost" : serverStr, this, usernameStr, passwordStr);
@@ -56,18 +54,12 @@ public class LoginController {
         }
         // If the server name is not correct.
         if (Client.getErrorType() == 1) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Connection Error");
-            alert.setHeaderText("Invalidated Server.");
-            alert.setContentText("Try again.");
+            Alert alert = generateAlert(Alert.AlertType.ERROR, "Connection Error", "Invalidated Server.", "Try again.");
             alert.show();
             loginButton.setText("login");
         } else if (Client.getErrorType() == 2) {
             // If the user is invalidated.
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Validation Error");
-            alert.setHeaderText("Invalidated user.");
-            alert.setContentText("Try again.");
+            Alert alert = generateAlert(Alert.AlertType.ERROR, "Validation Error", "Invalidated user.", "Try again.");
             alert.show();
             loginButton.setText("login");
         } else {
@@ -87,10 +79,7 @@ public class LoginController {
                 Client.setScene(tempScene);
             } catch (Exception e) {
                 e.printStackTrace();
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Unexpected Error.");
-                alert.setContentText("Try again.");
+                Alert alert = generateAlert(Alert.AlertType.ERROR, "Error", "Unexpected Error.", "Try again.");
                 alert.show();
             }
         }
@@ -105,6 +94,23 @@ public class LoginController {
      */
     private boolean isEmpty(String str) {
         return str == null || str.trim().length() == 0;
+    }
+
+    /**
+     * Generate Alert panel.
+     *
+     * @param type    The alert type.
+     * @param title   The title text of alert panel.
+     * @param header  The header text of alert panel.
+     * @param content The content text of alert panel.
+     * @return The alert panel.
+     */
+    private Alert generateAlert(Alert.AlertType type, String title, String header, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(content);
+        return alert;
     }
 
 }
