@@ -5,6 +5,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import socotra.controller.HomeController;
+import socotra.controller.LoginController;
+import socotra.model.ClientThread;
+import socotra.model.HomeModel;
+import socotra.model.LoginModel;
 
 public class Client extends Application {
 
@@ -12,10 +17,54 @@ public class Client extends Application {
      * The stage to show in the screen.
      */
     private static Stage stage;
-    /**
-     * The error type of the connection.
-     */
-    private static int errorType = 1;
+
+    // Put all the controllers and models in Client to manage.
+
+    private static LoginController loginController;
+    private static LoginModel loginModel;
+    private static HomeController homeController;
+    private static HomeModel homeModel;
+    private static ClientThread clientThread;
+
+    public static LoginController getLoginController() {
+        return loginController;
+    }
+
+    public static void setLoginController(LoginController loginController) {
+        Client.loginController = loginController;
+    }
+
+    public static LoginModel getLoginModel() {
+        return loginModel;
+    }
+
+    public static void setLoginModel(LoginModel loginModel) {
+        Client.loginModel = loginModel;
+    }
+
+    public static HomeController getHomeController() {
+        return homeController;
+    }
+
+    public static void setHomeController(HomeController homeController) {
+        Client.homeController = homeController;
+    }
+
+    public static HomeModel getHomeModel() {
+        return homeModel;
+    }
+
+    public static void setHomeModel(HomeModel homeModel) {
+        Client.homeModel = homeModel;
+    }
+
+    public static ClientThread getClientThread() {
+        return clientThread;
+    }
+
+    public static void setClientThread(ClientThread clientThread) {
+        Client.clientThread = clientThread;
+    }
 
     /**
      * The program entry.
@@ -36,24 +85,6 @@ public class Client extends Application {
     }
 
     /**
-     * Getter for error type.
-     *
-     * @return The error type of the connection.
-     */
-    public static int getErrorType() {
-        return errorType;
-    }
-
-    /**
-     * Setter for error type.
-     *
-     * @param errorType The error type needs to be set.
-     */
-    public static void setErrorType(int errorType) {
-        Client.errorType = errorType;
-    }
-
-    /**
      * Start to show the GUI.
      *
      * @param primaryStage The stage to show in the screen.
@@ -64,6 +95,7 @@ public class Client extends Application {
         // Load .fxml file
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
         Pane tempPane = loader.load();
+        setLoginController(loader.getController());
         // Create scene
         Scene tempScene = new Scene(tempPane);
         // Add scene to the stage

@@ -10,7 +10,8 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import socotra.Client;
-import socotra.model.ClientThread;
+import socotra.model.LoginModel;
+import socotra.util.Util;
 
 public class LoginController {
 
@@ -33,84 +34,52 @@ public class LoginController {
      */
     @FXML
     public void login(ActionEvent event) {
-        String serverStr = serverField.getText();
-        String usernameStr = usernameField.getText();
-        String passwordStr = passwordField.getText();
-        if (isEmpty(usernameStr) || isEmpty(passwordStr)) {
-            Alert alert = generateAlert(Alert.AlertType.WARNING, "Warning", "Validate Error.", "Please input the info.");
-            alert.show();
+        String serverName = serverField.getText();
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+        if (Util.isEmpty(username) || Util.isEmpty(password)) {
+            Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Validate Error.", "Please input the info.").show();
             return;
         }
         loginButton.setText("login...");
-        ClientThread clientThread = new ClientThread(isEmpty(serverStr) ? "localhost" : serverStr, this, usernameStr, passwordStr);
-        clientThread.start();
-        // Wait until the ClientThread notify it.
-        synchronized (this) {
-            try {
-                this.wait();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        // If the server name is not correct.
-        if (Client.getErrorType() == 1) {
-            Alert alert = generateAlert(Alert.AlertType.ERROR, "Connection Error", "Invalidated Server.", "Try again.");
-            alert.show();
-            loginButton.setText("login");
-        } else if (Client.getErrorType() == 2) {
+        Client.setLoginModel(new LoginModel());
+        int errorType = Client.getLoginModel().handleLogin(serverName, username, password);
+        loginButton.setText("login");
+        switch (errorType) {
+            // If the server name is not correct.
+            case 1:
+                Util.generateAlert(Alert.AlertType.ERROR, "Connection Error", "Invalidated Server.", "Try again.").show();
+                break;
             // If the user is invalidated.
-            Alert alert = generateAlert(Alert.AlertType.ERROR, "Validation Error", "Invalidated user.", "Try again.");
-            alert.show();
-            loginButton.setText("login");
-        } else {
-            // Load .fxml file
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/home.fxml"));
-            Pane tempPane = null;
-            try {
-                tempPane = loader.load();
-
-                HomeController homeController = loader.getController();
-                clientThread.setHomeController(homeController);
-                homeController.setClientThread(clientThread);
-
-                // Construct scene
-                Scene tempScene = new Scene(tempPane);
-                // Set scene
-                Client.setScene(tempScene);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Alert alert = generateAlert(Alert.AlertType.ERROR, "Error", "Unexpected Error.", "Try again.");
-                alert.show();
-            }
+            case 2:
+                Util.generateAlert(Alert.AlertType.ERROR, "Validation Error", "Invalidated user.", "Try again.").show();
+                break;
+            default:
+                loadHomePage();
+                break;
         }
-
     }
 
-    /**
-     * Check if the String is empty.
-     *
-     * @param str The given String.
-     * @return If the String is empty, return true; else return false.
-     */
-    private boolean isEmpty(String str) {
-        return str == null || str.trim().length() == 0;
+    private void loadHomePage() {
+        // Load .fxml file
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/home.fxml"));
+        Pane tempPane = null;
+        try {
+            tempPane = loader.load();
+
+            Client.setHomeController(loader.getController());
+//            clientThread.setHomeController(homeController);
+//            homeController.setClientThread(clientThread);
+
+            // Construct scene
+            Scene tempScene = new Scene(tempPane);
+            // Set scene
+            Client.setScene(tempScene);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Util.generateAlert(Alert.AlertType.ERROR, "Error", "Unexpected Error.", "Try again.").show();
+        }
     }
 
-    /**
-     * Generate Alert panel.
-     *
-     * @param type    The alert type.
-     * @param title   The title text of alert panel.
-     * @param header  The header text of alert panel.
-     * @param content The content text of alert panel.
-     * @return The alert panel.
-     */
-    private Alert generateAlert(Alert.AlertType type, String title, String header, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-        return alert;
-    }
 
 }

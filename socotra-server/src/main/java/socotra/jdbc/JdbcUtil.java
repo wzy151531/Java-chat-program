@@ -52,12 +52,23 @@ public class JdbcUtil {
         System.out.println("localhost:" + forwardPort);
     }
 
+    /**
+     * End ssh session.
+     *
+     * @throws Exception
+     */
     public static void end() throws Exception {
         session.delPortForwardingL(forwardPort);
         session.disconnect();
         System.out.println("Session disconnected.");
     }
 
+    /**
+     * Connect to database.
+     *
+     * @return The connection to database.
+     * @throws Exception Exception thrown while connecting to database.
+     */
     public static Connection connect() throws Exception {
         String url = "jdbc:postgresql://localhost:" + forwardPort + "/" + dbUser;
         Class.forName("org.postgresql.Driver");
@@ -68,6 +79,13 @@ public class JdbcUtil {
         return connection;
     }
 
+    /**
+     * Send some sql statement to database for results.
+     *
+     * @param sql The sql wants to be executed.
+     * @return The results from database.
+     * @throws Exception Exception thrown while executing the sql.
+     */
     public static ResultSet inquire(String sql) throws Exception {
         Statement statement = connection.createStatement();
         return statement.executeQuery(sql);
