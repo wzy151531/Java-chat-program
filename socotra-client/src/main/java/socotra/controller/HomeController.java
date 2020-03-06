@@ -64,6 +64,13 @@ public class HomeController {
     }
 
     /**
+     * Scroll chatList to the last row.
+     */
+    public void scrollChatList() {
+        chatList.scrollTo(chatList.getItems().size() - 1);
+    }
+
+    /**
      * Initialize code when controller initializing.
      */
     @FXML
@@ -75,6 +82,9 @@ public class HomeController {
         emojiList.setManaged(false);
         configEmojiList();
         configChatList();
+        Platform.runLater(() -> { // runLater keep thread synchronize
+            chatList.setItems(Client.getHomeModel().getHistoryData());
+        });
         // Generate emojiList view according to the render logic of it.
         generateEmojiListView();
     }
@@ -116,29 +126,6 @@ public class HomeController {
      */
     private void configChatList() {
         chatList.setCellFactory(l -> new ListCell<>() {
-
-            private final Button button = new Button("play");
-
-            {
-                button.setPrefSize(50.0, 15.0);
-                button.setFont(new Font(10));
-                allAudioButtons.add(button);
-                button.setOnAction(evt -> {
-                    Client.getHomeModel().setForceStop(false);
-                    captureButton.setDisable(true);
-                    stopButton.setDisable(false);
-                    allAudioButtons.forEach(n -> {
-                        if (!n.equals(button)) {
-                            n.setDisable(true);
-                        }
-                    });
-                    ConnectionData item = getItem();
-                    if (item.getType() == 2) {
-                        Client.getHomeModel().handlePlayAudio(item.getAudioData());
-                    }
-                });
-            }
-
             @Override
             protected void updateItem(ConnectionData item, boolean empty) {
                 super.updateItem(item, empty);
@@ -146,6 +133,20 @@ public class HomeController {
                     setGraphic(null);
                     setText("");
                 } else if (item.getType() == 2) {
+                    Button button = new Button("Audio");
+                    button.setPrefSize(50.0, 15.0);
+                    button.setFont(new Font(10));
+                    button.setOnAction(evt -> {
+                        Client.getHomeModel().setForceStop(false);
+                        captureButton.setDisable(true);
+                        stopButton.setDisable(false);
+                        allAudioButtons.forEach(n -> {
+                            if (!n.equals(button)) {
+                                n.setDisable(true);
+                            }
+                        });
+                        Client.getHomeModel().handlePlayAudio(item.getAudioData());
+                    });
                     if (item.getUserSignature().equals(Client.getClientThread().getUsername())) {
                         Label signature = new Label(" :" + item.getUserSignature());
                         HBox content = new HBox(button, signature);
@@ -154,15 +155,24 @@ public class HomeController {
                     } else {
                         Label signature = new Label(item.getUserSignature() + ": ");
                         HBox content = new HBox(signature, button);
+                        content.setAlignment(Pos.CENTER_LEFT);
                         setGraphic(content);
                     }
                 } else if (item.getType() == 1) {
                     // If user received own messages, show in right.
                     if (item.getUserSignature().equals(Client.getClientThread().getUsername())) {
-                        setText(item.getTextData() + " :" + item.getUserSignature());
-                        setAlignment(Pos.CENTER_RIGHT);
+                        Label signature = new Label(" :" + item.getUserSignature());
+                        Label textData = new Label(item.getTextData());
+                        HBox content = new HBox(textData, signature);
+                        content.setAlignment(Pos.CENTER_RIGHT);
+                        setGraphic(content);
+
                     } else {
-                        setText(item.getUserSignature() + ": " + item.getTextData());
+                        Label signature = new Label(item.getUserSignature() + ": ");
+                        Label textData = new Label(item.getTextData());
+                        HBox content = new HBox(signature, textData);
+                        content.setAlignment(Pos.CENTER_LEFT);
+                        setGraphic(content);
                     }
                 }
             }
@@ -184,20 +194,6 @@ public class HomeController {
             emojiList.scrollTo(0);
         });
     }
-
-    /**
-     * Update the ChatListView in home page.
-     */
-    public void updateChatView() {
-        ObservableList<ConnectionData> dataList = FXCollections.observableArrayList(Client.getHomeModel().getHistoryData());
-        Platform.runLater(() -> { // runLater keep thread synchronize
-            chatList.setItems(null);
-            chatList.setItems(dataList);
-            chatList.refresh();
-            chatList.scrollTo(chatList.getItems().size() - 1);
-        });
-    }
-
 
     /**
      * Send text message to server.

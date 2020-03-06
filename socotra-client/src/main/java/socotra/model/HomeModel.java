@@ -2,6 +2,9 @@ package socotra.model;
 
 import com.vdurmont.emoji.Emoji;
 import com.vdurmont.emoji.EmojiManager;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import socotra.Client;
 import socotra.common.ConnectionData;
@@ -18,7 +21,7 @@ public class HomeModel {
     /**
      * Local history message.
      */
-    private ArrayList<ConnectionData> historyData = new ArrayList<>();
+    private ObservableList<ConnectionData> historyData = FXCollections.observableArrayList(new ArrayList<>());
     /**
      * An AudioFormat object for a given set of format parameters.
      */
@@ -66,7 +69,7 @@ public class HomeModel {
      *
      * @return Local history message.
      */
-    public ArrayList<ConnectionData> getHistoryData() {
+    public ObservableList<ConnectionData> getHistoryData() {
         return this.historyData;
     }
 
@@ -76,8 +79,10 @@ public class HomeModel {
      * @param connectionData New connectionData.
      */
     public void appendHistoryData(ConnectionData connectionData) {
-        this.historyData.add(connectionData);
-        Client.getHomeController().updateChatView();
+        Platform.runLater(() -> {
+            this.historyData.add(connectionData);
+            Client.getHomeController().scrollChatList();
+        });
     }
 
     /**
