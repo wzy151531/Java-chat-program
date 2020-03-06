@@ -86,8 +86,22 @@ public class JdbcUtil {
      * @return The results from database.
      * @throws Exception Exception thrown while executing the sql.
      */
-    public static ResultSet inquire(String sql) throws Exception {
+    private static ResultSet inquire(String sql) throws Exception {
         Statement statement = connection.createStatement();
         return statement.executeQuery(sql);
     }
+
+    /**
+     * Validate user's identity.
+     *
+     * @param username The user's username input.
+     * @param password The user's password input.
+     * @return The boolean indicates that whether the user is validated.
+     * @throws Exception Exception when doing sql statement.
+     */
+    public static boolean validateUser(String username, String password) throws Exception {
+        ResultSet resultSet = JdbcUtil.inquire("select * from test_user where username='" + username + "' and password='" + password + "'");
+        return resultSet.next();
+    }
+
 }

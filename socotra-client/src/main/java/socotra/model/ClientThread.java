@@ -36,6 +36,8 @@ public class ClientThread extends Thread {
      */
     private ObjectInputStream fromServer;
 
+    private Socket server;
+
     /**
      * The constructor is given the server's name. It opens a socket connection to the server and extracts it input and
      * out streams.
@@ -71,12 +73,18 @@ public class ClientThread extends Thread {
         return toServer;
     }
 
+    public void endConnection() throws IOException {
+        toServer.close();
+        fromServer.close();
+        server.close();
+    }
+
     /**
      * The thread's job.
      */
     public void run() {
         try {
-            Socket server = new Socket(serverName, 50000);
+            server = new Socket(serverName, 50000);
             toServer = new ObjectOutputStream(server.getOutputStream());
             fromServer = new ObjectInputStream(server.getInputStream());
             loginModel.setErrorType(0);
@@ -85,20 +93,26 @@ public class ClientThread extends Thread {
                 ConnectionData connectionData = (ConnectionData) fromServer.readObject();
                 System.out.println("Received connectionData.");
                 // If receive the result about user's validation.
-                if (connectionData.getType() == -1) {
-                    if (!connectionData.getValidated()) {
-                        loginModel.setErrorType(2);
-                        toServer.close();
-                        fromServer.close();
-                        server.close();
-                    }
-                    // Notify the loginModel thread to redirect to the home page.
-                    synchronized (loginModel) {
-                        loginModel.notify();
-                    }
-                } else {
-                    // Receive the normal messages from server.
-                    Client.getHomeModel().appendHistoryData(connectionData);
+                switch (connectionData.getType()) {
+                    case -1:
+                        if (!connectionData.getValidated()) {
+                            loginModel.setErrorType(2);
+                            endConnection();
+                        }
+                        // Notify the loginModel thread to redirect to the home page.
+                        synchronized (loginModel) {
+                            loginModel.notify();
+                        }
+                        break;
+                    case -2:
+                        System.out.println(connectionData.getUserSignature() + " is " + connectionData.getIsOnline());
+                        break;
+                    case -3:
+                        System.out.println(connectionData.getOnlineUsers());
+                        break;
+                    default:
+                        Client.getHomeModel().appendHistoryData(connectionData);
+                        break;
                 }
             }
         } catch (IOException e) {
@@ -113,6 +127,11 @@ public class ClientThread extends Thread {
             System.out.println("Unexpected Error.");
         } finally {
             System.out.println("Finally handled.");
+            try {
+                endConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             // Notify the loginModel thread anyway.
             synchronized (loginModel) {
                 loginModel.notify();

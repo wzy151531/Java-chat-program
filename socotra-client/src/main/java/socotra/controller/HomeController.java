@@ -32,6 +32,8 @@ public class HomeController {
     @FXML
     private Button sendTextButton;
     @FXML
+    private Button logoutButton;
+    @FXML
     private TextField messageField;
     @FXML
     private ListView<ConnectionData> chatList;
@@ -254,6 +256,11 @@ public class HomeController {
     @FXML
     public void sendAudio(ActionEvent event) {
         Client.getHomeModel().handleSendAudio();
+    }
+
+    @FXML
+    public void logout(ActionEvent event) {
+        Client.getHomeModel().handleLogout();
     }
 
 }

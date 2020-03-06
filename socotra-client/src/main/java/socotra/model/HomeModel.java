@@ -212,20 +212,34 @@ public class HomeModel {
         }
     }
 
+    public void handleLogout() {
+        ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUsername(), false);
+        new SendThread(connectionData, true).start();
+    }
+
     /**
      * The send thread to run the send either audio or text message job.
      */
     class SendThread extends Thread {
         private ConnectionData connectionData;
+        private boolean logout = false;
 
         private SendThread(ConnectionData connectionData) {
             this.connectionData = connectionData;
+        }
+
+        private SendThread(ConnectionData connectionData, boolean logout) {
+            this.connectionData = connectionData;
+            this.logout = logout;
         }
 
         public void run() {
             try {
                 ObjectOutputStream toServer = Client.getClientThread().getToServer();
                 toServer.writeObject(connectionData);
+                if (logout) {
+                    Client.getClientThread().endConnection();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

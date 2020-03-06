@@ -1,6 +1,7 @@
 package socotra.common;
 
 import java.io.Serializable;
+import java.util.TreeSet;
 
 public class ConnectionData implements Serializable {
 
@@ -17,6 +18,14 @@ public class ConnectionData implements Serializable {
      * The password of the login connection data.
      */
     private String password;
+    /**
+     * The online status of user.
+     */
+    private boolean isOnline;
+    /**
+     * The online users.
+     */
+    private TreeSet<String> onlineUsers;
     /**
      * The validation result of the login connection data.
      */
@@ -42,6 +51,27 @@ public class ConnectionData implements Serializable {
     public ConnectionData(boolean validated) {
         this.type = -1;
         this.validated = validated;
+    }
+
+    /**
+     * If connection data is about the information of user's online status, the connection data's type is -2.
+     *
+     * @param userSignature The online user's name.
+     */
+    public ConnectionData(String userSignature, boolean isOnline) {
+        this.type = -2;
+        this.userSignature = userSignature;
+        this.isOnline = isOnline;
+    }
+
+    /**
+     * If connection data is about current online users, the connection data's type is -3.
+     *
+     * @param onlineUsers The current online users' name.
+     */
+    public ConnectionData(TreeSet<String> onlineUsers) {
+        this.type = -3;
+        this.onlineUsers = onlineUsers;
     }
 
     /**
@@ -112,6 +142,20 @@ public class ConnectionData implements Serializable {
             throw new IllegalStateException("Type isn't 0, cannot get password.");
         }
         return password;
+    }
+
+    public boolean getIsOnline() {
+        if (type != -2) {
+            throw new IllegalStateException("Type isn't -2, cannot get isOnline.");
+        }
+        return isOnline;
+    }
+
+    public TreeSet<String> getOnlineUsers() {
+        if (type != -3) {
+            throw new IllegalStateException("Type isn't -3, connot get onlineUsers.");
+        }
+        return onlineUsers;
     }
 
     /**
