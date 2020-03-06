@@ -86,7 +86,7 @@ public class ConnectionData implements Serializable {
      *
      * @return The type of the connection data.
      */
-    public int getType() {
+    public synchronized int getType() {
         return type;
     }
 

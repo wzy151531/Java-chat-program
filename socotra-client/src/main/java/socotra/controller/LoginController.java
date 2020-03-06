@@ -68,8 +68,6 @@ public class LoginController {
             tempPane = loader.load();
 
             Client.setHomeController(loader.getController());
-//            clientThread.setHomeController(homeController);
-//            homeController.setClientThread(clientThread);
 
             // Construct scene
             Scene tempScene = new Scene(tempPane);
