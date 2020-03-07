@@ -62,6 +62,10 @@ public class HomeModel {
         audioFormat = getAudioFormat();
     }
 
+    public String getToUsername() {
+        return this.toUsername;
+    }
+
     /**
      * Setter for forceStop.
      *

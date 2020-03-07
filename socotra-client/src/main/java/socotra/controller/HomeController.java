@@ -91,6 +91,7 @@ public class HomeController {
     @FXML
     private void initialize() {
         Client.setHomeModel(new HomeModel());
+        usernameLabel.setText(Client.getClientThread().getUsername());
         stopButton.setDisable(true);
         sendAudioButton.setDisable(true);
         emojiList.setVisible(false);
@@ -210,11 +211,15 @@ public class HomeController {
                     setText("");
                 } else {
                     Button button = new Button(item);
+                    button.setPrefSize(180.0, 15.0);
+                    button.setFont(new Font(15));
                     button.setOnAction(evt -> {
                         Client.getHomeModel().checkoutChatPanel(item);
+                        button.setStyle(null);
                     });
                     clientsListButtons.add(button);
                     HBox content = new HBox(button);
+                    content.setPadding(Insets.EMPTY);
                     content.setAlignment(Pos.CENTER);
                     setGraphic(content);
                 }
@@ -237,10 +242,21 @@ public class HomeController {
         });
     }
 
+    /**
+     * Update clientsListButtons's style.
+     *
+     * @param connectionData Received connection data.
+     */
+    // TODO
     public void updateClientsListButtons(ConnectionData connectionData) {
         clientsListButtons.forEach(n -> {
-            if (connectionData.getToUsername().equals(n.getText()) || connectionData.getUserSignature().equals(n.getText())) {
-                n.setStyle("-fx-base: #ee2211");
+            if (!connectionData.getUserSignature().equals(Client.getClientThread().getUsername())) {
+                if (connectionData.getToUsername().equals(n.getText()) && !connectionData.getToUsername().equals(Client.getHomeModel().getToUsername())) {
+                    n.setStyle("-fx-base: #ee2211");
+                }
+                if (connectionData.getUserSignature().equals(n.getText()) && !connectionData.getToUsername().equals("all") && !connectionData.getUserSignature().equals(Client.getHomeModel().getToUsername())) {
+                    n.setStyle("-fx-base: #ee2211");
+                }
             }
         });
     }

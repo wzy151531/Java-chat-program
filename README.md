@@ -9,7 +9,7 @@ The whole project is divided into two parts: server and client. Both projects ar
 ## Current Function
 
 * Login validation via jdbc.
-* Send text message or audio to all connected clients
+* Send text message or audio to all connected clients or single connected client.
 * Local chat history in client.
 * Can send some emoji in chat.
 * Show current online clients.
