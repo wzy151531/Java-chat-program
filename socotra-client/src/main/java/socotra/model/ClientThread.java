@@ -118,9 +118,12 @@ public class ClientThread extends Thread {
                         Client.setSetOnlineUsers(setOnlineUsers);
                         setOnlineUsers.start();
                         break;
-                    default:
+                    case 1:
+                    case 2:
                         Client.getHomeModel().appendHistoryData(connectionData);
                         break;
+                    default:
+                        System.out.println("Unknown data.");
                 }
             }
         } catch (IOException e) {

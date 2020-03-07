@@ -8,7 +8,10 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import socotra.Client;
@@ -23,6 +26,7 @@ public class HomeController {
      * All audio button in local history message.
      */
     private ArrayList<Button> allAudioButtons = new ArrayList<>();
+    private ArrayList<Button> clientsListButtons = new ArrayList<>();
     @FXML
     private Button captureButton;
     @FXML
@@ -67,6 +71,13 @@ public class HomeController {
         });
     }
 
+    public void setChatListItems(ObservableList<ConnectionData> items) {
+        Platform.runLater(() -> {
+            chatList.setItems(items);
+            scrollChatList();
+        });
+    }
+
     /**
      * Scroll chatList to the last row.
      */
@@ -86,8 +97,9 @@ public class HomeController {
         emojiList.setManaged(false);
         configEmojiList();
         configChatList();
+        configClientsList();
         Platform.runLater(() -> { // runLater keep thread synchronize
-            chatList.setItems(Client.getHomeModel().getHistoryData());
+            chatList.setItems(Client.getHomeModel().getCertainChatData("all"));
             clientsList.setItems(Client.getHomeModel().getClientsList());
         });
         // Generate emojiList view according to the render logic of it.
@@ -186,6 +198,31 @@ public class HomeController {
     }
 
     /**
+     * Config clientsList render logic.
+     */
+    private void configClientsList() {
+        clientsList.setCellFactory(l -> new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null) {
+                    setGraphic(null);
+                    setText("");
+                } else {
+                    Button button = new Button(item);
+                    button.setOnAction(evt -> {
+                        Client.getHomeModel().checkoutChatPanel(item);
+                    });
+                    clientsListButtons.add(button);
+                    HBox content = new HBox(button);
+                    content.setAlignment(Pos.CENTER);
+                    setGraphic(content);
+                }
+            }
+        });
+    }
+
+    /**
      * Generate emojiList view according to the render logic of it.
      */
     private void generateEmojiListView() {
@@ -197,6 +234,14 @@ public class HomeController {
             emojiList.setItems(dataList);
             emojiList.refresh();
             emojiList.scrollTo(0);
+        });
+    }
+
+    public void updateClientsListButtons(ConnectionData connectionData) {
+        clientsListButtons.forEach(n -> {
+            if (connectionData.getToUsername().equals(n.getText()) || connectionData.getUserSignature().equals(n.getText())) {
+                n.setStyle("-fx-base: #ee2211");
+            }
         });
     }
 

@@ -42,6 +42,10 @@ public class ConnectionData implements Serializable {
      * The user signature of connection data.
      */
     private String userSignature;
+    /**
+     * The user that data send to.
+     */
+    private String toUsername;
 
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
@@ -93,10 +97,11 @@ public class ConnectionData implements Serializable {
      * @param textData      The text message in connection data.
      * @param userSignature The connection data sender's username.
      */
-    public ConnectionData(String textData, String userSignature) {
+    public ConnectionData(String textData, String userSignature, String toUsername) {
         this.type = 1;
         this.textData = textData;
         this.userSignature = userSignature;
+        this.toUsername = toUsername;
     }
 
     /**
@@ -105,10 +110,11 @@ public class ConnectionData implements Serializable {
      * @param audioData     The audio message in connection data.
      * @param userSignature The connection data sender's username.
      */
-    public ConnectionData(byte[] audioData, String userSignature) {
+    public ConnectionData(byte[] audioData, String userSignature, String toUsername) {
         this.type = 2;
         this.audioData = audioData;
         this.userSignature = userSignature;
+        this.toUsername = toUsername;
     }
 
     /**
@@ -116,7 +122,7 @@ public class ConnectionData implements Serializable {
      *
      * @return The type of the connection data.
      */
-    public int getType() {
+    public synchronized int getType() {
         return type;
     }
 
@@ -201,6 +207,13 @@ public class ConnectionData implements Serializable {
      */
     public String getUserSignature() {
         return userSignature;
+    }
+
+    public String getToUsername() {
+        if (type != 1 && type != 2) {
+            throw new IllegalStateException("Type isn't 1 or 2, cannot get toUsername");
+        }
+        return toUsername;
     }
 
 }

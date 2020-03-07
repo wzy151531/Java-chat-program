@@ -14,6 +14,7 @@ import socotra.util.Util;
 import javax.sound.sampled.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class HomeModel {
@@ -21,7 +22,9 @@ public class HomeModel {
     /**
      * Local history message.
      */
-    private ObservableList<ConnectionData> historyData = FXCollections.observableArrayList(new ArrayList<>());
+//    private ObservableList<ConnectionData> historyData = FXCollections.observableArrayList(new ArrayList<>());
+    private HashMap<String, ObservableList<ConnectionData>> chatData = new HashMap<>();
+    private String toUsername = "all";
     /**
      * Current online clients list.
      */
@@ -68,13 +71,13 @@ public class HomeModel {
         this.forceStop = forceStop;
     }
 
-    /**
-     * Getter for historyData.
-     *
-     * @return Local history message.
-     */
-    public ObservableList<ConnectionData> getHistoryData() {
-        return this.historyData;
+    public ObservableList<ConnectionData> getCertainChatData(String toUsername) {
+        ObservableList<ConnectionData> certainChatData = this.chatData.get(toUsername);
+        if (certainChatData == null) {
+            certainChatData = FXCollections.observableArrayList(new ArrayList<>());
+            this.chatData.put(toUsername, certainChatData);
+        }
+        return certainChatData;
     }
 
     public ObservableList<String> getClientsList() {
@@ -88,8 +91,28 @@ public class HomeModel {
      */
     public void appendHistoryData(ConnectionData connectionData) {
         Platform.runLater(() -> {
-            this.historyData.add(connectionData);
+//            this.historyData.add(connectionData);
+            if (connectionData.getToUsername().equals(Client.getClientThread().getUsername())) {
+                ObservableList<ConnectionData> certainChatData = this.chatData.get(connectionData.getUserSignature());
+                if (certainChatData == null) {
+                    certainChatData = FXCollections.observableArrayList(new ArrayList<>());
+                    certainChatData.add(connectionData);
+                    this.chatData.put(connectionData.getUserSignature(), certainChatData);
+                } else {
+                    certainChatData.add(connectionData);
+                }
+            } else {
+                ObservableList<ConnectionData> certainChatData = this.chatData.get(connectionData.getToUsername());
+                if (certainChatData == null) {
+                    certainChatData = FXCollections.observableArrayList(new ArrayList<>());
+                    certainChatData.add(connectionData);
+                    this.chatData.put(connectionData.getToUsername(), certainChatData);
+                } else {
+                    certainChatData.add(connectionData);
+                }
+            }
             Client.getHomeController().scrollChatList();
+            Client.getHomeController().updateClientsListButtons(connectionData);
         });
     }
 
@@ -103,6 +126,11 @@ public class HomeModel {
         Platform.runLater(() -> {
             this.clientsList.remove(clientName);
         });
+    }
+
+    public void checkoutChatPanel(String toUsername) {
+        this.toUsername = toUsername;
+        Client.getHomeController().setChatListItems(getCertainChatData(toUsername));
     }
 
     /**
@@ -167,7 +195,7 @@ public class HomeModel {
         if (Util.isEmpty(text)) {
             Util.generateAlert(Alert.AlertType.ERROR, "Error", "Cannot send empty message.", "Try again.").show();
         } else {
-            ConnectionData connectionData = new ConnectionData(text, Client.getClientThread().getUsername());
+            ConnectionData connectionData = new ConnectionData(text, Client.getClientThread().getUsername(), toUsername);
             new SendThread(connectionData).start();
         }
     }
@@ -178,7 +206,7 @@ public class HomeModel {
     public void handleSendAudio() {
         try {
             byte[] audioData = byteArrayOutputStream.toByteArray();
-            ConnectionData connectionData = new ConnectionData(audioData, Client.getClientThread().getUsername());
+            ConnectionData connectionData = new ConnectionData(audioData, Client.getClientThread().getUsername(), toUsername);
             new SendThread(connectionData).start();
         } catch (Exception e) {
             e.printStackTrace();

@@ -21,6 +21,7 @@ public class SetOnlineUsers extends Thread {
                 }
             }
         }
+        Client.getHomeModel().appendClientsList("all");
         onlineUsers.forEach(n -> {
             Client.getHomeModel().appendClientsList(n);
         });

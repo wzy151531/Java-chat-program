@@ -112,4 +112,13 @@ public class Server {
         });
     }
 
+    public static void privateSend(ConnectionData connectionData, String username) {
+        try {
+            Server.clients.get(username).writeObject(connectionData);
+            Server.clients.get(connectionData.getUserSignature()).writeObject(connectionData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

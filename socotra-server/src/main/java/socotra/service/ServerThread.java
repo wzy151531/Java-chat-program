@@ -42,36 +42,76 @@ public class ServerThread extends Thread {
             while (true) {
                 ConnectionData connectionData = (ConnectionData) fromClient.readObject();
                 System.out.println("Received data.");
-                if (connectionData.getType() == 0) {
-                    username = connectionData.getUsername();
-                    String password = connectionData.getPassword();
-                    try {
-                        if (!JdbcUtil.validateUser(username, password)) {
-                            System.out.println("Invalidated user.");
-                            toClient.writeObject(new ConnectionData(false));
-                            endClient();
-                            return;
-                        } else {
-                            Server.addClient(username, toClient);
-                            System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
-                            toClient.writeObject(new ConnectionData(true));
-                            TreeSet<String> allClientsName = new TreeSet<>(Server.getClients().keySet());
-                            allClientsName.remove(username);
-                            // Inform the new client current online users and inform other clients that the new client is online.
-                            Server.broadcast(new ConnectionData(username, true), username, new ConnectionData(allClientsName));
+                switch (connectionData.getType()) {
+                    case 0:
+                        username = connectionData.getUsername();
+                        String password = connectionData.getPassword();
+                        try {
+                            if (!JdbcUtil.validateUser(username, password)) {
+                                System.out.println("Invalidated user.");
+                                toClient.writeObject(new ConnectionData(false));
+                                endClient();
+                                return;
+                            } else {
+                                Server.addClient(username, toClient);
+                                System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
+                                toClient.writeObject(new ConnectionData(true));
+                                TreeSet<String> allClientsName = new TreeSet<>(Server.getClients().keySet());
+                                allClientsName.remove(username);
+                                // Inform the new client current online users and inform other clients that the new client is online.
+                                Server.broadcast(new ConnectionData(username, true), username, new ConnectionData(allClientsName));
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else if (connectionData.getType() == -2) {
-                    Server.broadcast(new ConnectionData(username, false), username);
-                    Server.removeClient(username);
-                    System.out.println("User log out. Current online users: " + Server.getClients().keySet());
-                    endClient();
-                    return;
-                } else {
-                    Server.broadcast(connectionData);
+                        break;
+                    case -2:
+                        Server.broadcast(new ConnectionData(username, false), username);
+                        Server.removeClient(username);
+                        System.out.println("User log out. Current online users: " + Server.getClients().keySet());
+                        endClient();
+                        return;
+                    case 1:
+                    case 2:
+                        if (connectionData.getToUsername().equals("all")) {
+                            Server.broadcast(connectionData);
+                        } else {
+                            Server.privateSend(connectionData, connectionData.getToUsername());
+                        }
+                        break;
+                    default:
+                        System.out.println("Unknown data.");
                 }
+//                if (connectionData.getType() == 0) {
+////                    username = connectionData.getUsername();
+////                    String password = connectionData.getPassword();
+////                    try {
+////                        if (!JdbcUtil.validateUser(username, password)) {
+////                            System.out.println("Invalidated user.");
+////                            toClient.writeObject(new ConnectionData(false));
+////                            endClient();
+////                            return;
+////                        } else {
+////                            Server.addClient(username, toClient);
+////                            System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
+////                            toClient.writeObject(new ConnectionData(true));
+////                            TreeSet<String> allClientsName = new TreeSet<>(Server.getClients().keySet());
+////                            allClientsName.remove(username);
+////                            // Inform the new client current online users and inform other clients that the new client is online.
+////                            Server.broadcast(new ConnectionData(username, true), username, new ConnectionData(allClientsName));
+////                        }
+////                    } catch (Exception e) {
+////                        e.printStackTrace();
+////                    }
+//                } else if (connectionData.getType() == -2) {
+////                    Server.broadcast(new ConnectionData(username, false), username);
+////                    Server.removeClient(username);
+////                    System.out.println("User log out. Current online users: " + Server.getClients().keySet());
+////                    endClient();
+////                    return;
+//                } else {
+////                    Server.broadcast(connectionData);
+//                }
             }
         } catch (IOException e) {
             System.out.println("Something went wrong. Ending service to client...");
