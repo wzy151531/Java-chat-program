@@ -2,7 +2,7 @@ package socotra.model;
 
 import socotra.Client;
 import socotra.common.ConnectionData;
-import socotra.controller.HomeController;
+import socotra.util.SetOnlineUsers;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -105,10 +105,18 @@ public class ClientThread extends Thread {
                         }
                         break;
                     case -2:
-                        System.out.println(connectionData.getUserSignature() + " is " + connectionData.getIsOnline());
+                        System.out.println(connectionData.getUserSignature() + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
+                        if (connectionData.getIsOnline()) {
+                            Client.getHomeModel().appendClientsList(connectionData.getUserSignature());
+                        } else {
+                            Client.getHomeModel().removeClientsList(connectionData.getUserSignature());
+                        }
                         break;
                     case -3:
                         System.out.println(connectionData.getOnlineUsers());
+                        SetOnlineUsers setOnlineUsers = new SetOnlineUsers(connectionData.getOnlineUsers());
+                        Client.setSetOnlineUsers(setOnlineUsers);
+                        setOnlineUsers.start();
                         break;
                     default:
                         Client.getHomeModel().appendHistoryData(connectionData);

@@ -23,6 +23,10 @@ public class HomeModel {
      */
     private ObservableList<ConnectionData> historyData = FXCollections.observableArrayList(new ArrayList<>());
     /**
+     * Current online clients list.
+     */
+    private ObservableList<String> clientsList = FXCollections.observableArrayList(new ArrayList<>());
+    /**
      * An AudioFormat object for a given set of format parameters.
      */
     private AudioFormat audioFormat;
@@ -73,6 +77,10 @@ public class HomeModel {
         return this.historyData;
     }
 
+    public ObservableList<String> getClientsList() {
+        return this.clientsList;
+    }
+
     /**
      * Append new connectionData to historyData.
      *
@@ -82,6 +90,18 @@ public class HomeModel {
         Platform.runLater(() -> {
             this.historyData.add(connectionData);
             Client.getHomeController().scrollChatList();
+        });
+    }
+
+    public void appendClientsList(String clientName) {
+        Platform.runLater(() -> {
+            this.clientsList.add(clientName);
+        });
+    }
+
+    public void removeClientsList(String clientName) {
+        Platform.runLater(() -> {
+            this.clientsList.remove(clientName);
         });
     }
 
@@ -244,6 +264,7 @@ public class HomeModel {
                 toServer.writeObject(connectionData);
                 if (logout) {
                     Client.getClientThread().endConnection();
+                    System.exit(0);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

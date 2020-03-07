@@ -12,6 +12,7 @@ The whole project is divided into two parts: server and client. Both projects ar
 * Send text message or audio to all connected clients
 * Local chat history in client.
 * Can send some emoji in chat.
+* Show current online clients.
 
 ## Quick Start
 
@@ -59,6 +60,9 @@ java --module-path $PATHTOJAVAFXSDK13 --add-modules javafx.controls,javafx.fxml,
 ```
 
 ## Contributing
+
+`NOTE: Please confirm that ConnectionData.java file is same on both client and server project.`
+
 First clone the project, and in your local git repository, create a new branch named as your name, for example:
 
 ```bash
@@ -99,6 +103,6 @@ git merge $YOURBRANCH
 
 Make sure before each commit, checkout your current branch first.
 
-
 ## License
+
 [MIT](https://choosealicense.com/licenses/mit/)

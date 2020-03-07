@@ -10,6 +10,7 @@ import socotra.controller.LoginController;
 import socotra.model.ClientThread;
 import socotra.model.HomeModel;
 import socotra.model.LoginModel;
+import socotra.util.SetOnlineUsers;
 
 public class Client extends Application {
 
@@ -25,6 +26,7 @@ public class Client extends Application {
     private static HomeController homeController;
     private static HomeModel homeModel;
     private static ClientThread clientThread;
+    private static SetOnlineUsers setOnlineUsers;
 
     public static LoginController getLoginController() {
         return loginController;
@@ -56,6 +58,9 @@ public class Client extends Application {
 
     public static void setHomeModel(HomeModel homeModel) {
         Client.homeModel = homeModel;
+        synchronized (setOnlineUsers) {
+            setOnlineUsers.notify();
+        }
     }
 
     public static ClientThread getClientThread() {
@@ -64,6 +69,10 @@ public class Client extends Application {
 
     public static void setClientThread(ClientThread clientThread) {
         Client.clientThread = clientThread;
+    }
+
+    public static void setSetOnlineUsers(SetOnlineUsers setOnlineUsers) {
+        Client.setOnlineUsers = setOnlineUsers;
     }
 
     /**

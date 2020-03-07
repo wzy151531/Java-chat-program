@@ -39,6 +39,10 @@ public class HomeController {
     private ListView<ConnectionData> chatList;
     @FXML
     private Button emojiButton;
+    @FXML
+    private Label usernameLabel;
+    @FXML
+    private ListView<String> clientsList;
     /**
      * The emoji list, each list stores a length of 10 arrayList.
      */
@@ -84,6 +88,7 @@ public class HomeController {
         configChatList();
         Platform.runLater(() -> { // runLater keep thread synchronize
             chatList.setItems(Client.getHomeModel().getHistoryData());
+            clientsList.setItems(Client.getHomeModel().getClientsList());
         });
         // Generate emojiList view according to the render logic of it.
         generateEmojiListView();
