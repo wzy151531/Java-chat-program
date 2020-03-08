@@ -4,10 +4,13 @@ import socotra.Client;
 import socotra.common.ConnectionData;
 import socotra.util.SetOnlineUsers;
 
+import javax.net.SocketFactory;
+import javax.net.ssl.*;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
+import java.security.KeyStore;
 
 public class ClientThread extends Thread {
 
@@ -36,7 +39,7 @@ public class ClientThread extends Thread {
      */
     private ObjectInputStream fromServer;
 
-    private Socket server;
+    private SSLSocket server;
 
     /**
      * The constructor is given the server's name. It opens a socket connection to the server and extracts it input and
@@ -79,12 +82,36 @@ public class ClientThread extends Thread {
         server.close();
     }
 
+    private void initTLS() throws Exception {
+        String CLIENT_KEY_STORE = "src/main/resources/socotra_client_ks";
+        String CLIENT_KEY_STORE_PASSWORD = "socotra";
+        System.setProperty("javax.net.ssl.trustStore", CLIENT_KEY_STORE);
+        // See handle shake process under debug.
+//            System.setProperty("javax.net.debug", "ssl,handshake");
+
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(new FileInputStream(CLIENT_KEY_STORE), CLIENT_KEY_STORE_PASSWORD.toCharArray());
+
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(ks, CLIENT_KEY_STORE_PASSWORD.toCharArray());
+
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        tmf.init(ks);
+
+        SSLContext context = SSLContext.getInstance("TLS");
+        TrustManager[] trustManagers = tmf.getTrustManagers();
+        context.init(kmf.getKeyManagers(), trustManagers, null);
+        SocketFactory factory = context.getSocketFactory();
+        server = (SSLSocket) factory.createSocket(serverName, 50443);
+        server.startHandshake();
+    }
+
     /**
      * The thread's job.
      */
     public void run() {
         try {
-            server = new Socket(serverName, 50000);
+            initTLS();
             toServer = new ObjectOutputStream(server.getOutputStream());
             fromServer = new ObjectInputStream(server.getInputStream());
             loginModel.setErrorType(0);
