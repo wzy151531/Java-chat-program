@@ -13,6 +13,7 @@ The whole project is divided into two parts: server and client. Both projects ar
 * Local chat history in client.
 * Can send some emoji in chat.
 * Show current online clients.
+* Use TLS connection.
 
 ## Quick Start
 

@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'bham.socotra'
-version '2.0-SNAPSHOT'
+version '2.1-SNAPSHOT'
 
 sourceCompatibility = 11
 
