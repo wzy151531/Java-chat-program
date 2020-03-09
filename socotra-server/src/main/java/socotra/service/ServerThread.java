@@ -71,11 +71,19 @@ public class ServerThread extends Thread {
                         System.out.println("User log out. Current online users: " + Server.getClients().keySet());
                         endClient();
                         return;
+                    case -4:
+                        Server.privateSend(connectionData, connectionData.getToUsername());
+                        break;
                     case 1:
                     case 2:
+                        connectionData.setIsSent(true);
                         if (connectionData.getToUsername().equals("all")) {
-                            Server.broadcast(connectionData);
+                            Server.privateSend(new ConnectionData(connectionData.getUuid(), connectionData.getToUsername(), connectionData.getUserSignature()), connectionData.getUserSignature());
+                            Server.broadcast(connectionData, connectionData.getUserSignature());
                         } else {
+                            if (!Server.getClients().keySet().contains(connectionData.getToUsername())) {
+                                Server.privateSend(new ConnectionData(connectionData.getUuid(), connectionData.getToUsername(), connectionData.getUserSignature()), connectionData.getUserSignature());
+                            }
                             Server.privateSend(connectionData, connectionData.getToUsername());
                         }
                         break;

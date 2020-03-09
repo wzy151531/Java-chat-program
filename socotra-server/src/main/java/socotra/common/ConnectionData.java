@@ -2,14 +2,17 @@ package socotra.common;
 
 import java.io.Serializable;
 import java.util.TreeSet;
+import java.util.UUID;
 
 public class ConnectionData implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private UUID uuid;
     /**
      * The type of the connection data.
      */
     private int type;
+    private boolean isSent = false;
     /**
      * The username of the login connection data.
      */
@@ -78,6 +81,13 @@ public class ConnectionData implements Serializable {
         this.onlineUsers = onlineUsers;
     }
 
+    public ConnectionData(UUID uuid, String userSignature, String toUsername) {
+        this.uuid = uuid;
+        this.type = -4;
+        this.userSignature = userSignature;
+        this.toUsername = toUsername;
+    }
+
     /**
      * If connection data is about login information, the connection data's type is 0.
      *
@@ -98,6 +108,7 @@ public class ConnectionData implements Serializable {
      * @param userSignature The connection data sender's username.
      */
     public ConnectionData(String textData, String userSignature, String toUsername) {
+        this.uuid = UUID.randomUUID();
         this.type = 1;
         this.textData = textData;
         this.userSignature = userSignature;
@@ -111,10 +122,18 @@ public class ConnectionData implements Serializable {
      * @param userSignature The connection data sender's username.
      */
     public ConnectionData(byte[] audioData, String userSignature, String toUsername) {
+        this.uuid = UUID.randomUUID();
         this.type = 2;
         this.audioData = audioData;
         this.userSignature = userSignature;
         this.toUsername = toUsername;
+    }
+
+    public UUID getUuid() {
+        if (type != 1 && type != 2 && type != -4) {
+            throw new IllegalStateException("Type isn't 1 or 2, cannot get uuid");
+        }
+        return uuid;
     }
 
     /**
@@ -124,6 +143,20 @@ public class ConnectionData implements Serializable {
      */
     public synchronized int getType() {
         return type;
+    }
+
+    public boolean getIsSent() {
+        if (type != 1 && type != 2) {
+            throw new IllegalStateException("Type isn't 1 or 2, cannot get isSent");
+        }
+        return isSent;
+    }
+
+    public void setIsSent(boolean isSent) {
+        if (type != 1 && type != 2) {
+            throw new IllegalStateException("Type isn't 1 or 2, cannot set isSent");
+        }
+        this.isSent = isSent;
     }
 
     /**
@@ -210,7 +243,7 @@ public class ConnectionData implements Serializable {
     }
 
     public String getToUsername() {
-        if (type != 1 && type != 2) {
+        if (type != 1 && type != 2 && type != -4) {
             throw new IllegalStateException("Type isn't 1 or 2, cannot get toUsername");
         }
         return toUsername;

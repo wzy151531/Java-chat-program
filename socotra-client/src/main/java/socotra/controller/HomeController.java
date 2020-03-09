@@ -8,10 +8,9 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import socotra.Client;
@@ -68,6 +67,13 @@ public class HomeController {
     public void setAllAudioButtonsDisabled(boolean disabled) {
         this.allAudioButtons.forEach(n -> {
             n.setDisable(disabled);
+        });
+    }
+
+    public void refreshChatList() {
+        Platform.runLater(() -> {
+            System.out.println("refresh chatList.");
+            chatList.refresh();
         });
     }
 
@@ -167,7 +173,8 @@ public class HomeController {
                     });
                     if (item.getUserSignature().equals(Client.getClientThread().getUsername())) {
                         Label signature = new Label(" :" + item.getUserSignature());
-                        HBox content = new HBox(button, signature);
+                        Circle notSentCircle = new Circle(2.0, Color.RED);
+                        HBox content = item.getIsSent() ? new HBox(button, signature) : new HBox(notSentCircle, button, signature);
                         content.setAlignment(Pos.CENTER_RIGHT);
                         setGraphic(content);
                     } else {
@@ -181,7 +188,8 @@ public class HomeController {
                     if (item.getUserSignature().equals(Client.getClientThread().getUsername())) {
                         Label signature = new Label(" :" + item.getUserSignature());
                         Label textData = new Label(item.getTextData());
-                        HBox content = new HBox(textData, signature);
+                        Circle notSentCircle = new Circle(2.0, Color.RED);
+                        HBox content = item.getIsSent() ? new HBox(textData, signature) : new HBox(notSentCircle, textData, signature);
                         content.setAlignment(Pos.CENTER_RIGHT);
                         setGraphic(content);
 

@@ -9,6 +9,7 @@ import javafx.scene.control.Alert;
 import socotra.Client;
 import socotra.common.ConnectionData;
 import socotra.controller.HomeController;
+import socotra.util.SendThread;
 import socotra.util.Util;
 
 import javax.sound.sampled.*;
@@ -16,13 +17,13 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 public class HomeModel {
 
     /**
      * Local history message.
      */
-//    private ObservableList<ConnectionData> historyData = FXCollections.observableArrayList(new ArrayList<>());
     private HashMap<String, ObservableList<ConnectionData>> chatData = new HashMap<>();
     private String toUsername = "all";
     /**
@@ -93,9 +94,8 @@ public class HomeModel {
      *
      * @param connectionData New connectionData.
      */
-    public void appendHistoryData(ConnectionData connectionData) {
+    public void appendChatData(ConnectionData connectionData) {
         Platform.runLater(() -> {
-//            this.historyData.add(connectionData);
             if (connectionData.getToUsername().equals(Client.getClientThread().getUsername())) {
                 ObservableList<ConnectionData> certainChatData = this.chatData.get(connectionData.getUserSignature());
                 if (certainChatData == null) {
@@ -117,6 +117,18 @@ public class HomeModel {
             }
             Client.getHomeController().scrollChatList();
             Client.getHomeController().updateClientsListButtons(connectionData);
+        });
+    }
+
+    public void updateChatData(UUID uuid, String userSignature) {
+        Platform.runLater(() -> {
+            this.chatData.get(userSignature).forEach(n -> {
+                if (uuid.equals(n.getUuid()) && !n.getIsSent()) {
+                    System.out.println("Set " + n.getTextData() + " sent.");
+                    n.setIsSent(true);
+                    Client.getHomeController().refreshChatList();
+                }
+            });
         });
     }
 
@@ -200,6 +212,7 @@ public class HomeModel {
             Util.generateAlert(Alert.AlertType.ERROR, "Error", "Cannot send empty message.", "Try again.").show();
         } else {
             ConnectionData connectionData = new ConnectionData(text, Client.getClientThread().getUsername(), toUsername);
+            appendChatData(connectionData);
             new SendThread(connectionData).start();
         }
     }
@@ -211,6 +224,7 @@ public class HomeModel {
         try {
             byte[] audioData = byteArrayOutputStream.toByteArray();
             ConnectionData connectionData = new ConnectionData(audioData, Client.getClientThread().getUsername(), toUsername);
+            appendChatData(connectionData);
             new SendThread(connectionData).start();
         } catch (Exception e) {
             e.printStackTrace();
@@ -277,32 +291,6 @@ public class HomeModel {
     /**
      * The send thread to run the send either audio or text message job.
      */
-    class SendThread extends Thread {
-        private ConnectionData connectionData;
-        private boolean logout = false;
-
-        private SendThread(ConnectionData connectionData) {
-            this.connectionData = connectionData;
-        }
-
-        private SendThread(ConnectionData connectionData, boolean logout) {
-            this.connectionData = connectionData;
-            this.logout = logout;
-        }
-
-        public void run() {
-            try {
-                ObjectOutputStream toServer = Client.getClientThread().getToServer();
-                toServer.writeObject(connectionData);
-                if (logout) {
-                    Client.getClientThread().endConnection();
-                    System.exit(0);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     /**
      * The capture thread to run the capture audio job.

@@ -2,6 +2,7 @@ package socotra.model;
 
 import socotra.Client;
 import socotra.common.ConnectionData;
+import socotra.util.SendThread;
 import socotra.util.SetOnlineUsers;
 
 import javax.net.SocketFactory;
@@ -145,9 +146,13 @@ public class ClientThread extends Thread {
                         Client.setSetOnlineUsers(setOnlineUsers);
                         setOnlineUsers.start();
                         break;
+                    case -4:
+                        Client.getHomeModel().updateChatData(connectionData.getUuid(), connectionData.getUserSignature());
+                        break;
                     case 1:
                     case 2:
-                        Client.getHomeModel().appendHistoryData(connectionData);
+                        Client.getHomeModel().appendChatData(connectionData);
+                        new SendThread(new ConnectionData(connectionData.getUuid(), connectionData.getToUsername(), connectionData.getUserSignature())).start();
                         break;
                     default:
                         System.out.println("Unknown data.");

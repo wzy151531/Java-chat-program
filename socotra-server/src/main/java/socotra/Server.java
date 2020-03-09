@@ -132,10 +132,10 @@ public class Server {
         });
     }
 
-    public static void privateSend(ConnectionData connectionData, String username) {
+    public static void privateSend(ConnectionData connectionData, String toUsername) {
         try {
-            Server.clients.get(username).writeObject(connectionData);
-            Server.clients.get(connectionData.getUserSignature()).writeObject(connectionData);
+            Server.clients.get(toUsername).writeObject(connectionData);
+//            Server.clients.get(connectionData.getUserSignature()).writeObject(connectionData);
         } catch (IOException e) {
             e.printStackTrace();
         }

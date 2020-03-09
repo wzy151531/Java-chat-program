@@ -14,6 +14,7 @@ The whole project is divided into two parts: server and client. Both projects ar
 * Can send some emoji in chat.
 * Show current online clients.
 * Use TLS connection.
+* Show if the message is sent.
 
 ## Quick Start
 
