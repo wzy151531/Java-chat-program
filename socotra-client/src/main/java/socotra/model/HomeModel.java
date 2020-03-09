@@ -124,7 +124,7 @@ public class HomeModel {
         Platform.runLater(() -> {
             this.chatData.get(userSignature).forEach(n -> {
                 if (uuid.equals(n.getUuid()) && !n.getIsSent()) {
-                    System.out.println("Set " + n.getTextData() + " sent.");
+//                    System.out.println("Set " + n.getTextData() + " sent.");
                     n.setIsSent(true);
                     Client.getHomeController().refreshChatList();
                 }

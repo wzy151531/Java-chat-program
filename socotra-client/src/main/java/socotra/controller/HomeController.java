@@ -72,7 +72,7 @@ public class HomeController {
 
     public void refreshChatList() {
         Platform.runLater(() -> {
-            System.out.println("refresh chatList.");
+//            System.out.println("refresh chatList.");
             chatList.refresh();
         });
     }
@@ -157,6 +157,8 @@ public class HomeController {
                     setGraphic(null);
                     setText("");
                 } else if (item.getType() == 2) {
+                    Circle notSentCircle = new Circle(2.0, Color.RED);
+                    Circle sentCircle = new Circle(2.0, Color.LIGHTGREEN);
                     Button button = new Button("Audio");
                     button.setPrefSize(50.0, 15.0);
                     button.setFont(new Font(10));
@@ -173,8 +175,7 @@ public class HomeController {
                     });
                     if (item.getUserSignature().equals(Client.getClientThread().getUsername())) {
                         Label signature = new Label(" :" + item.getUserSignature());
-                        Circle notSentCircle = new Circle(2.0, Color.RED);
-                        HBox content = item.getIsSent() ? new HBox(button, signature) : new HBox(notSentCircle, button, signature);
+                        HBox content = item.getIsSent() ? new HBox(sentCircle, button, signature) : new HBox(notSentCircle, button, signature);
                         content.setAlignment(Pos.CENTER_RIGHT);
                         setGraphic(content);
                     } else {
@@ -185,11 +186,12 @@ public class HomeController {
                     }
                 } else if (item.getType() == 1) {
                     // If user received own messages, show in right.
+                    Circle notSentCircle = new Circle(2.0, Color.RED);
+                    Circle sentCircle = new Circle(2.0, Color.LIGHTGREEN);
                     if (item.getUserSignature().equals(Client.getClientThread().getUsername())) {
                         Label signature = new Label(" :" + item.getUserSignature());
                         Label textData = new Label(item.getTextData());
-                        Circle notSentCircle = new Circle(2.0, Color.RED);
-                        HBox content = item.getIsSent() ? new HBox(textData, signature) : new HBox(notSentCircle, textData, signature);
+                        HBox content = item.getIsSent() ? new HBox(sentCircle, textData, signature) : new HBox(notSentCircle, textData, signature);
                         content.setAlignment(Pos.CENTER_RIGHT);
                         setGraphic(content);
 
