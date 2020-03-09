@@ -325,8 +325,9 @@ public class HomeModel {
      * The play thread to run the play audio job.
      */
     class PlayThread extends Thread {
-        //byte[] tempBuffer = new byte[10000];
-        byte[] tempBuffer = new byte[10];
+        byte[] tempBuffer = new byte[10000];
+        // TODO forceStop
+//        byte[] tempBuffer = new byte[10];
 
         public void run() {
             try {
@@ -335,7 +336,9 @@ public class HomeModel {
 
                 int cnt;
                 // Keep looping until the input read method returns -1 for empty stream.
-                while ((cnt = audioInputStream.read(tempBuffer, 0, tempBuffer.length)) != -1 && !forceStop) {
+                // TODO: forceStop
+//                while ((cnt = audioInputStream.read(tempBuffer, 0, tempBuffer.length)) != -1 && !forceStop) {
+                while ((cnt = audioInputStream.read(tempBuffer, 0, tempBuffer.length)) != -1) {
                     if (cnt > 0) {
                         // Write data to the internal buffer of the data line where it will be delivered
                         // to the speaker.
