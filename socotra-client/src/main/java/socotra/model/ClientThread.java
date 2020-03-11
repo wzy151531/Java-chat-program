@@ -127,10 +127,6 @@ public class ClientThread extends Thread {
                             loginModel.setErrorType(2);
                             endConnection();
                         }
-                        // Notify the loginModel thread to redirect to the home page.
-                        synchronized (loginModel) {
-                            loginModel.notify();
-                        }
                         break;
                     case -2:
                         System.out.println(connectionData.getUserSignature() + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
@@ -174,10 +170,6 @@ public class ClientThread extends Thread {
                 endConnection();
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-            // Notify the loginModel thread anyway.
-            synchronized (loginModel) {
-                loginModel.notify();
             }
         }
     }

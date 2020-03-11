@@ -22,10 +22,9 @@ public class LoginModel {
     public int handleLogin(String serverName, String username, String password) {
         Client.setClientThread(new ClientThread(Util.isEmpty(serverName) ? "localhost" : serverName, this, username, password));
         Client.getClientThread().start();
-        // Wait until the ClientThread notify it.
         synchronized (this) {
             try {
-                this.wait();
+                Thread.sleep(500);
             } catch (Exception e) {
                 e.printStackTrace();
             }
