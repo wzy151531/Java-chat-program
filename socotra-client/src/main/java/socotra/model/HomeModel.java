@@ -14,10 +14,8 @@ import socotra.util.Util;
 
 import javax.sound.sampled.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class HomeModel {
 
@@ -359,5 +357,19 @@ public class HomeModel {
             }
         }
     }
+
+    //working on a search function
+    public String Search(String input){
+        ArrayList<String> valueList = new ArrayList<String>((Collection<? extends String>) chatData.values());
+
+        for (String s : valueList) {
+            if (s.contains(input)) {
+                return s;
+            }
+        }
+         return "Not found";
+    }
+
+
 
 }
