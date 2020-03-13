@@ -175,5 +175,3 @@ public class ClientThread extends Thread {
     }
 
 }
-
-//test2

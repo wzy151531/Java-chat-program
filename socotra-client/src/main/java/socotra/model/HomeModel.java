@@ -358,17 +358,17 @@ public class HomeModel {
         }
     }
 
-    //working on a search function
-    public String Search(String input){
-        ArrayList<String> valueList = new ArrayList<String>((Collection<? extends String>) chatData.values());
+    //public String search(String input){
+    //    ArrayList<String> messages = new ArrayList<String>(chatData.values());
+    //
+     //   for (String s : messages){
+     //       if (s.contains(input)){
+     //           return s;
+     //       }
+     //   }
+      //  return "Not found";
+   // }
 
-        for (String s : valueList) {
-            if (s.contains(input)) {
-                return s;
-            }
-        }
-         return "Not found";
-    }
 
 
 

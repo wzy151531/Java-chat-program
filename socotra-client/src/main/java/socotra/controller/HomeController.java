@@ -46,6 +46,8 @@ public class HomeController {
     private Label usernameLabel;
     @FXML
     private ListView<String> clientsList;
+   // @FXML
+    // private Button searchButton;
     /**
      * The emoji list, each list stores a length of 10 arrayList.
      */
@@ -63,6 +65,10 @@ public class HomeController {
     public void setSendAudioButtonDisabled(boolean disabled) {
         this.sendAudioButton.setDisable(disabled);
     }
+
+   // public void setSearchButtonDisabled(boolean disabled) {
+   //     this.searchButton.setDisable(disabled);
+   // }
 
     public void setAllAudioButtonsDisabled(boolean disabled) {
         this.allAudioButtons.forEach(n -> {
