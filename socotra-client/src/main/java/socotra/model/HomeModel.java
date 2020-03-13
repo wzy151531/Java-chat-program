@@ -361,7 +361,7 @@ public class HomeModel {
     /**
      * The search chatdata function
      *
-     * @returns a list of chatdata with search characters inside.
+     * @return a list of chatdata with search characters inside.
      */
     public ArrayList<ConnectionData> search(String input) {
         List<ConnectionData> chatList = chatData.get(toUsername);
