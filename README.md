@@ -55,10 +55,10 @@ For server project, you can release the .jar file, you can archive the server pr
 
 then the `repos` foler will be generated with serveral .jar files.
 
-For client project, it use `javafx13` to build the GUI, so once you use the gradle to generate a .jar file, you need to download javafx13 sdk first, and run it as following:
+For client project, it use `javafx11` to build the GUI, so once you use the gradle to generate a .jar file, you need to download javafx11 sdk first, and run it as following:
 
 ```bash
-java --module-path $PATHTOJAVAFXSDK13 --add-modules javafx.controls,javafx.fxml,javafx.base -jar $YOURCLIENT.jar
+java --module-path $PATHTOJAVAFXSDK11 --add-modules javafx.controls,javafx.fxml,javafx.base -jar $YOURCLIENT.jar
 ```
 
 ## Contributing
