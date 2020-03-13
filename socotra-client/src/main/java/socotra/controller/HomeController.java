@@ -37,6 +37,10 @@ public class HomeController {
     @FXML
     private Button logoutButton;
     @FXML
+    private Button searchButton;
+    @FXML
+    private TextField searchBox;
+    @FXML
     private TextField messageField;
     @FXML
     private ListView<ConnectionData> chatList;
@@ -286,6 +290,19 @@ public class HomeController {
     public void sendText(ActionEvent event) {
         Client.getHomeModel().handleSendText(messageField.getText());
         messageField.setText("");
+    }
+
+    /**
+     * Search texts and display.
+     *
+     * @param event The event ot searchTextButton.
+     */
+    @FXML
+    public void searchText(ActionEvent event) {
+        ArrayList<ConnectionData> searchData = Client.getHomeModel().search(searchBox.getText());
+        ObservableList<ConnectionData> searchList = FXCollections.observableArrayList(searchData);
+        setChatListItems(searchList);
+        searchBox.setText("");
     }
 
     /**

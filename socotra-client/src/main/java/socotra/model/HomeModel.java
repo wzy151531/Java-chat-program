@@ -358,16 +358,24 @@ public class HomeModel {
         }
     }
 
-    //public String search(String input){
-    //    ArrayList<String> messages = new ArrayList<String>(chatData.values());
-    //
-     //   for (String s : messages){
-     //       if (s.contains(input)){
-     //           return s;
-     //       }
-     //   }
-      //  return "Not found";
-   //    }
+    /**
+     * The search chatdata function
+     *
+     * @returns a list of chatdata with search characters inside.
+     */
+    public ArrayList<ConnectionData> search(String input) {
+        List<ConnectionData> chatList = chatData.get(toUsername);
+        ArrayList<ConnectionData> searchList = new ArrayList<ConnectionData>();
+
+        for (ConnectionData cd : chatList) {
+            if (cd.getType() == 1 && cd.getTextData().contains(input)) {
+                searchList.add(cd);
+            }
+
+        }
+        return searchList;
+
+    }
 
 
 

@@ -18,7 +18,8 @@
         </Label>
         <Label layoutX="50.0" layoutY="60.0" />
         <TextField fx:id="messageField" layoutX="31.0" layoutY="413.0" prefHeight="27.0" prefWidth="291.0" />
-        <TextField fx:id="searchBox" layoutX="180.0" layoutY="30.0" prefHeight="27.0" prefWidth="100.0" />
+        <Button fx:id="searchButton" defaultButton="true" layoutX="391.0" layoutY="30.0" mnemonicParsing="false" onAction="#searchText" prefHeight="27.0" prefWidth="62.0" text="search" />
+        <TextField fx:id="searchBox" layoutX="280.0" layoutY="30.0" prefHeight="27.0" prefWidth="100.0" />
         <Button fx:id="sendTextButton" defaultButton="true" layoutX="391.0" layoutY="413.0" mnemonicParsing="false" onAction="#sendText" prefHeight="27.0" prefWidth="62.0" text="send" />
         <Button fx:id="captureButton" layoutX="31.0" layoutY="462.0" mnemonicParsing="false" onAction="#capture" prefHeight="27.0" prefWidth="74.0" text="capture" />
         <Button fx:id="stopButton" layoutX="120.0" layoutY="462.0" mnemonicParsing="false" onAction="#stop" prefHeight="27.0" prefWidth="49.0" text="stop" />
