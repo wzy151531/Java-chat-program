@@ -48,7 +48,8 @@ public class ConnectionData implements Serializable {
     /**
      * The user that data send to.
      */
-    private String toUsername;
+//    private String toUsername;
+    private ChatSession chatSession;
 
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
@@ -81,11 +82,11 @@ public class ConnectionData implements Serializable {
         this.onlineUsers = onlineUsers;
     }
 
-    public ConnectionData(UUID uuid, String userSignature, String toUsername) {
+    public ConnectionData(UUID uuid, String userSignature, ChatSession chatSession) {
         this.uuid = uuid;
         this.type = -4;
         this.userSignature = userSignature;
-        this.toUsername = toUsername;
+        this.chatSession = chatSession;
     }
 
     /**
@@ -107,12 +108,12 @@ public class ConnectionData implements Serializable {
      * @param textData      The text message in connection data.
      * @param userSignature The connection data sender's username.
      */
-    public ConnectionData(String textData, String userSignature, String toUsername) {
+    public ConnectionData(String textData, String userSignature, ChatSession chatSession) {
         this.uuid = UUID.randomUUID();
         this.type = 1;
         this.textData = textData;
         this.userSignature = userSignature;
-        this.toUsername = toUsername;
+        this.chatSession = chatSession;
     }
 
     /**
@@ -121,17 +122,17 @@ public class ConnectionData implements Serializable {
      * @param audioData     The audio message in connection data.
      * @param userSignature The connection data sender's username.
      */
-    public ConnectionData(byte[] audioData, String userSignature, String toUsername) {
+    public ConnectionData(byte[] audioData, String userSignature, ChatSession chatSession) {
         this.uuid = UUID.randomUUID();
         this.type = 2;
         this.audioData = audioData;
         this.userSignature = userSignature;
-        this.toUsername = toUsername;
+        this.chatSession = chatSession;
     }
 
     public UUID getUuid() {
         if (type != 1 && type != 2 && type != -4) {
-            throw new IllegalStateException("Type isn't 1 or 2, cannot get uuid");
+            throw new IllegalStateException("Type isn't 1 or 2 or 4, cannot get uuid");
         }
         return uuid;
     }
@@ -242,11 +243,11 @@ public class ConnectionData implements Serializable {
         return userSignature;
     }
 
-    public String getToUsername() {
+    public ChatSession getChatSession() {
         if (type != 1 && type != 2 && type != -4) {
-            throw new IllegalStateException("Type isn't 1 or 2, cannot get toUsername");
+            throw new IllegalStateException("Type isn't 1 or 2, cannot get chatSession");
         }
-        return toUsername;
+        return chatSession;
     }
 
 }

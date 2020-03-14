@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.TreeSet;
 
 public class ServerThread extends Thread {
@@ -72,19 +73,26 @@ public class ServerThread extends Thread {
                         endClient();
                         return;
                     case -4:
-                        Server.privateSend(connectionData, connectionData.getToUsername());
+                        Server.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                         break;
                     case 1:
                     case 2:
                         connectionData.setIsSent(true);
-                        if (connectionData.getToUsername().equals("all")) {
-                            Server.privateSend(new ConnectionData(connectionData.getUuid(), connectionData.getToUsername(), connectionData.getUserSignature()), connectionData.getUserSignature());
+                        if (connectionData.getChatSession().getToUsernames().size() == 1) {
+                            Server.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
                             Server.broadcast(connectionData, connectionData.getUserSignature());
                         } else {
-                            if (!Server.getClients().keySet().contains(connectionData.getToUsername())) {
-                                Server.privateSend(new ConnectionData(connectionData.getUuid(), connectionData.getToUsername(), connectionData.getUserSignature()), connectionData.getUserSignature());
-                            }
-                            Server.privateSend(connectionData, connectionData.getToUsername());
+//                            boolean result = false;
+//                            for (String username : connectionData.getChatSession().getToUsernames()) {
+//                                if (Server.getClients().keySet().contains(username)) {
+//                                    result = true;
+//                                }
+//                            }
+//                            if (!result) {
+//                                Server.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
+//                            }
+//                            Server.privateSend(connectionData, connectionData.getToUsername());
+                            Server.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                         }
                         break;
                     default:

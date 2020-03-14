@@ -14,10 +14,13 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import socotra.Client;
+import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.model.HomeModel;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 public class HomeController {
 
@@ -25,7 +28,7 @@ public class HomeController {
      * All audio button in local history message.
      */
     private ArrayList<Button> allAudioButtons = new ArrayList<>();
-    private ArrayList<Button> clientsListButtons = new ArrayList<>();
+    private ArrayList<Button> chatSessionListButtons = new ArrayList<>();
     @FXML
     private Button captureButton;
     @FXML
@@ -44,6 +47,8 @@ public class HomeController {
     private Button emojiButton;
     @FXML
     private Label usernameLabel;
+    @FXML
+    private ListView<ChatSession> chatSessionList;
     @FXML
     private ListView<String> clientsList;
     /**
@@ -77,6 +82,12 @@ public class HomeController {
         });
     }
 
+    public void refreshChatSessionList() {
+        Platform.runLater(() -> {
+            chatSessionList.refresh();
+        });
+    }
+
     public void setChatListItems(ObservableList<ConnectionData> items) {
         Platform.runLater(() -> {
             chatList.setItems(items);
@@ -104,9 +115,11 @@ public class HomeController {
         emojiList.setManaged(false);
         configEmojiList();
         configChatList();
+        configChatSessionList();
         configClientsList();
         Platform.runLater(() -> { // runLater keep thread synchronize
-            chatList.setItems(Client.getHomeModel().getCertainChatData("all"));
+//            chatList.setItems(Client.getHomeModel().getCertainChatData("all"));
+            chatSessionList.setItems(Client.getHomeModel().getChatSessionList());
             clientsList.setItems(Client.getHomeModel().getClientsList());
         });
         // Generate emojiList view according to the render logic of it.
@@ -209,8 +222,43 @@ public class HomeController {
     }
 
     /**
-     * Config clientsList render logic.
+     * Config chatSessionList render logic.
      */
+    private void configChatSessionList() {
+        chatSessionList.setCellFactory(l -> new ListCell<>() {
+            @Override
+            protected void updateItem(ChatSession item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null) {
+                    setGraphic(null);
+                    setText("");
+                } else {
+                    ArrayList<String> temp = new ArrayList<>(item.getToUsernames());
+                    temp.remove(Client.getClientThread().getUsername());
+//                    System.out.println(item);
+                    String chatName = temp.toString();
+                    Button button = new Button(chatName);
+                    button.setPrefSize(180.0, 15.0);
+                    button.setFont(new Font(15));
+                    if (item.isHint()) {
+                        button.setStyle("-fx-base: #ee2211");
+                    }
+                    button.setOnAction(evt -> {
+                        Client.getHomeModel().checkoutChatPanel(item);
+                        button.setStyle(null);
+                        item.setHint(false);
+                    });
+//                    chatSessionListButtons.add(button);
+//                    System.out.println(chatSessionListButtons.size());
+                    HBox content = new HBox(button);
+                    content.setPadding(Insets.EMPTY);
+                    content.setAlignment(Pos.CENTER);
+                    setGraphic(content);
+                }
+            }
+        });
+    }
+
     private void configClientsList() {
         clientsList.setCellFactory(l -> new ListCell<>() {
             @Override
@@ -220,17 +268,26 @@ public class HomeController {
                     setGraphic(null);
                     setText("");
                 } else {
-                    Button button = new Button(item);
-                    button.setPrefSize(180.0, 15.0);
+                    Button button = new Button("chat");
+                    button.setPrefSize(50.0, 15.0);
                     button.setFont(new Font(15));
                     button.setOnAction(evt -> {
-                        Client.getHomeModel().checkoutChatPanel(item);
-                        button.setStyle(null);
+                        TreeSet<String> clients = new TreeSet<>();
+                        clients.add(item);
+                        if (!item.equals("all")) {
+                            clients.add(Client.getClientThread().getUsername());
+                        }
+                        if (!Client.getHomeModel().chatSessionExist(clients)) {
+                            ChatSession chatSession = new ChatSession(clients, true);
+                            Client.getHomeModel().appendChatSessionList(chatSession);
+                        }
                     });
-                    clientsListButtons.add(button);
-                    HBox content = new HBox(button);
-                    content.setPadding(Insets.EMPTY);
-                    content.setAlignment(Pos.CENTER);
+                    Label clientName = new Label(item);
+                    HBox content1 = new HBox(clientName);
+                    content1.setAlignment(Pos.CENTER_LEFT);
+                    HBox content2 = new HBox(button);
+                    content2.setAlignment(Pos.CENTER_RIGHT);
+                    HBox content = new HBox(content1, content2);
                     setGraphic(content);
                 }
             }
@@ -253,23 +310,25 @@ public class HomeController {
     }
 
     /**
-     * Update clientsListButtons's style.
+     * Update chatSessionListButtons's style.
      *
      * @param connectionData Received connection data.
      */
     // TODO
-    public void updateClientsListButtons(ConnectionData connectionData) {
-        clientsListButtons.forEach(n -> {
-            if (!connectionData.getUserSignature().equals(Client.getClientThread().getUsername())) {
-                if (connectionData.getToUsername().equals(n.getText()) && !connectionData.getToUsername().equals(Client.getHomeModel().getToUsername())) {
-                    n.setStyle("-fx-base: #ee2211");
-                }
-                if (connectionData.getUserSignature().equals(n.getText()) && !connectionData.getToUsername().equals("all") && !connectionData.getUserSignature().equals(Client.getHomeModel().getToUsername())) {
-                    n.setStyle("-fx-base: #ee2211");
-                }
-            }
-        });
-    }
+//    public void updateChatSessionListButtons(ConnectionData connectionData) {
+//        chatSessionListButtons.forEach(n -> {
+//            System.out.println("start");
+//            if (!connectionData.getUserSignature().equals(Client.getClientThread().getUsername()) && !connectionData.getToUsername().equals(Client.getHomeModel().getToUsername())) {
+//                System.out.println("update");
+//                if (connectionData.getToUsername().equals(n.getText())) {
+//                    n.setStyle("-fx-base: #ee2211");
+//                }
+//                if (connectionData.getUserSignature().equals(n.getText()) && !connectionData.getToUsername().equals("all")) {
+//                    n.setStyle("-fx-base: #ee2211");
+//                }
+//            }
+//        });
+//    }
 
     /**
      * Send text message to server.

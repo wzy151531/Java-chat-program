@@ -1,6 +1,7 @@
 package socotra.model;
 
 import socotra.Client;
+import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.util.SendThread;
 import socotra.util.SetOnlineUsers;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.KeyStore;
+import java.util.ArrayList;
 
 public class ClientThread extends Thread {
 
@@ -146,12 +148,13 @@ public class ClientThread extends Thread {
                         setOnlineUsers.start();
                         break;
                     case -4:
-                        Client.getHomeModel().updateChatData(connectionData.getUuid(), connectionData.getUserSignature());
+//                        Client.getHomeModel().updateChatData(connectionData.getUuid(), connectionData.getChatSession());
                         break;
                     case 1:
                     case 2:
                         Client.getHomeModel().appendChatData(connectionData);
-                        new SendThread(new ConnectionData(connectionData.getUuid(), connectionData.getToUsername(), connectionData.getUserSignature())).start();
+                        ChatSession chatSession = connectionData.getChatSession();
+//                        new SendThread(new ConnectionData(connectionData.getUuid(), this.username, chatSession)).start();
                         break;
                     default:
                         System.out.println("Unknown data.");

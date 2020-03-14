@@ -7,6 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import socotra.Client;
+import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.controller.HomeController;
 import socotra.util.SendThread;
@@ -14,21 +15,19 @@ import socotra.util.Util;
 
 import javax.sound.sampled.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class HomeModel {
 
     /**
      * Local history message.
      */
-    private HashMap<String, ObservableList<ConnectionData>> chatData = new HashMap<>();
-    private String toUsername = "all";
+    private HashMap<ChatSession, ObservableList<ConnectionData>> chatData = new HashMap<>();
+    private ChatSession currentChatSession;
     /**
      * Current online clients list.
      */
+    private ObservableList<ChatSession> chatSessionList = FXCollections.observableArrayList(new ArrayList<>());
     private ObservableList<String> clientsList = FXCollections.observableArrayList(new ArrayList<>());
     /**
      * An AudioFormat object for a given set of format parameters.
@@ -63,8 +62,8 @@ public class HomeModel {
         audioFormat = getAudioFormat();
     }
 
-    public String getToUsername() {
-        return this.toUsername;
+    public ChatSession getCurrentChatSession() {
+        return this.currentChatSession;
     }
 
     /**
@@ -76,13 +75,17 @@ public class HomeModel {
         this.forceStop = forceStop;
     }
 
-    public ObservableList<ConnectionData> getCertainChatData(String toUsername) {
-        ObservableList<ConnectionData> certainChatData = this.chatData.get(toUsername);
+    public ObservableList<ConnectionData> getCertainChatData(ChatSession chatSession) {
+        ObservableList<ConnectionData> certainChatData = this.chatData.get(chatSession);
         if (certainChatData == null) {
             certainChatData = FXCollections.observableArrayList(new ArrayList<>());
-            this.chatData.put(toUsername, certainChatData);
+            this.chatData.put(chatSession, certainChatData);
         }
         return certainChatData;
+    }
+
+    public ObservableList<ChatSession> getChatSessionList() {
+        return this.chatSessionList;
     }
 
     public ObservableList<String> getClientsList() {
@@ -96,39 +99,65 @@ public class HomeModel {
      */
     public void appendChatData(ConnectionData connectionData) {
         Platform.runLater(() -> {
-            if (connectionData.getToUsername().equals(Client.getClientThread().getUsername())) {
-                ObservableList<ConnectionData> certainChatData = this.chatData.get(connectionData.getUserSignature());
-                if (certainChatData == null) {
-                    certainChatData = FXCollections.observableArrayList(new ArrayList<>());
-                    certainChatData.add(connectionData);
-                    this.chatData.put(connectionData.getUserSignature(), certainChatData);
-                } else {
-                    certainChatData.add(connectionData);
-                }
+            ChatSession key = connectionData.getChatSession();
+
+            ObservableList<ConnectionData> certainChatData = this.chatData.get(key);
+            if (certainChatData == null) {
+                certainChatData = FXCollections.observableArrayList(new ArrayList<>());
+                certainChatData.add(connectionData);
+                this.chatData.put(key, certainChatData);
+                this.appendChatSessionList(key);
             } else {
-                ObservableList<ConnectionData> certainChatData = this.chatData.get(connectionData.getToUsername());
-                if (certainChatData == null) {
-                    certainChatData = FXCollections.observableArrayList(new ArrayList<>());
-                    certainChatData.add(connectionData);
-                    this.chatData.put(connectionData.getToUsername(), certainChatData);
-                } else {
-                    certainChatData.add(connectionData);
-                }
+                certainChatData.add(connectionData);
             }
             Client.getHomeController().scrollChatList();
-            Client.getHomeController().updateClientsListButtons(connectionData);
+            if (currentChatSession == null || !key.equals(currentChatSession)) {
+                System.out.println("need to set hint");
+                System.out.println(chatSessionList);
+                System.out.println(key);
+                chatSessionList.forEach(n -> {
+                    if (n.equals(key)) {
+                        System.out.println("Set hint true");
+                        n.setHint(true);
+                        Client.getHomeController().refreshChatSessionList();
+                    }
+                });
+            }
+//            Client.getHomeController().updateChatSessionListButtons(connectionData);
         });
     }
 
-    public void updateChatData(UUID uuid, String userSignature) {
+    public boolean chatSessionExist(TreeSet<String> clients) {
+        for (ChatSession chatSession : chatSessionList) {
+            if (chatSession.getToUsernames().equals(clients)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void updateChatData(UUID uuid, ChatSession chatSession) {
         Platform.runLater(() -> {
-            this.chatData.get(userSignature).forEach(n -> {
+            this.chatData.get(chatSession).forEach(n -> {
                 if (uuid.equals(n.getUuid()) && !n.getIsSent()) {
 //                    System.out.println("Set " + n.getTextData() + " sent.");
                     n.setIsSent(true);
                     Client.getHomeController().refreshChatList();
                 }
             });
+        });
+    }
+
+    public void appendChatSessionList(ChatSession chatSession) {
+        Platform.runLater(() -> {
+            chatSession.setHint(true);
+            this.chatSessionList.add(chatSession);
+        });
+    }
+
+    public void removeChatSessionList(String clientName) {
+        Platform.runLater(() -> {
+            this.chatSessionList.remove(clientName);
         });
     }
 
@@ -144,9 +173,9 @@ public class HomeModel {
         });
     }
 
-    public void checkoutChatPanel(String toUsername) {
-        this.toUsername = toUsername;
-        Client.getHomeController().setChatListItems(getCertainChatData(toUsername));
+    public void checkoutChatPanel(ChatSession chatSession) {
+        this.currentChatSession = chatSession;
+        Client.getHomeController().setChatListItems(getCertainChatData(chatSession));
     }
 
     /**
@@ -209,9 +238,11 @@ public class HomeModel {
      */
     public void handleSendText(String text) {
         if (Util.isEmpty(text)) {
-            Util.generateAlert(Alert.AlertType.ERROR, "Error", "Cannot send empty message.", "Try again.").show();
+            Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Cannot send empty message.", "Try again.").show();
+        } else if (this.currentChatSession == null) {
+            Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Please choose a user to send message.", "Try again.").show();
         } else {
-            ConnectionData connectionData = new ConnectionData(text, Client.getClientThread().getUsername(), toUsername);
+            ConnectionData connectionData = new ConnectionData(text, Client.getClientThread().getUsername(), currentChatSession);
             appendChatData(connectionData);
             new SendThread(connectionData).start();
         }
@@ -223,7 +254,7 @@ public class HomeModel {
     public void handleSendAudio() {
         try {
             byte[] audioData = byteArrayOutputStream.toByteArray();
-            ConnectionData connectionData = new ConnectionData(audioData, Client.getClientThread().getUsername(), toUsername);
+            ConnectionData connectionData = new ConnectionData(audioData, Client.getClientThread().getUsername(), currentChatSession);
             appendChatData(connectionData);
             new SendThread(connectionData).start();
         } catch (Exception e) {

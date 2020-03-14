@@ -1,5 +1,6 @@
 package socotra;
 
+import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.jdbc.JdbcUtil;
 import socotra.service.ServerThread;
@@ -10,7 +11,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.security.KeyStore;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 public class Server {
 
@@ -139,6 +142,24 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void groupSend(ConnectionData connectionData, TreeSet<String> toUsernames) {
+        ArrayList<String> clients = new ArrayList<>(toUsernames);
+        clients.remove(connectionData.getUserSignature());
+        System.out.println(clients);
+        for (String toUsername : clients) {
+            Server.clients.forEach((k, v) -> {
+                try {
+                    if (k.equals(toUsername)) {
+                        v.writeObject(connectionData);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+
     }
 
 }
