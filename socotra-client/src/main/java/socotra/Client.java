@@ -58,8 +58,10 @@ public class Client extends Application {
 
     public static void setHomeModel(HomeModel homeModel) {
         Client.homeModel = homeModel;
-        synchronized (setOnlineUsers) {
-            setOnlineUsers.notify();
+        if (setOnlineUsers != null) {
+            synchronized (setOnlineUsers) {
+                setOnlineUsers.notify();
+            }
         }
     }
 

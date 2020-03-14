@@ -127,6 +127,9 @@ public class ClientThread extends Thread {
                             loginModel.setErrorType(2);
                             endConnection();
                         }
+                        synchronized (loginModel) {
+                            loginModel.notify();
+                        }
                         break;
                     case -2:
                         System.out.println(connectionData.getUserSignature() + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
@@ -166,6 +169,10 @@ public class ClientThread extends Thread {
             System.out.println("Unexpected Error.");
         } finally {
             System.out.println("Finally handled.");
+            // Notify the loginModel thread anyway.
+            synchronized (loginModel) {
+                loginModel.notify();
+            }
             try {
                 endConnection();
             } catch (IOException e) {
