@@ -56,7 +56,7 @@ public abstract class Util {
     public static void groupSend(ConnectionData connectionData, TreeSet<String> toUsernames) {
         ArrayList<String> clients = new ArrayList<>(toUsernames);
         clients.remove(connectionData.getUserSignature());
-        System.out.println(clients);
+//        System.out.println(clients);
         for (String toUsername : clients) {
             Server.getClients().forEach((k, v) -> {
                 try {

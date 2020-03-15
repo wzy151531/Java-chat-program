@@ -20,9 +20,9 @@
         </Label>
         <Label layoutX="50.0" layoutY="60.0"/>
         <TextField fx:id="messageField" layoutX="257.0" layoutY="406.0" prefHeight="27.0" prefWidth="317.0"/>
-        <Button fx:id="searchButton" defaultButton="true" layoutX="391.0" layoutY="30.0" mnemonicParsing="false"
-                onAction="#searchText" prefHeight="27.0" prefWidth="62.0" text="search"/>
-        <TextField fx:id="searchBox" layoutX="280.0" layoutY="30.0" prefHeight="27.0" prefWidth="100.0"/>
+        <Button fx:id="searchButton" layoutX="643.0" layoutY="24.0" mnemonicParsing="false" onAction="#searchText"
+                prefHeight="27.0" prefWidth="62.0" text="search"/>
+        <TextField fx:id="searchBox" layoutX="536.0" layoutY="24.0" prefHeight="27.0" prefWidth="100.0"/>
         <Button fx:id="sendTextButton" defaultButton="true" layoutX="643.0" layoutY="406.0" mnemonicParsing="false"
                 onAction="#sendText" prefHeight="27.0" prefWidth="62.0" text="send"/>
         <Button fx:id="captureButton" layoutX="257.0" layoutY="448.0" mnemonicParsing="false" onAction="#capture"
@@ -46,11 +46,9 @@
         <Button fx:id="cancelAddingButton" layoutX="175.0" layoutY="420.0" mnemonicParsing="false"
                 onAction="#cancelAdding" text="cancel"/>
         <Button fx:id="confirmAddingButton" layoutX="106.0" layoutY="420.0" mnemonicParsing="false"
-                onAction="#confirmAdding" prefHeight="27.0" prefWidth="62.0"
-                text="confirm"/>
+                onAction="#confirmAdding" prefHeight="27.0" prefWidth="62.0" text="confirm"/>
     </children>
     <stylesheets>
         <URL value="@/css/home.css"/>
     </stylesheets>
 </AnchorPane>
-

@@ -378,6 +378,14 @@ public class HomeController {
      */
     @FXML
     public void searchText(ActionEvent event) {
+        if (Client.getHomeModel().getCurrentChatSession() == null) {
+            Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Must search message in a certain chat session.", "Try again.").show();
+            return;
+        }
+        if (Util.isEmpty(searchBox.getText())) {
+            Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Search message cannot be empty.", "Try again.").show();
+            return;
+        }
         ArrayList<ConnectionData> searchData = Client.getHomeModel().search(searchBox.getText());
         ObservableList<ConnectionData> searchList = FXCollections.observableArrayList(searchData);
         setChatListItems(searchList);
