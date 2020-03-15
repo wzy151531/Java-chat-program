@@ -3,6 +3,7 @@ package socotra.service;
 import socotra.Server;
 import socotra.common.ConnectionData;
 import socotra.jdbc.JdbcUtil;
+import socotra.util.Util;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -59,32 +60,32 @@ public class ServerThread extends Thread {
                                 TreeSet<String> allClientsName = new TreeSet<>(Server.getClients().keySet());
                                 allClientsName.remove(username);
                                 // Inform the new client current online users and inform other clients that the new client is online.
-                                Server.broadcast(new ConnectionData(username, true), username, new ConnectionData(allClientsName));
+                                Util.broadcast(new ConnectionData(username, true), username, new ConnectionData(allClientsName));
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                         break;
                     case -2:
-                        Server.broadcast(new ConnectionData(username, false), username);
+                        Util.broadcast(new ConnectionData(username, false), username);
                         Server.removeClient(username);
                         System.out.println("User log out. Current online users: " + Server.getClients().keySet());
                         endClient();
                         return;
                     case -4:
-                        Server.privateSend(connectionData, connectionData.getToUsername());
+                        Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                         break;
                     case 1:
                     case 2:
                         connectionData.setIsSent(true);
-                        if (connectionData.getToUsername().equals("all")) {
-                            Server.privateSend(new ConnectionData(connectionData.getUuid(), connectionData.getToUsername(), connectionData.getUserSignature()), connectionData.getUserSignature());
-                            Server.broadcast(connectionData, connectionData.getUserSignature());
+                        if (connectionData.getChatSession().getToUsernames().size() == 1) {
+                            Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
+                            Util.broadcast(connectionData, connectionData.getUserSignature());
                         } else {
-                            if (!Server.getClients().keySet().contains(connectionData.getToUsername())) {
-                                Server.privateSend(new ConnectionData(connectionData.getUuid(), connectionData.getToUsername(), connectionData.getUserSignature()), connectionData.getUserSignature());
+                            if (!Util.isAnyOnline(connectionData.getChatSession().getToUsernames())) {
+                                Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
                             }
-                            Server.privateSend(connectionData, connectionData.getToUsername());
+                            Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                         }
                         break;
                     default:

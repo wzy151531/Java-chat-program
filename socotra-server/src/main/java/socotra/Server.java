@@ -1,5 +1,6 @@
 package socotra;
 
+import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.jdbc.JdbcUtil;
 import socotra.service.ServerThread;
@@ -10,7 +11,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.security.KeyStore;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 public class Server {
 
@@ -96,49 +99,7 @@ public class Server {
         Server.clients.remove(username);
     }
 
-    public synchronized static void broadcast(ConnectionData connectionData) {
-        Server.clients.forEach((k, v) -> {
-            try {
-                v.writeObject(connectionData);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
 
-    public synchronized static void broadcast(ConnectionData connectionData, String username, ConnectionData specialConnectionData) {
-        Server.clients.forEach((k, v) -> {
-            try {
-                if (!k.equals(username)) {
-                    v.writeObject(connectionData);
-                } else {
-                    v.writeObject(specialConnectionData);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
 
-    public synchronized static void broadcast(ConnectionData connectionData, String username) {
-        Server.clients.forEach((k, v) -> {
-            try {
-                if (!k.equals(username)) {
-                    v.writeObject(connectionData);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    public static void privateSend(ConnectionData connectionData, String toUsername) {
-        try {
-            Server.clients.get(toUsername).writeObject(connectionData);
-//            Server.clients.get(connectionData.getUserSignature()).writeObject(connectionData);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 }

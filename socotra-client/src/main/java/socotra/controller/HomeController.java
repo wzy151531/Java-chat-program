@@ -14,10 +14,13 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import socotra.Client;
+import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.model.HomeModel;
+import socotra.util.Util;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 public class HomeController {
 
@@ -25,7 +28,6 @@ public class HomeController {
      * All audio button in local history message.
      */
     private ArrayList<Button> allAudioButtons = new ArrayList<>();
-    private ArrayList<Button> clientsListButtons = new ArrayList<>();
     @FXML
     private Button captureButton;
     @FXML
@@ -49,14 +51,25 @@ public class HomeController {
     @FXML
     private Label usernameLabel;
     @FXML
+    private ListView<ChatSession> chatSessionList;
+    @FXML
     private ListView<String> clientsList;
-   // @FXML
-    // private Button searchButton;
+    @FXML
+    private Label chatTitleLabel;
+    @FXML
+    private Button addGroupChatButton;
+    @FXML
+    private Button cancelAddingButton;
+    @FXML
+    private Button confirmAddingButton;
     /**
      * The emoji list, each list stores a length of 10 arrayList.
      */
     @FXML
     private ListView<ArrayList<String>> emojiList;
+
+    private boolean isCreatingGroup;
+    private TreeSet<String> newGroup = new TreeSet<>();
 
     public void setStopButtonDisabled(boolean disabled) {
         this.stopButton.setDisable(disabled);
@@ -70,9 +83,9 @@ public class HomeController {
         this.sendAudioButton.setDisable(disabled);
     }
 
-   // public void setSearchButtonDisabled(boolean disabled) {
-   //     this.searchButton.setDisable(disabled);
-   // }
+    // public void setSearchButtonDisabled(boolean disabled) {
+    //     this.searchButton.setDisable(disabled);
+    // }
 
     public void setAllAudioButtonsDisabled(boolean disabled) {
         this.allAudioButtons.forEach(n -> {
@@ -84,6 +97,12 @@ public class HomeController {
         Platform.runLater(() -> {
 //            System.out.println("refresh chatList.");
             chatList.refresh();
+        });
+    }
+
+    public void refreshChatSessionList() {
+        Platform.runLater(() -> {
+            chatSessionList.refresh();
         });
     }
 
@@ -112,11 +131,17 @@ public class HomeController {
         sendAudioButton.setDisable(true);
         emojiList.setVisible(false);
         emojiList.setManaged(false);
+        cancelAddingButton.setVisible(false);
+        cancelAddingButton.setManaged(false);
+        confirmAddingButton.setVisible(false);
+        confirmAddingButton.setVisible(false);
         configEmojiList();
         configChatList();
+        configChatSessionList();
         configClientsList();
         Platform.runLater(() -> { // runLater keep thread synchronize
-            chatList.setItems(Client.getHomeModel().getCertainChatData("all"));
+//            chatList.setItems(Client.getHomeModel().getCertainChatData("all"));
+            chatSessionList.setItems(Client.getHomeModel().getChatSessionList());
             clientsList.setItems(Client.getHomeModel().getClientsList());
         });
         // Generate emojiList view according to the render logic of it.
@@ -219,8 +244,45 @@ public class HomeController {
     }
 
     /**
-     * Config clientsList render logic.
+     * Config chatSessionList render logic.
      */
+    private void configChatSessionList() {
+        chatSessionList.setCellFactory(l -> new ListCell<>() {
+            @Override
+            protected void updateItem(ChatSession item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null) {
+                    setGraphic(null);
+                    setText("");
+                } else {
+                    TreeSet<String> temp = new TreeSet<>(item.getToUsernames());
+                    temp.remove(Client.getClientThread().getUsername());
+                    String chatName = Util.generateChatName(temp);
+                    Button button = new Button(chatName);
+                    button.setPrefSize(170.0, 15.0);
+                    button.setFont(new Font(15));
+                    button.setOnAction(evt -> {
+                        Client.getHomeModel().checkoutChatPanel(item);
+                        chatTitleLabel.setText(chatName);
+                        item.setHint(false);
+                        chatSessionList.refresh();
+                    });
+                    Circle hintCircle = new Circle(2.0, Color.RED);
+                    HBox content;
+                    if (item.isHint()) {
+//                        button.setStyle("-fx-base: #ee2211");
+                        content = new HBox(hintCircle, button);
+                    } else {
+                        content = new HBox(button);
+                    }
+                    content.setPadding(Insets.EMPTY);
+                    content.setAlignment(Pos.CENTER_RIGHT);
+                    setGraphic(content);
+                }
+            }
+        });
+    }
+
     private void configClientsList() {
         clientsList.setCellFactory(l -> new ListCell<>() {
             @Override
@@ -230,17 +292,53 @@ public class HomeController {
                     setGraphic(null);
                     setText("");
                 } else {
-                    Button button = new Button(item);
-                    button.setPrefSize(180.0, 15.0);
+
+                    Button button = new Button("chat");
+                    button.setPrefSize(50.0, 15.0);
                     button.setFont(new Font(15));
                     button.setOnAction(evt -> {
-                        Client.getHomeModel().checkoutChatPanel(item);
-                        button.setStyle(null);
+                        TreeSet<String> clients = new TreeSet<>();
+                        clients.add(item);
+                        if (!item.equals("all")) {
+                            clients.add(Client.getClientThread().getUsername());
+                        }
+                        if (!Client.getHomeModel().chatSessionExist(clients)) {
+                            ChatSession chatSession = new ChatSession(clients, true);
+                            Client.getHomeModel().appendChatSessionList(chatSession);
+                        }
                     });
-                    clientsListButtons.add(button);
-                    HBox content = new HBox(button);
-                    content.setPadding(Insets.EMPTY);
-                    content.setAlignment(Pos.CENTER);
+                    Label clientName = new Label(item);
+                    HBox content = new HBox();
+                    content.setPrefWidth(180.0);
+                    HBox content1 = new HBox(clientName);
+                    content1.setAlignment(Pos.CENTER_LEFT);
+
+                    HBox content2 = new HBox(button);
+                    content2.setAlignment(Pos.CENTER_RIGHT);
+
+                    if (isCreatingGroup && !item.equals("all")) {
+                        CheckBox checkBox = new CheckBox();
+                        checkBox.setOnAction(evt -> {
+//                            System.out.println("item: " + checkBox.isSelected());
+                            if (checkBox.isSelected()) {
+                                newGroup.add(item);
+                            } else {
+                                newGroup.remove(item);
+                            }
+                        });
+                        checkBox.setPrefWidth(content.getPrefWidth() * 0.2);
+                        content1.setPrefWidth(content.getPrefWidth() * 0.4);
+                        content2.setPrefWidth(content.getPrefWidth() * 0.4);
+                        content.getChildren().add(checkBox);
+                    } else {
+                        content1.setPrefWidth(content.getPrefWidth() / 2);
+                        content2.setPrefWidth(content.getPrefWidth() / 2);
+
+                    }
+
+                    content.getChildren().add(content1);
+                    content.getChildren().add(content2);
+
                     setGraphic(content);
                 }
             }
@@ -259,25 +357,6 @@ public class HomeController {
             emojiList.setItems(dataList);
             emojiList.refresh();
             emojiList.scrollTo(0);
-        });
-    }
-
-    /**
-     * Update clientsListButtons's style.
-     *
-     * @param connectionData Received connection data.
-     */
-    // TODO
-    public void updateClientsListButtons(ConnectionData connectionData) {
-        clientsListButtons.forEach(n -> {
-            if (!connectionData.getUserSignature().equals(Client.getClientThread().getUsername())) {
-                if (connectionData.getToUsername().equals(n.getText()) && !connectionData.getToUsername().equals(Client.getHomeModel().getToUsername())) {
-                    n.setStyle("-fx-base: #ee2211");
-                }
-                if (connectionData.getUserSignature().equals(n.getText()) && !connectionData.getToUsername().equals("all") && !connectionData.getUserSignature().equals(Client.getHomeModel().getToUsername())) {
-                    n.setStyle("-fx-base: #ee2211");
-                }
-            }
         });
     }
 
@@ -356,6 +435,47 @@ public class HomeController {
     @FXML
     public void logout(ActionEvent event) {
         Client.getHomeModel().handleLogout();
+    }
+
+    @FXML
+    public void addGroupChat(ActionEvent event) {
+        isCreatingGroup = true;
+        cancelAddingButton.setVisible(true);
+        cancelAddingButton.setManaged(true);
+        confirmAddingButton.setVisible(true);
+        confirmAddingButton.setManaged(true);
+        addGroupChatButton.setVisible(false);
+        addGroupChatButton.setManaged(false);
+        clientsList.refresh();
+    }
+
+    @FXML
+    public void cancelAdding(ActionEvent event) {
+        isCreatingGroup = false;
+        cancelAddingButton.setVisible(false);
+        cancelAddingButton.setManaged(false);
+        confirmAddingButton.setVisible(false);
+        confirmAddingButton.setManaged(false);
+        addGroupChatButton.setVisible(true);
+        addGroupChatButton.setManaged(true);
+        clientsList.refresh();
+    }
+
+    @FXML
+    public void confirmAdding(ActionEvent event) {
+        System.out.println(this.newGroup);
+        if (newGroup.size() <= 1) {
+            Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Cannot create a group chat with less two people.", "Try again.").show();
+            return;
+        }
+        newGroup.add(Client.getClientThread().getUsername());
+        if (Client.getHomeModel().chatSessionExist(newGroup)) {
+            Util.generateAlert(Alert.AlertType.WARNING, "Warning", "The group chat has already existed.", "Try again.").show();
+            return;
+        }
+        ChatSession chatSession = new ChatSession(newGroup, true);
+        Client.getHomeModel().appendChatSessionList(chatSession);
+        this.cancelAdding(event);
     }
 
 }
