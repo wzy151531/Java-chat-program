@@ -3,12 +3,12 @@ package socotra.service;
 import socotra.Server;
 import socotra.common.ConnectionData;
 import socotra.jdbc.JdbcUtil;
+import socotra.util.Util;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.TreeSet;
 
 public class ServerThread extends Thread {
@@ -60,39 +60,32 @@ public class ServerThread extends Thread {
                                 TreeSet<String> allClientsName = new TreeSet<>(Server.getClients().keySet());
                                 allClientsName.remove(username);
                                 // Inform the new client current online users and inform other clients that the new client is online.
-                                Server.broadcast(new ConnectionData(username, true), username, new ConnectionData(allClientsName));
+                                Util.broadcast(new ConnectionData(username, true), username, new ConnectionData(allClientsName));
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                         break;
                     case -2:
-                        Server.broadcast(new ConnectionData(username, false), username);
+                        Util.broadcast(new ConnectionData(username, false), username);
                         Server.removeClient(username);
                         System.out.println("User log out. Current online users: " + Server.getClients().keySet());
                         endClient();
                         return;
                     case -4:
-                        Server.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
+                        Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                         break;
                     case 1:
                     case 2:
                         connectionData.setIsSent(true);
                         if (connectionData.getChatSession().getToUsernames().size() == 1) {
-                            Server.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
-                            Server.broadcast(connectionData, connectionData.getUserSignature());
+                            Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
+                            Util.broadcast(connectionData, connectionData.getUserSignature());
                         } else {
-//                            boolean result = false;
-//                            for (String username : connectionData.getChatSession().getToUsernames()) {
-//                                if (Server.getClients().keySet().contains(username)) {
-//                                    result = true;
-//                                }
-//                            }
-//                            if (!result) {
-//                                Server.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
-//                            }
-//                            Server.privateSend(connectionData, connectionData.getToUsername());
-                            Server.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
+                            if (!Util.isAnyOnline(connectionData.getChatSession().getToUsernames())) {
+                                Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
+                            }
+                            Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                         }
                         break;
                     default:

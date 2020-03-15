@@ -2,6 +2,8 @@ package socotra.util;
 
 import javafx.scene.control.Alert;
 
+import java.util.TreeSet;
+
 public abstract class Util {
 
     /**
@@ -29,6 +31,11 @@ public abstract class Util {
         alert.setHeaderText(header);
         alert.setContentText(content);
         return alert;
+    }
+
+    public static String generateChatName(TreeSet<String> toUsernames) {
+        String result = toUsernames.toString();
+        return result.substring(1, result.length() - 1);
     }
 
 }

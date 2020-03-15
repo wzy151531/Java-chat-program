@@ -19,24 +19,32 @@
             </font>
         </Label>
         <Label layoutX="50.0" layoutY="60.0"/>
-        <TextField fx:id="messageField" layoutX="283.0" layoutY="406.0" prefHeight="27.0" prefWidth="291.0"/>
+        <TextField fx:id="messageField" layoutX="257.0" layoutY="406.0" prefHeight="27.0" prefWidth="317.0"/>
         <Button fx:id="sendTextButton" defaultButton="true" layoutX="643.0" layoutY="406.0" mnemonicParsing="false"
                 onAction="#sendText" prefHeight="27.0" prefWidth="62.0" text="send"/>
-        <Button fx:id="captureButton" layoutX="283.0" layoutY="455.0" mnemonicParsing="false" onAction="#capture"
+        <Button fx:id="captureButton" layoutX="257.0" layoutY="448.0" mnemonicParsing="false" onAction="#capture"
                 prefHeight="27.0" prefWidth="74.0" text="capture"/>
-        <Button fx:id="stopButton" layoutX="372.0" layoutY="455.0" mnemonicParsing="false" onAction="#stop"
+        <Button fx:id="stopButton" layoutX="351.0" layoutY="448.0" mnemonicParsing="false" onAction="#stop"
                 prefHeight="27.0" prefWidth="49.0" text="stop"/>
-        <Button fx:id="sendAudioButton" layoutX="436.0" layoutY="455.0" mnemonicParsing="false" onAction="#sendAudio"
+        <Button fx:id="sendAudioButton" layoutX="426.0" layoutY="448.0" mnemonicParsing="false" onAction="#sendAudio"
                 prefHeight="27.0" prefWidth="97.0" text="send audio"/>
-        <ListView fx:id="chatList" layoutX="282.0" layoutY="62.0" prefHeight="330.0" prefWidth="421.0"/>
+        <ListView fx:id="chatList" layoutX="257.0" layoutY="62.0" prefHeight="330.0" prefWidth="446.0"/>
         <Button fx:id="emojiButton" layoutX="574.0" layoutY="406.0" mnemonicParsing="false" onAction="#showEmojiList"
-                prefHeight="27.0" prefWidth="62.0" text="Emoji"/>
+                prefHeight="27.0" prefWidth="62.0" text="emoji"/>
         <ListView fx:id="emojiList" layoutX="252.0" layoutY="206.0" prefHeight="200.0" prefWidth="481.0"/>
         <Button fx:id="logoutButton" layoutX="861.0" layoutY="24.0" mnemonicParsing="false" onAction="#logout"
                 prefHeight="27.0" prefWidth="74.0" text="Log out"/>
         <ListView fx:id="chatSessionList" layoutX="733.0" layoutY="62.0" prefHeight="345.0" prefWidth="202.0"/>
         <Label fx:id="usernameLabel" layoutX="820.0" layoutY="24.0" prefHeight="27.0" prefWidth="49.0" text="User"/>
         <ListView fx:id="clientsList" layoutX="30.0" layoutY="62.0" prefHeight="345.0" prefWidth="200.0"/>
+        <Label fx:id="chatTitleLabel" layoutX="257.0" layoutY="43.0" prefHeight="17.0" prefWidth="446.0"/>
+        <Button fx:id="addGroupChatButton" layoutX="34.0" layoutY="420.0" mnemonicParsing="false"
+                onAction="#addGroupChat" prefHeight="27.0" prefWidth="36.0" text="+"/>
+        <Button fx:id="cancelAddingButton" layoutX="175.0" layoutY="420.0" mnemonicParsing="false"
+                onAction="#cancelAdding" text="cancel"/>
+        <Button fx:id="confirmAddingButton" layoutX="106.0" layoutY="420.0" mnemonicParsing="false"
+                onAction="#confirmAdding" prefHeight="27.0" prefWidth="62.0"
+                text="confirm"/>
     </children>
     <stylesheets>
         <URL value="@/css/home.css"/>

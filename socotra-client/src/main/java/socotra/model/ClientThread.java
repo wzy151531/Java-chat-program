@@ -148,13 +148,12 @@ public class ClientThread extends Thread {
                         setOnlineUsers.start();
                         break;
                     case -4:
-//                        Client.getHomeModel().updateChatData(connectionData.getUuid(), connectionData.getChatSession());
+                        Client.getHomeModel().updateChatData(connectionData.getUuid(), connectionData.getChatSession());
                         break;
                     case 1:
                     case 2:
                         Client.getHomeModel().appendChatData(connectionData);
-                        ChatSession chatSession = connectionData.getChatSession();
-//                        new SendThread(new ConnectionData(connectionData.getUuid(), this.username, chatSession)).start();
+                        new SendThread(new ConnectionData(connectionData.getUuid(), this.username, connectionData.getChatSession())).start();
                         break;
                     default:
                         System.out.println("Unknown data.");
