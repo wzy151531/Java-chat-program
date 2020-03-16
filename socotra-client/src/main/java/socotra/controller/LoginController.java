@@ -13,17 +13,30 @@ import socotra.Client;
 import socotra.model.LoginModel;
 import socotra.util.Util;
 
+/**
+ * This file is about controller of login page.
+ */
+
 public class LoginController {
 
+    /**
+     * The server address input.
+     */
     @FXML
     private TextField serverField;
-
+    /**
+     * The username input.
+     */
     @FXML
     private TextField usernameField;
-
+    /**
+     * The password input.
+     */
     @FXML
     private PasswordField passwordField;
-
+    /**
+     * The login button.
+     */
     @FXML
     private Button loginButton;
 
@@ -60,6 +73,9 @@ public class LoginController {
         }
     }
 
+    /**
+     * Load home page once log in.
+     */
     private void loadHomePage() {
         // Load .fxml file
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/home.fxml"));

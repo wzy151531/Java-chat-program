@@ -4,14 +4,27 @@ import java.io.Serializable;
 import java.util.TreeSet;
 import java.util.UUID;
 
+/**
+ * This file defines the format of connection data used for communication between server and clients.
+ */
+
 public class ConnectionData implements Serializable {
 
+    /**
+     * Serial version uid.
+     */
     private static final long serialVersionUID = 1L;
+    /**
+     * The unique id.
+     */
     private UUID uuid;
     /**
      * The type of the connection data.
      */
     private int type;
+    /**
+     * Indicates whether the connection data is sent.
+     */
     private boolean isSent = false;
     /**
      * The username of the login connection data.
@@ -46,9 +59,8 @@ public class ConnectionData implements Serializable {
      */
     private String userSignature;
     /**
-     * The user that data send to.
+     * The chat session that data send to.
      */
-//    private String toUsername;
     private ChatSession chatSession;
 
     /**
@@ -82,6 +94,13 @@ public class ConnectionData implements Serializable {
         this.onlineUsers = onlineUsers;
     }
 
+    /**
+     * If connection data is about received hint, the connection data's type is -4.
+     *
+     * @param uuid          The received hint of connection data's uuid.
+     * @param userSignature The connection data sender's username.
+     * @param chatSession
+     */
     public ConnectionData(UUID uuid, String userSignature, ChatSession chatSession) {
         this.uuid = uuid;
         this.type = -4;
@@ -107,6 +126,7 @@ public class ConnectionData implements Serializable {
      *
      * @param textData      The text message in connection data.
      * @param userSignature The connection data sender's username.
+     * @param chatSession   The chat session the data send to.
      */
     public ConnectionData(String textData, String userSignature, ChatSession chatSession) {
         this.uuid = UUID.randomUUID();
@@ -121,6 +141,7 @@ public class ConnectionData implements Serializable {
      *
      * @param audioData     The audio message in connection data.
      * @param userSignature The connection data sender's username.
+     * @param chatSession   The chat session the data send to.
      */
     public ConnectionData(byte[] audioData, String userSignature, ChatSession chatSession) {
         this.uuid = UUID.randomUUID();
@@ -130,6 +151,11 @@ public class ConnectionData implements Serializable {
         this.chatSession = chatSession;
     }
 
+    /**
+     * Getter for uuid.
+     *
+     * @return The uuid of connection data.
+     */
     public UUID getUuid() {
         if (type != 1 && type != 2 && type != -4) {
             throw new IllegalStateException("Type isn't 1 or 2 or 4, cannot get uuid");
@@ -146,6 +172,11 @@ public class ConnectionData implements Serializable {
         return type;
     }
 
+    /**
+     * Getter for isSent.
+     *
+     * @return Indicates whether the connection data is sent.
+     */
     public boolean getIsSent() {
         if (type != 1 && type != 2) {
             throw new IllegalStateException("Type isn't 1 or 2, cannot get isSent");
@@ -153,6 +184,11 @@ public class ConnectionData implements Serializable {
         return isSent;
     }
 
+    /**
+     * Setter for isSent.
+     *
+     * @param isSent Indicates whether the connection data is sent.
+     */
     public void setIsSent(boolean isSent) {
         if (type != 1 && type != 2) {
             throw new IllegalStateException("Type isn't 1 or 2, cannot set isSent");
@@ -184,6 +220,11 @@ public class ConnectionData implements Serializable {
         return password;
     }
 
+    /**
+     * Getter for isOnline.
+     *
+     * @return The online status of user.
+     */
     public boolean getIsOnline() {
         if (type != -2) {
             throw new IllegalStateException("Type isn't -2, cannot get isOnline.");
@@ -191,6 +232,11 @@ public class ConnectionData implements Serializable {
         return isOnline;
     }
 
+    /**
+     * Getter for onlineUsers.
+     *
+     * @return The online users.
+     */
     public TreeSet<String> getOnlineUsers() {
         if (type != -3) {
             throw new IllegalStateException("Type isn't -3, connot get onlineUsers.");
@@ -243,6 +289,11 @@ public class ConnectionData implements Serializable {
         return userSignature;
     }
 
+    /**
+     * Getter for chatSession.
+     *
+     * @return The chat session that connection data sent to.
+     */
     public ChatSession getChatSession() {
         if (type != 1 && type != 2 && type != -4) {
             throw new IllegalStateException("Type isn't 1 or 2, cannot get chatSession");

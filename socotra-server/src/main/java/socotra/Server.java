@@ -1,7 +1,5 @@
 package socotra;
 
-import socotra.common.ChatSession;
-import socotra.common.ConnectionData;
 import socotra.jdbc.JdbcUtil;
 import socotra.service.ServerThread;
 
@@ -11,15 +9,28 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.security.KeyStore;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.TreeSet;
+
+/**
+ * This file is entry of server, used to accept clients.
+ */
 
 public class Server {
 
+    /**
+     * All connected clients's username and their ObjectOutputStream.
+     */
     private static HashMap<String, ObjectOutputStream> clients = new HashMap<>();
+    /**
+     * SSL server socket.
+     */
     private static SSLServerSocket serverSocket;
 
+    /**
+     * Initialize TLS before creating the SSL server socket.
+     *
+     * @throws Exception The Exception when initializing.
+     */
     private static void initTLS() throws Exception {
         String SERVER_KEY_STORE = "src/main/resources/socotra_server_ks";
         String SERVER_KEY_STORE_PASSWORD = "socotra";
@@ -42,6 +53,11 @@ public class Server {
         serverSocket.setNeedClientAuth(false);
     }
 
+    /**
+     * Start server.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         // Open a server socket:
         try {
@@ -56,8 +72,7 @@ public class Server {
             e.printStackTrace();
         }
 
-        // Listen to the socket, accepting connections from new clients,
-        // and running a new thread to serve each new client:
+        // Listen to the socket, accepting connections from new clients, and running a new thread to serve each new client:
         try {
             while (true) {
                 SSLSocket clientSocket = (SSLSocket) serverSocket.accept();
@@ -83,23 +98,43 @@ public class Server {
         }
     }
 
+    /**
+     * Add new client to all clients hash map.
+     *
+     * @param username The username of client.
+     * @param toClient The ObjectOutputStream of client.
+     */
     public synchronized static void addClient(String username, ObjectOutputStream toClient) {
         Server.clients.put(username, toClient);
     }
 
+    /**
+     * Getter for all connected clients.
+     *
+     * @return All connected clients.
+     */
     public synchronized static HashMap<String, ObjectOutputStream> getClients() {
         return Server.clients;
     }
 
+    /**
+     * Remove client from all connected clients use username and ObjectOutputStream.
+     *
+     * @param username The username of removed client.
+     * @param toClient The ObjectOutputStream of removed client.
+     */
     public synchronized static void removeClient(String username, ObjectOutputStream toClient) {
         Server.clients.remove(username, toClient);
     }
 
+    /**
+     * Remove client from all connected clients use username.
+     *
+     * @param username The username of removed client.
+     */
     public synchronized static void removeClient(String username) {
         Server.clients.remove(username);
     }
-
-
 
 
 }

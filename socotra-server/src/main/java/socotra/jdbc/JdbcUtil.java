@@ -9,17 +9,48 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Properties;
 
+/**
+ * This file is about jdbc.
+ */
+
 public class JdbcUtil {
 
+    /**
+     * SshIP used to connect to school's ssh service.
+     */
     private static String sshIP = "tinky-winky.cs.bham.ac.uk";
+    /**
+     * SshUser used to connect to school's ssh service.
+     */
     private static String sshUser;
+    /**
+     * SshPassword used to connect to school's ssh service.
+     */
     private static String sshPassword;
+    /**
+     * Forward port to forward database information.
+     */
     private static int forwardPort;
+    /**
+     * DbUser used to connect to database.
+     */
     private static String dbUser;
+    /**
+     * DbPassword used to connect to database.
+     */
     private static String dbPassword;
+    /**
+     * Ssh session.
+     */
     private static Session session;
+    /**
+     * Database connection.
+     */
     private static Connection connection;
 
+    /**
+     * Load ssh connection information from jdbc.properties file.
+     */
     static {
         try {
             Properties properties = new Properties();

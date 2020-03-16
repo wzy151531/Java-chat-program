@@ -11,13 +11,35 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.TreeSet;
 
+/**
+ * This file is used to communicate with clients.
+ */
+
 public class ServerThread extends Thread {
+
+    /**
+     * Client socket accepted in.
+     */
     private Socket client;
+    /**
+     * ObjectOutputStream to client socket.
+     */
     private ObjectOutputStream toClient;
+    /**
+     * The client's username.
+     */
     private String username;
+    /**
+     * ObjectInputStream from client socket.
+     */
     private ObjectInputStream fromClient;
 
-
+    /**
+     * Constructor of ServerThread.
+     *
+     * @param client The client socket that server thread communicates with.
+     * @throws Exception The IOException.
+     */
     public ServerThread(Socket client) throws Exception {
         super("ServerThread");
         this.client = client;
@@ -36,14 +58,16 @@ public class ServerThread extends Thread {
         client.close();
     }
 
-
+    /**
+     * Start handle the communication with client.
+     */
     public void run() {
         try {
-
             while (true) {
                 ConnectionData connectionData = (ConnectionData) fromClient.readObject();
                 System.out.println("Received data.");
                 switch (connectionData.getType()) {
+                    // If connection data is about login.
                     case 0:
                         username = connectionData.getUsername();
                         String password = connectionData.getPassword();
@@ -66,15 +90,18 @@ public class ServerThread extends Thread {
                             e.printStackTrace();
                         }
                         break;
+                    // If connection data is about logout.
                     case -2:
                         Util.broadcast(new ConnectionData(username, false), username);
                         Server.removeClient(username);
                         System.out.println("User log out. Current online users: " + Server.getClients().keySet());
                         endClient();
                         return;
+                    // If connection data is about received hint.
                     case -4:
                         Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                         break;
+                    // If connection data is about normal chat message.
                     case 1:
                     case 2:
                         connectionData.setIsSent(true);

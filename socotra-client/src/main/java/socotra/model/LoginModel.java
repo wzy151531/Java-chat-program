@@ -19,6 +19,14 @@ public class LoginModel {
         this.errorType = errorType;
     }
 
+    /**
+     * Send login connectionData to inform server.
+     *
+     * @param serverName The server name needs to connect.
+     * @param username   The username used to login.
+     * @param password   The password used to login.
+     * @return The errorType after login.
+     */
     public int handleLogin(String serverName, String username, String password) {
         Client.setClientThread(new ClientThread(Util.isEmpty(serverName) ? "localhost" : serverName, this, username, password));
         Client.getClientThread().start();

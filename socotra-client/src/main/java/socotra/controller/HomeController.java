@@ -22,44 +22,99 @@ import socotra.util.Util;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
+/**
+ * This class is about controller of home page.
+ */
+
 public class HomeController {
 
     /**
      * All audio button in local history message.
      */
     private ArrayList<Button> allAudioButtons = new ArrayList<>();
+    /**
+     * Capture audio button.
+     */
     @FXML
     private Button captureButton;
+    /**
+     * Stop capturing audio button.
+     */
     @FXML
     private Button stopButton;
+    /**
+     * Send audio button.
+     */
     @FXML
     private Button sendAudioButton;
+    /**
+     * Send text button.
+     */
     @FXML
     private Button sendTextButton;
+    /**
+     * Log out button.
+     */
     @FXML
     private Button logoutButton;
+    /**
+     * Search chat message button.
+     */
     @FXML
     private Button searchButton;
+    /**
+     * Search chat message input.
+     */
     @FXML
     private TextField searchBox;
+    /**
+     * Text message input.
+     */
     @FXML
     private TextField messageField;
+    /**
+     * Chat data list view.
+     */
     @FXML
     private ListView<ConnectionData> chatList;
+    /**
+     * Emoji button.
+     */
     @FXML
     private Button emojiButton;
+    /**
+     * Username label.
+     */
     @FXML
     private Label usernameLabel;
+    /**
+     * Chat session list.
+     */
     @FXML
     private ListView<ChatSession> chatSessionList;
+    /**
+     * Online clients list.
+     */
     @FXML
     private ListView<String> clientsList;
+    /**
+     * Chat session name label.
+     */
     @FXML
     private Label chatTitleLabel;
+    /**
+     * Add group chat button.
+     */
     @FXML
     private Button addGroupChatButton;
+    /**
+     * Cancel adding group button.
+     */
     @FXML
     private Button cancelAddingButton;
+    /**
+     * Confirm adding group button.
+     */
     @FXML
     private Button confirmAddingButton;
     /**
@@ -68,47 +123,79 @@ public class HomeController {
     @FXML
     private ListView<ArrayList<String>> emojiList;
 
+    /**
+     * Indicates if is creating group.
+     */
     private boolean isCreatingGroup;
+    /**
+     * The new group chat session needs to be added.
+     */
     private TreeSet<String> newGroup = new TreeSet<>();
 
+    /**
+     * Set stop capturing button disabled value.
+     *
+     * @param disabled The disabled value needs to be set.
+     */
     public void setStopButtonDisabled(boolean disabled) {
         this.stopButton.setDisable(disabled);
     }
 
+    /**
+     * Set capture button disabled value.
+     *
+     * @param disabled The disabled value needs to be set.
+     */
     public void setCaptureButtonDisabled(boolean disabled) {
         this.captureButton.setDisable(disabled);
     }
 
+    /**
+     * Set send audio button disabled value.
+     *
+     * @param disabled The disabled value needs to be set.
+     */
     public void setSendAudioButtonDisabled(boolean disabled) {
         this.sendAudioButton.setDisable(disabled);
     }
 
-    // public void setSearchButtonDisabled(boolean disabled) {
-    //     this.searchButton.setDisable(disabled);
-    // }
-
+    /**
+     * Set all audio button disabled value.
+     *
+     * @param disabled The disabled value needs to be set.
+     */
     public void setAllAudioButtonsDisabled(boolean disabled) {
         this.allAudioButtons.forEach(n -> {
             n.setDisable(disabled);
         });
     }
 
+    /**
+     * Refresh chat list.
+     */
     public void refreshChatList() {
         Platform.runLater(() -> {
-//            System.out.println("refresh chatList.");
             chatList.refresh();
         });
     }
 
+    /**
+     * Refresh chat session list.
+     */
     public void refreshChatSessionList() {
         Platform.runLater(() -> {
             chatSessionList.refresh();
         });
     }
 
-    public void setChatListItems(ObservableList<ConnectionData> items) {
+    /**
+     * Set chat list item to show.
+     *
+     * @param item The item needs to show.
+     */
+    public void setChatListItems(ObservableList<ConnectionData> item) {
         Platform.runLater(() -> {
-            chatList.setItems(items);
+            chatList.setItems(item);
             scrollChatList();
         });
     }
@@ -140,7 +227,6 @@ public class HomeController {
         configChatSessionList();
         configClientsList();
         Platform.runLater(() -> { // runLater keep thread synchronize
-//            chatList.setItems(Client.getHomeModel().getCertainChatData("all"));
             chatSessionList.setItems(Client.getHomeModel().getChatSessionList());
             clientsList.setItems(Client.getHomeModel().getClientsList());
         });
@@ -283,6 +369,9 @@ public class HomeController {
         });
     }
 
+    /**
+     * Config clientsList render logic.
+     */
     private void configClientsList() {
         clientsList.setCellFactory(l -> new ListCell<>() {
             @Override
@@ -319,7 +408,6 @@ public class HomeController {
                     if (isCreatingGroup && !item.equals("all")) {
                         CheckBox checkBox = new CheckBox();
                         checkBox.setOnAction(evt -> {
-//                            System.out.println("item: " + checkBox.isSelected());
                             if (checkBox.isSelected()) {
                                 newGroup.add(item);
                             } else {
@@ -440,11 +528,21 @@ public class HomeController {
         Client.getHomeModel().handleSendAudio();
     }
 
+    /**
+     * User logout.
+     *
+     * @param event The event of logout.
+     */
     @FXML
     public void logout(ActionEvent event) {
         Client.getHomeModel().handleLogout();
     }
 
+    /**
+     * Start adding group chat.
+     *
+     * @param event The event of adding group chat.
+     */
     @FXML
     public void addGroupChat(ActionEvent event) {
         isCreatingGroup = true;
@@ -457,6 +555,11 @@ public class HomeController {
         clientsList.refresh();
     }
 
+    /**
+     * Cancel adding group chat.
+     *
+     * @param event The event of canceling adding group chat.
+     */
     @FXML
     public void cancelAdding(ActionEvent event) {
         isCreatingGroup = false;
@@ -469,6 +572,11 @@ public class HomeController {
         clientsList.refresh();
     }
 
+    /**
+     * Confirm adding group chat.
+     *
+     * @param event The event of confirming adding group chat.
+     */
     @FXML
     public void confirmAdding(ActionEvent event) {
         System.out.println(this.newGroup);

@@ -1,7 +1,6 @@
 package socotra.model;
 
 import socotra.Client;
-import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.util.SendThread;
 import socotra.util.SetOnlineUsers;
@@ -13,7 +12,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.KeyStore;
-import java.util.ArrayList;
+
+/**
+ * This thread is used to communicate with server.
+ */
 
 public class ClientThread extends Thread {
 
@@ -41,7 +43,9 @@ public class ClientThread extends Thread {
      * The input stream of connection.
      */
     private ObjectInputStream fromServer;
-
+    /**
+     * The socket connected to server.
+     */
     private SSLSocket server;
 
     /**
@@ -79,12 +83,22 @@ public class ClientThread extends Thread {
         return toServer;
     }
 
+    /**
+     * End connection when user log out.
+     *
+     * @throws IOException
+     */
     public void endConnection() throws IOException {
         toServer.close();
         fromServer.close();
         server.close();
     }
 
+    /**
+     * Initialize TLS certification and created a SSL connection.
+     *
+     * @throws Exception Exception when initializing TLS.
+     */
     private void initTLS() throws Exception {
         String CLIENT_KEY_STORE = "src/main/resources/socotra_client_ks";
         String CLIENT_KEY_STORE_PASSWORD = "socotra";
@@ -122,8 +136,8 @@ public class ClientThread extends Thread {
             while (true) {
                 ConnectionData connectionData = (ConnectionData) fromServer.readObject();
                 System.out.println("Received connectionData.");
-                // If receive the result about user's validation.
                 switch (connectionData.getType()) {
+                    // If connectionData is about the result of user's validation.
                     case -1:
                         if (!connectionData.getValidated()) {
                             loginModel.setErrorType(2);
@@ -133,6 +147,7 @@ public class ClientThread extends Thread {
                             loginModel.notify();
                         }
                         break;
+                    // If connectionData is about users online information.
                     case -2:
                         System.out.println(connectionData.getUserSignature() + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
                         if (connectionData.getIsOnline()) {
@@ -141,15 +156,18 @@ public class ClientThread extends Thread {
                             Client.getHomeModel().removeClientsList(connectionData.getUserSignature());
                         }
                         break;
+                    // If connectionData is about set online users.
                     case -3:
                         System.out.println(connectionData.getOnlineUsers());
                         SetOnlineUsers setOnlineUsers = new SetOnlineUsers(connectionData.getOnlineUsers());
                         Client.setSetOnlineUsers(setOnlineUsers);
                         setOnlineUsers.start();
                         break;
+                    // If connectionData is about received hint.
                     case -4:
                         Client.getHomeModel().updateChatData(connectionData.getUuid(), connectionData.getChatSession());
                         break;
+                    // If connectionData is about normal chat messages.
                     case 1:
                     case 2:
                         Client.getHomeModel().appendChatData(connectionData);

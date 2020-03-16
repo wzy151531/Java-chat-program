@@ -17,17 +17,27 @@ import javax.sound.sampled.*;
 import java.io.*;
 import java.util.*;
 
+/**
+ * This file is about the data model in home page.
+ */
+
 public class HomeModel {
 
     /**
      * Local history message.
      */
     private HashMap<ChatSession, ObservableList<ConnectionData>> chatData = new HashMap<>();
+    /**
+     * Current chosen chat session.
+     */
     private ChatSession currentChatSession;
+    /**
+     * Created chat sessions.
+     */
+    private ObservableList<ChatSession> chatSessionList = FXCollections.observableArrayList(new ArrayList<>());
     /**
      * Current online clients list.
      */
-    private ObservableList<ChatSession> chatSessionList = FXCollections.observableArrayList(new ArrayList<>());
     private ObservableList<String> clientsList = FXCollections.observableArrayList(new ArrayList<>());
     /**
      * An AudioFormat object for a given set of format parameters.
@@ -58,10 +68,18 @@ public class HomeModel {
      */
     private SourceDataLine sourceDataLine;
 
+    /**
+     * Constructor for HomeModel.
+     */
     public HomeModel() {
         audioFormat = getAudioFormat();
     }
 
+    /**
+     * Getter for currentChatSession.
+     *
+     * @return Current chosen chat session.
+     */
     public ChatSession getCurrentChatSession() {
         return this.currentChatSession;
     }
@@ -75,6 +93,12 @@ public class HomeModel {
         this.forceStop = forceStop;
     }
 
+    /**
+     * Get certain chat data according to the given chat session.
+     *
+     * @param chatSession The given chat session.
+     * @return The certain data of chat session.
+     */
     public ObservableList<ConnectionData> getCertainChatData(ChatSession chatSession) {
         ObservableList<ConnectionData> certainChatData = this.chatData.get(chatSession);
         if (certainChatData == null) {
@@ -84,10 +108,20 @@ public class HomeModel {
         return certainChatData;
     }
 
+    /**
+     * Getter for chat session list.
+     *
+     * @return Created chat session list.
+     */
     public ObservableList<ChatSession> getChatSessionList() {
         return this.chatSessionList;
     }
 
+    /**
+     * Getter for online clients list.
+     *
+     * @return Current online clients.
+     */
     public ObservableList<String> getClientsList() {
         return this.clientsList;
     }
@@ -123,10 +157,15 @@ public class HomeModel {
                     }
                 });
             }
-//            Client.getHomeController().updateChatSessionListButtons(connectionData);
         });
     }
 
+    /**
+     * Judge if chat session has existed in chat session list.
+     *
+     * @param clients The chat session needs to be created.
+     * @return The boolean indicates whether the new chat session has existed in chat session list.
+     */
     public boolean chatSessionExist(TreeSet<String> clients) {
         for (ChatSession chatSession : chatSessionList) {
             if (chatSession.getToUsernames().equals(clients)) {
@@ -136,11 +175,16 @@ public class HomeModel {
         return false;
     }
 
+    /**
+     * Update chat data's read status.
+     *
+     * @param uuid        The connectionData's uuid.
+     * @param chatSession The chat session that connectionData belongs to.
+     */
     public void updateChatData(UUID uuid, ChatSession chatSession) {
         Platform.runLater(() -> {
             this.chatData.get(chatSession).forEach(n -> {
                 if (uuid.equals(n.getUuid()) && !n.getIsSent()) {
-//                    System.out.println("Set " + n.getTextData() + " sent.");
                     n.setIsSent(true);
                     Client.getHomeController().refreshChatList();
                 }
@@ -148,6 +192,11 @@ public class HomeModel {
         });
     }
 
+    /**
+     * Append new chat session to chat session list.
+     *
+     * @param chatSession New chat session.
+     */
     public void appendChatSessionList(ChatSession chatSession) {
         Platform.runLater(() -> {
             chatSession.setHint(true);
@@ -155,24 +204,44 @@ public class HomeModel {
         });
     }
 
-    public void removeChatSessionList(String clientName) {
+    /**
+     * Remove chat session from chat session list.
+     *
+     * @param chatSession The chat session needs to be removed.
+     */
+    public void removeChatSessionList(ChatSession chatSession) {
         Platform.runLater(() -> {
-            this.chatSessionList.remove(clientName);
+            this.chatSessionList.remove(chatSession);
         });
     }
 
+    /**
+     * Append new client to clients list.
+     *
+     * @param clientName New client.
+     */
     public void appendClientsList(String clientName) {
         Platform.runLater(() -> {
             this.clientsList.add(clientName);
         });
     }
 
+    /**
+     * Remove clinet from clients list.
+     *
+     * @param clientName The client needs to be removed.
+     */
     public void removeClientsList(String clientName) {
         Platform.runLater(() -> {
             this.clientsList.remove(clientName);
         });
     }
 
+    /**
+     * Checkout chat session panel.
+     *
+     * @param chatSession The new chat session checkout to.
+     */
     public void checkoutChatPanel(ChatSession chatSession) {
         this.currentChatSession = chatSession;
         Client.getHomeController().setChatListItems(getCertainChatData(chatSession));
@@ -314,6 +383,9 @@ public class HomeModel {
         }
     }
 
+    /**
+     * Send log out connectionData to server.
+     */
     public void handleLogout() {
         ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUsername(), false);
         new SendThread(connectionData, true).start();
@@ -336,7 +408,6 @@ public class HomeModel {
             if (cd.getType() == 1 && cd.getTextData().contains(input)) {
                 searchList.add(cd);
             }
-
         }
         return searchList;
     }

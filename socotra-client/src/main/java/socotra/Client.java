@@ -12,6 +12,10 @@ import socotra.model.HomeModel;
 import socotra.model.LoginModel;
 import socotra.util.SetOnlineUsers;
 
+/**
+ * This is the entry of the application.
+ */
+
 public class Client extends Application {
 
     /**
