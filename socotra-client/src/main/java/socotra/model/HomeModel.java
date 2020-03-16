@@ -413,6 +413,23 @@ public class HomeModel {
     }
 
     /**
+     * The go back chat function
+     *
+     * @return a list of all chatdata.
+     */
+    public ArrayList<ConnectionData> oldChat() {
+        List<ConnectionData> chatList = chatData.get(currentChatSession);
+        ArrayList<ConnectionData> oldChatList = new ArrayList<ConnectionData>();
+
+        for (ConnectionData cd : chatList) {
+            if (cd.getType() ==1) {
+                oldChatList.add(cd);
+            }
+        }
+        return oldChatList;
+    }
+
+    /**
      * The capture thread to run the capture audio job.
      */
     class CaptureThread extends Thread {

@@ -20,6 +20,7 @@ import socotra.model.HomeModel;
 import socotra.util.Util;
 
 import java.util.ArrayList;
+import java.util.Observable;
 import java.util.TreeSet;
 
 /**
@@ -592,6 +593,18 @@ public class HomeController {
         ChatSession chatSession = new ChatSession(newGroup, true);
         Client.getHomeModel().appendChatSessionList(chatSession);
         this.cancelAdding(event);
+    }
+
+    /**
+     * Displays previous chats after a search
+     *
+     * @param event The event of the back button.
+     */
+    @FXML
+    public void back(ActionEvent event) {
+        ArrayList<ConnectionData> chatData = Client.getHomeModel().oldChat();
+        ObservableList<ConnectionData> oldChat = FXCollections.observableArrayList(chatData);
+        setChatListItems(oldChat);
     }
 
 }
