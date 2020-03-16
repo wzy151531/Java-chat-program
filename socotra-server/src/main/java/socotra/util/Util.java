@@ -1,10 +1,13 @@
 package socotra.util;
 
 import socotra.Server;
+import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.TreeSet;
 
 public abstract class Util {
@@ -77,6 +80,29 @@ public abstract class Util {
             }
         }
         return false;
+    }
+
+    /**
+     * Generate chat session name according to the toUsernames in chatSession.
+     *
+     * @param toUsernames toUsernames in chatSession.
+     * @return The String represent the chatSession.
+     */
+    public static String generateChatName(TreeSet<String> toUsernames) {
+        String result = toUsernames.toString().replace(" ", "");
+        return result.substring(1, result.length() - 1);
+    }
+
+    public static void printClientsChatData(HashMap<String, HashMap<ChatSession, List<ConnectionData>>> clientsChatData) {
+        clientsChatData.forEach((k, v) -> {
+            System.out.println("============" + k);
+            v.forEach((k1, v1) -> {
+                System.out.println(k1.getToUsernames());
+                v1.forEach(n -> {
+                    System.out.println("    " + n.getTextData());
+                });
+            });
+        });
     }
 
 }

@@ -139,6 +139,15 @@ public class ConnectionData implements Serializable {
         this.chatSession = chatSession;
     }
 
+    public ConnectionData(String textData, UUID uuid, String userSignature, ChatSession chatSession) {
+        this.uuid = uuid;
+        this.type = 1;
+        this.textData = textData;
+        this.userSignature = userSignature;
+        this.chatSession = chatSession;
+        this.isSent = true;
+    }
+
     /**
      * If connection data is about audio message, the connection data's type is 2.
      *

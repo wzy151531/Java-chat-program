@@ -17,7 +17,7 @@ The whole project is divided into two parts: server and client. Both projects ar
 * Show if the message is sent.
 * Search chat record at local.
 * Group chat.
-* Clients' chat data stored in server memory.
+* Clients' chat data stored in database.
 
 ## Quick Start
 

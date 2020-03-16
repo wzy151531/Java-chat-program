@@ -126,12 +126,7 @@ public class ServerThread extends Thread {
                         break;
                     case 3:
                         // TODO
-//                        connectionData.getChatData().forEach((k, v) -> {
-//                            System.out.println(k.getToUsernames());
-//                            v.forEach(n -> {
-//                                System.out.println("    " + n.getTextData());
-//                            });
-//                        });
+//
                         JdbcUtil.updateClientsChatData(connectionData.getUserSignature(), connectionData.getChatData());
                         break;
                     default:

@@ -2,6 +2,7 @@ package socotra;
 
 import socotra.jdbc.JdbcUtil;
 import socotra.service.ServerThread;
+import socotra.util.Util;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.*;
@@ -65,7 +66,9 @@ public class Server {
             System.out.println("Server bound.");
             JdbcUtil.init();
             JdbcUtil.connect();
-//            JdbcUtil.getStoredChatData();
+            JdbcUtil.setClientsChatData(JdbcUtil.queryClientsChatData());
+            System.out.println("Clients chat data loaded.");
+//            Util.printClientsChatData(JdbcUtil.getClientsChatData());
         } catch (IOException e) {
             System.err.println("Couldn't listen on port: 50443.");
             e.printStackTrace();
@@ -80,7 +83,6 @@ public class Server {
                 SSLSocket clientSocket = (SSLSocket) serverSocket.accept();
                 System.out.println("Got a connection.");
                 ServerThread s = new ServerThread(clientSocket);
-
                 s.start();
             }
         } catch (Exception e) {

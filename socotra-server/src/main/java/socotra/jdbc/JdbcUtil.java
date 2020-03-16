@@ -3,15 +3,14 @@ package socotra.jdbc;
 import com.jcraft.jsch.*;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.util.Util;
 
 import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * This file is about jdbc.
@@ -51,7 +50,6 @@ public class JdbcUtil {
      * Database connection.
      */
     private static Connection connection;
-
     private static HashMap<String, HashMap<ChatSession, List<ConnectionData>>> clientsChatData;
 
     /**
@@ -71,6 +69,14 @@ public class JdbcUtil {
             e.printStackTrace();
         }
 
+    }
+
+    public static HashMap<String, HashMap<ChatSession, List<ConnectionData>>> getClientsChatData() {
+        return clientsChatData;
+    }
+
+    public static void setClientsChatData(HashMap<String, HashMap<ChatSession, List<ConnectionData>>> clientsChatData) {
+        JdbcUtil.clientsChatData = clientsChatData;
     }
 
     /**
@@ -129,9 +135,9 @@ public class JdbcUtil {
         return statement.executeQuery(sql);
     }
 
-    private static void insert(String sql) throws Exception {
+    private synchronized static void insert(String sql) throws Exception {
         Statement statement = connection.createStatement();
-        statement.executeQuery(sql);
+        statement.executeUpdate(sql);
     }
 
     /**
@@ -147,12 +153,143 @@ public class JdbcUtil {
         return resultSet.next();
     }
 
-    public static void updateClientsChatData(String username, HashMap<ChatSession, List<ConnectionData>> chatData) {
+    public synchronized static void updateClientsChatData(String username, HashMap<ChatSession, List<ConnectionData>> chatData) {
         clientsChatData.put(username, chatData);
+        storeClientsChatData(clientsChatData);
     }
 
     public static HashMap<ChatSession, List<ConnectionData>> getCertainChatData(String username) {
         return clientsChatData.get(username);
+    }
+
+    public static HashMap<String, HashMap<ChatSession, List<ConnectionData>>> queryClientsChatData() throws Exception {
+        HashMap<String, HashMap<ChatSession, List<ConnectionData>>> result = new HashMap<>();
+        HashMap<Integer, String> userIdNameMap = queryUserIdNameMap();
+        userIdNameMap.forEach((k, v) -> {
+            try {
+                HashMap<ChatSession, List<ConnectionData>> chatData = generateChatData(k, v);
+                result.put(v, chatData);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        return result;
+    }
+
+    private static HashMap<Integer, String> queryUserIdNameMap() throws Exception {
+        ResultSet resultSet = inquire("select id, username from test_user");
+        HashMap<Integer, String> result = new HashMap<>();
+        while (resultSet.next()) {
+            result.put(resultSet.getInt("id"), resultSet.getString("username"));
+        }
+        return result;
+    }
+
+    private static TreeSet<String> generateSessionMembers(String sessionName, String currentUser) {
+        String[] usernames = sessionName.split(",");
+        TreeSet<String> result = new TreeSet<>();
+        for (String username : usernames) {
+            result.add(username);
+        }
+        if (!sessionName.equals("all")) {
+            result.add(currentUser);
+        }
+        return result;
+    }
+
+    private static HashMap<ChatSession, List<ConnectionData>> generateChatData(int userId, String username) throws Exception {
+        HashMap<ChatSession, List<ConnectionData>> result = new HashMap<>();
+        HashSet<String> sessionNames = querySessionNames(userId);
+        sessionNames.forEach(n -> {
+            try {
+                TreeSet<String> sessionMembers = generateSessionMembers(n, username);
+                ChatSession chatSession = new ChatSession(sessionMembers, true);
+                List<ConnectionData> certainChatData = queryCertainChatData(n, username, chatSession);
+                result.put(chatSession, certainChatData);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        return result;
+    }
+
+    private static HashSet<String> querySessionNames(int userId) throws Exception {
+        HashSet<String> result = new HashSet<>();
+        ResultSet resultSet = inquire("select session_name from test_user_session where id=" + userId);
+        while (resultSet.next()) {
+            result.add(resultSet.getString("session_name"));
+        }
+        return result;
+    }
+
+    private static List<ConnectionData> queryCertainChatData(String sessionName, String currentUser, ChatSession chatSession) throws Exception {
+        List<ConnectionData> result = new ArrayList<>();
+        ResultSet resultSet = inquire("select data_id, data_text from test_chat_history where session_name='" + sessionName + "'");
+        while (resultSet.next()) {
+            result.add(new ConnectionData(resultSet.getString("data_text"), UUID.fromString(resultSet.getString("data_id")), currentUser, chatSession));
+        }
+        return result;
+    }
+
+    public static void storeClientsChatData(HashMap<String, HashMap<ChatSession, List<ConnectionData>>> clientsChatData) {
+
+        clientsChatData.forEach((k, v) -> {
+            try {
+                int userId = queryUserId(k);
+                v.forEach((k1, v1) -> {
+                    try {
+                        String sessionName = Util.generateChatName(k1.getToUsernames());
+
+                        storeSession(userId, sessionName);
+                        v1.forEach(n -> {
+                            try {
+                                storeChatHistory(n.getUuid().toString(), n.getTextData(), sessionName);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private static int queryUserId(String username) throws Exception {
+        ResultSet resultSet = inquire("select id from test_user where username='" + username + "'");
+        while (resultSet.next()) {
+            return resultSet.getInt("id");
+        }
+        throw new IllegalArgumentException("Username does not exist.");
+    }
+
+    private static void storeSession(int userId, String sessionName) throws Exception {
+        ResultSet resultSet = inquire("select count(*) as count from test_user_session where id=" + userId + " and session_name='" + sessionName + "'");
+        int rowCount = 0;
+        while (resultSet.next()) {
+            rowCount = resultSet.getInt("count");
+        }
+        if (rowCount < 1) {
+            insert("insert into test_user_session(id, session_name) values (" + userId + ", '" + sessionName + "')");
+        } else {
+            System.out.println("'" + sessionName + "' has already existed.");
+        }
+    }
+
+    private static void storeChatHistory(String dataId, String dataText, String sessionName) throws Exception {
+        ResultSet resultSet = inquire("select count(*) as count from test_chat_history where data_id='" + dataId + "'");
+        int rowCount = 0;
+        while (resultSet.next()) {
+            rowCount = resultSet.getInt("count");
+        }
+        if (rowCount < 1) {
+            insert("insert into test_chat_history(data_id, data_text, session_name) values ('" + dataId + "', '" + dataText + "', '" + sessionName + "')");
+        } else {
+            System.out.println("'" + dataText + "' has already existed.");
+        }
     }
 
 }
