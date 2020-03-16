@@ -1,12 +1,16 @@
 package socotra.jdbc;
 
 import com.jcraft.jsch.*;
+import socotra.common.ChatSession;
+import socotra.common.ConnectionData;
 
-import java.io.InputStream;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -48,6 +52,8 @@ public class JdbcUtil {
      */
     private static Connection connection;
 
+    private static HashMap<String, HashMap<ChatSession, List<ConnectionData>>> clientsChatData;
+
     /**
      * Load ssh connection information from jdbc.properties file.
      */
@@ -60,6 +66,7 @@ public class JdbcUtil {
             sshPassword = properties.getProperty("sshPassword");
             dbUser = properties.getProperty("dbUser");
             dbPassword = properties.getProperty("dbPassword");
+            clientsChatData = new HashMap<>();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -122,6 +129,11 @@ public class JdbcUtil {
         return statement.executeQuery(sql);
     }
 
+    private static void insert(String sql) throws Exception {
+        Statement statement = connection.createStatement();
+        statement.executeQuery(sql);
+    }
+
     /**
      * Validate user's identity.
      *
@@ -131,8 +143,16 @@ public class JdbcUtil {
      * @throws Exception Exception when doing sql statement.
      */
     public static boolean validateUser(String username, String password) throws Exception {
-        ResultSet resultSet = JdbcUtil.inquire("select * from test_user where username='" + username + "' and password='" + password + "'");
+        ResultSet resultSet = inquire("select * from test_user where username='" + username + "' and password='" + password + "'");
         return resultSet.next();
+    }
+
+    public static void updateClientsChatData(String username, HashMap<ChatSession, List<ConnectionData>> chatData) {
+        clientsChatData.put(username, chatData);
+    }
+
+    public static HashMap<ChatSession, List<ConnectionData>> getCertainChatData(String username) {
+        return clientsChatData.get(username);
     }
 
 }

@@ -65,8 +65,10 @@ public class Server {
             System.out.println("Server bound.");
             JdbcUtil.init();
             JdbcUtil.connect();
+//            JdbcUtil.getStoredChatData();
         } catch (IOException e) {
             System.err.println("Couldn't listen on port: 50443.");
+            e.printStackTrace();
             System.exit(-1);
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package socotra.service;
 
 import socotra.Server;
+import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.jdbc.JdbcUtil;
 import socotra.util.Util;
@@ -9,6 +10,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -81,6 +84,12 @@ public class ServerThread extends Thread {
                                 Server.addClient(username, toClient);
                                 System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
                                 toClient.writeObject(new ConnectionData(true));
+
+                                HashMap<ChatSession, List<ConnectionData>> chatData = JdbcUtil.getCertainChatData(username);
+                                if (chatData != null) {
+                                    Util.privateSend(new ConnectionData(chatData, "server"), username);
+                                }
+
                                 TreeSet<String> allClientsName = new TreeSet<>(Server.getClients().keySet());
                                 allClientsName.remove(username);
                                 // Inform the new client current online users and inform other clients that the new client is online.
@@ -115,6 +124,16 @@ public class ServerThread extends Thread {
                             Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                         }
                         break;
+                    case 3:
+                        // TODO
+//                        connectionData.getChatData().forEach((k, v) -> {
+//                            System.out.println(k.getToUsernames());
+//                            v.forEach(n -> {
+//                                System.out.println("    " + n.getTextData());
+//                            });
+//                        });
+                        JdbcUtil.updateClientsChatData(connectionData.getUserSignature(), connectionData.getChatData());
+                        break;
                     default:
                         System.out.println("Unknown data.");
                 }
@@ -123,7 +142,7 @@ public class ServerThread extends Thread {
             System.out.println("Something went wrong. Ending service to client...");
             Server.removeClient(username, toClient);
             System.out.println("User removed. Current online users: " + Server.getClients().keySet());
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
