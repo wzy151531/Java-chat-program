@@ -9,6 +9,10 @@ import java.util.TreeSet;
  */
 
 public class SetOnlineUsers extends Thread {
+
+    /**
+     * Current online users.
+     */
     private TreeSet<String> onlineUsers;
 
     /**
@@ -21,7 +25,7 @@ public class SetOnlineUsers extends Thread {
     }
 
     /**
-     * Start setting the online users. If HomeModel is not created, then this thread wait.
+     * Start setting the online users. If homeModel is not created, then this thread wait.
      */
     public void run() {
         if (Client.getHomeModel() == null) {

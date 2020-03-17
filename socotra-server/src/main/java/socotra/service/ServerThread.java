@@ -83,7 +83,8 @@ public class ServerThread extends Thread {
                             } else {
                                 Server.addClient(username, toClient);
                                 System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
-                                toClient.writeObject(new ConnectionData(true));
+//                                toClient.writeObject(new ConnectionData(true));
+                                Util.privateSend(new ConnectionData(true), username);
 
                                 HashMap<ChatSession, List<ConnectionData>> chatData = JdbcUtil.getCertainChatData(username);
                                 if (chatData != null) {
@@ -124,9 +125,8 @@ public class ServerThread extends Thread {
                             Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                         }
                         break;
+                    // If connection data is about store chat history.
                     case 3:
-                        // TODO
-//
                         JdbcUtil.updateClientsChatData(connectionData.getUserSignature(), connectionData.getChatData());
                         break;
                     default:

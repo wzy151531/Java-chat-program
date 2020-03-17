@@ -10,7 +10,14 @@ import java.io.ObjectOutputStream;
  */
 
 public class SendThread extends Thread {
+
+    /**
+     * ConnectionData the sendThread needs to send.
+     */
     private ConnectionData connectionData;
+    /**
+     * If the connectionData is about logout.
+     */
     private boolean logout = false;
 
     /**

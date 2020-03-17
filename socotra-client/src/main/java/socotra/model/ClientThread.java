@@ -174,6 +174,7 @@ public class ClientThread extends Thread {
                         Client.getHomeModel().appendChatData(connectionData);
                         new SendThread(new ConnectionData(connectionData.getUuid(), this.username, connectionData.getChatSession())).start();
                         break;
+                    // If connectionData is about chat history data.
                     case 3:
                         SetChatData setChatData = new SetChatData(connectionData.getChatData());
                         Client.setSetChatData(setChatData);

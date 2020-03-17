@@ -75,6 +75,11 @@ public class HomeModel {
         audioFormat = getAudioFormat();
     }
 
+    /**
+     * Set chat history data from server to chatData.
+     *
+     * @param chatData The chat history data from server.
+     */
     public void setChatData(HashMap<ChatSession, List<ConnectionData>> chatData) {
         Platform.runLater(() -> {
             chatData.forEach((k, v) -> {
@@ -403,8 +408,6 @@ public class HomeModel {
         });
         ConnectionData connectionData1 = new ConnectionData(newChatData, Client.getClientThread().getUsername());
         new SendThread(connectionData1, true).start();
-//        ConnectionData connectionData2 = new ConnectionData(Client.getClientThread().getUsername(), false);
-//        new SendThread(connectionData2, true).start();
     }
 
     /**
@@ -438,7 +441,7 @@ public class HomeModel {
         ArrayList<ConnectionData> oldChatList = new ArrayList<>();
 
         for (ConnectionData cd : chatList) {
-            if (cd.getType() ==1) {
+            if (cd.getType() == 1) {
                 oldChatList.add(cd);
             }
         }
@@ -512,6 +515,5 @@ public class HomeModel {
             }
         }
     }
-
 
 }

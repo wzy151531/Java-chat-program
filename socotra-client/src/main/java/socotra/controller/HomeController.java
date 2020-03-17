@@ -20,7 +20,6 @@ import socotra.model.HomeModel;
 import socotra.util.Util;
 
 import java.util.ArrayList;
-import java.util.Observable;
 import java.util.TreeSet;
 
 /**
