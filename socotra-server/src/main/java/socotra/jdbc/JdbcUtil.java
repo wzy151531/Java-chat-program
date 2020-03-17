@@ -292,9 +292,9 @@ public class JdbcUtil {
      */
     private static List<ConnectionData> queryCertainChatData(String sessionName, String currentUser, ChatSession chatSession) throws Exception {
         List<ConnectionData> result = new ArrayList<>();
-        ResultSet resultSet = inquire("select data_id, data_text from test_chat_history where session_name='" + sessionName + "'");
+        ResultSet resultSet = inquire("select data_id, data_text, user_signature from test_connection_data where session_name='" + sessionName + "'");
         while (resultSet.next()) {
-            result.add(new ConnectionData(resultSet.getString("data_text"), UUID.fromString(resultSet.getString("data_id")), currentUser, chatSession));
+            result.add(new ConnectionData(resultSet.getString("data_text"), UUID.fromString(resultSet.getString("data_id")), resultSet.getString("user_signature"), chatSession));
         }
         return result;
     }
@@ -315,7 +315,7 @@ public class JdbcUtil {
                         storeSession(userId, sessionName);
                         v1.forEach(n -> {
                             try {
-                                storeChatHistory(n.getUuid().toString(), n.getTextData(), sessionName);
+                                storeChatHistory(n.getUuid().toString(), n.getTextData(), n.getUserSignature(), sessionName);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -382,14 +382,14 @@ public class JdbcUtil {
      * @param sessionName The session name of given chat session.
      * @throws Exception The exception when query in database.
      */
-    static void storeChatHistory(String dataId, String dataText, String sessionName) throws Exception {
-        ResultSet resultSet = inquire("select count(*) as count from test_chat_history where data_id='" + dataId + "'");
+    static void storeChatHistory(String dataId, String dataText, String userSignature, String sessionName) throws Exception {
+        ResultSet resultSet = inquire("select count(*) as count from test_connection_data where data_id='" + dataId + "'");
         int rowCount = 0;
         while (resultSet.next()) {
             rowCount = resultSet.getInt("count");
         }
         if (rowCount < 1) {
-            insert("insert into test_chat_history(data_id, data_text, session_name) values ('" + dataId + "', '" + dataText + "', '" + sessionName + "')");
+            insert("insert into test_connection_data(data_id, data_text, user_signature, session_name) values ('" + dataId + "', '" + dataText + "', '" + userSignature + "', '" + sessionName + "')");
         } else {
             System.out.println("'" + dataText + "' has already existed.");
         }

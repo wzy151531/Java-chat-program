@@ -31,7 +31,7 @@ public class InsertClientChatDataThread extends Thread {
             int userId = JdbcUtil.queryUserId(connectionData.getUserSignature());
             String sessionName = Util.generateChatName(connectionData.getChatSession().getToUsernames());
             JdbcUtil.storeSession(userId, sessionName);
-            JdbcUtil.storeChatHistory(connectionData.getUuid().toString(), connectionData.getTextData(), sessionName);
+            JdbcUtil.storeChatHistory(connectionData.getUuid().toString(), connectionData.getTextData(), connectionData.getUserSignature(), sessionName);
         } catch (Exception e) {
             e.printStackTrace();
         }
