@@ -602,6 +602,9 @@ public class HomeController {
      */
     @FXML
     public void back(ActionEvent event) {
+        if (Client.getHomeModel().getCurrentChatSession() == null) {
+            return;
+        }
         ArrayList<ConnectionData> chatData = Client.getHomeModel().oldChat();
         ObservableList<ConnectionData> oldChat = FXCollections.observableArrayList(chatData);
         setChatListItems(oldChat);

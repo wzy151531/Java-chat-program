@@ -435,7 +435,7 @@ public class HomeModel {
      */
     public ArrayList<ConnectionData> oldChat() {
         List<ConnectionData> chatList = chatData.get(currentChatSession);
-        ArrayList<ConnectionData> oldChatList = new ArrayList<ConnectionData>();
+        ArrayList<ConnectionData> oldChatList = new ArrayList<>();
 
         for (ConnectionData cd : chatList) {
             if (cd.getType() ==1) {
