@@ -1,6 +1,8 @@
 package socotra.common;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.UUID;
 
@@ -62,6 +64,7 @@ public class ConnectionData implements Serializable {
      * The chat session that data send to.
      */
     private ChatSession chatSession;
+    private HashMap<ChatSession, List<ConnectionData>> chatData;
 
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
@@ -136,6 +139,15 @@ public class ConnectionData implements Serializable {
         this.chatSession = chatSession;
     }
 
+    public ConnectionData(String textData, UUID uuid, String userSignature, ChatSession chatSession) {
+        this.uuid = uuid;
+        this.type = 1;
+        this.textData = textData;
+        this.userSignature = userSignature;
+        this.chatSession = chatSession;
+        this.isSent = true;
+    }
+
     /**
      * If connection data is about audio message, the connection data's type is 2.
      *
@@ -149,6 +161,12 @@ public class ConnectionData implements Serializable {
         this.audioData = audioData;
         this.userSignature = userSignature;
         this.chatSession = chatSession;
+    }
+
+    public ConnectionData(HashMap<ChatSession, List<ConnectionData>> chatData, String userSignature) {
+        this.type = 3;
+        this.chatData = chatData;
+        this.userSignature = userSignature;
     }
 
     /**
@@ -299,6 +317,13 @@ public class ConnectionData implements Serializable {
             throw new IllegalStateException("Type isn't 1 or 2, cannot get chatSession");
         }
         return chatSession;
+    }
+
+    public HashMap<ChatSession, List<ConnectionData>> getChatData() {
+        if (type != 3) {
+            throw new IllegalStateException("Type isn't 3, cannot get chatData.");
+        }
+        return chatData;
     }
 
 }
