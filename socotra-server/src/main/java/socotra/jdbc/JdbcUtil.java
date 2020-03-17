@@ -331,13 +331,22 @@ public class JdbcUtil {
     }
 
     /**
+     * Insert chat history data of certain client.
+     *
+     * @param connectionData The connectionData needs to be inserted.
+     */
+    public static void insertClientChatData(ConnectionData connectionData) {
+        new InsertClientChatDataThread(connectionData).start();
+    }
+
+    /**
      * Query userId according to the given user name.
      *
      * @param username The given user name.
      * @return The userId of given user name.
      * @throws Exception The exception when query in database.
      */
-    private static int queryUserId(String username) throws Exception {
+    static int queryUserId(String username) throws Exception {
         ResultSet resultSet = inquire("select id from test_user where username='" + username + "'");
         while (resultSet.next()) {
             return resultSet.getInt("id");
@@ -352,7 +361,7 @@ public class JdbcUtil {
      * @param sessionName Chat sessions of given userId.
      * @throws Exception The exception when query in database.
      */
-    private static void storeSession(int userId, String sessionName) throws Exception {
+    static void storeSession(int userId, String sessionName) throws Exception {
         ResultSet resultSet = inquire("select count(*) as count from test_user_session where id=" + userId + " and session_name='" + sessionName + "'");
         int rowCount = 0;
         while (resultSet.next()) {
@@ -373,7 +382,7 @@ public class JdbcUtil {
      * @param sessionName The session name of given chat session.
      * @throws Exception The exception when query in database.
      */
-    private static void storeChatHistory(String dataId, String dataText, String sessionName) throws Exception {
+    static void storeChatHistory(String dataId, String dataText, String sessionName) throws Exception {
         ResultSet resultSet = inquire("select count(*) as count from test_chat_history where data_id='" + dataId + "'");
         int rowCount = 0;
         while (resultSet.next()) {

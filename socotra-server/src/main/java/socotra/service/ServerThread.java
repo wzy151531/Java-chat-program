@@ -83,7 +83,6 @@ public class ServerThread extends Thread {
                             } else {
                                 Server.addClient(username, toClient);
                                 System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
-//                                toClient.writeObject(new ConnectionData(true));
                                 Util.privateSend(new ConnectionData(true), username);
 
                                 HashMap<ChatSession, List<ConnectionData>> chatData = JdbcUtil.getCertainChatData(username);
@@ -113,17 +112,21 @@ public class ServerThread extends Thread {
                         break;
                     // If connection data is about normal chat message.
                     case 1:
+                        connectionData.setIsSent(true);
+                        // Once received the text data, use a new thread to insert it into database.
+                        JdbcUtil.insertClientChatData(connectionData);
                     case 2:
                         connectionData.setIsSent(true);
-                        if (connectionData.getChatSession().getToUsernames().size() == 1) {
-                            Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
-                            Util.broadcast(connectionData, connectionData.getUserSignature());
-                        } else {
-                            if (!Util.isAnyOnline(connectionData.getChatSession().getToUsernames())) {
-                                Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
-                            }
-                            Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
-                        }
+                        // If want to given received hint once server receive connectionData.
+//                        if (connectionData.getChatSession().getToUsernames().size() == 1) {
+//                            Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
+//                            Util.broadcast(connectionData, connectionData.getUserSignature());
+//                        } else {
+//                            if (!Util.isAnyOnline(connectionData.getChatSession().getToUsernames())) {
+//                                Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
+//                            }
+                        Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
+//                        }
                         break;
                     // If connection data is about store chat history.
                     case 3:
