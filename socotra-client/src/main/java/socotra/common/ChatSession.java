@@ -78,7 +78,12 @@ public class ChatSession implements Serializable {
     @Override
     public boolean equals(Object o) {
         ChatSession chatSession = (ChatSession) o;
-        return this.toUsernames.equals(chatSession.toUsernames);
+        try {
+            return this.toUsernames.equals(chatSession.toUsernames);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
