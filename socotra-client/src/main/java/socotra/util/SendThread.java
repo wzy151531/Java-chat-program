@@ -41,6 +41,7 @@ public class SendThread extends Thread {
             ObjectOutputStream toServer = Client.getClientThread().getToServer();
             toServer.writeObject(connectionData);
             if (logout) {
+                toServer.writeObject(new ConnectionData(connectionData.getUserSignature(), false));
                 Client.getClientThread().endConnection();
                 System.exit(0);
             }

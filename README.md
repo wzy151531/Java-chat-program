@@ -10,13 +10,14 @@ The whole project is divided into two parts: server and client. Both projects ar
 
 * Login validation via jdbc.
 * Send text message or audio to all connected clients or single connected client.
-* Local chat history in client.
+* Local chat history in client memory.
 * Can send some emoji in chat.
 * Show current online clients.
 * Use TLS connection.
 * Show if the message is sent.
 * Search chat record at local.
 * Group chat.
+* Clients' chat data stored in database.
 
 ## Quick Start
 
