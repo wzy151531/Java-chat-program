@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import java.net.URL?>
+<BorderPane fx:id="pane" prefHeight="400.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="socotra.controller.BoardController">
+
+    <stylesheets>
+        <URL value="@../css/style.css" />
+    </stylesheets>
+    <left>
+        <Canvas fx:id="canvas" width="400.0" height="400.0" focusTraversable="true"/>
+    </left>
+    <center>
+        <VBox alignment="CENTER" spacing="50">
+            <Label styleClass="label" fx:id="scoreLabel" text="Score:"/>
+            <Label styleClass="label" fx:id="score" text="0"/>
+            <Button styleClass="buttonGray" fx:id="pauseButton" text="pause"/>
+            <Button styleClass="buttonGray" fx:id="restartButton" text="restart"/>
+            <Button styleClass="buttonGray" fx:id="endGameButton" text="end game"/>
+        </VBox>
+    </center>
+</BorderPane>

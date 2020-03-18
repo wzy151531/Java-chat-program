@@ -5,7 +5,11 @@ import com.vdurmont.emoji.EmojiManager;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.stage.Stage;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
@@ -16,6 +20,7 @@ import socotra.util.Util;
 import javax.sound.sampled.*;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * This file is about the data model in home page.
@@ -73,15 +78,6 @@ public class HomeModel {
      */
     public HomeModel() {
         audioFormat = getAudioFormat();
-    }
-
-    public void setChatData(HashMap<ChatSession, List<ConnectionData>> chatData) {
-        Platform.runLater(() -> {
-            chatData.forEach((k, v) -> {
-                this.chatData.put(k, FXCollections.observableArrayList(v));
-                chatSessionList.add(k);
-            });
-        });
     }
 
     /**
@@ -396,15 +392,8 @@ public class HomeModel {
      * Send log out connectionData to server.
      */
     public void handleLogout() {
-        HashMap<ChatSession, List<ConnectionData>> newChatData = new HashMap<>();
-        chatData.forEach((k, v) -> {
-            List<ConnectionData> connectionDataList = new ArrayList<>(v);
-            newChatData.put(k, connectionDataList);
-        });
-        ConnectionData connectionData1 = new ConnectionData(newChatData, Client.getClientThread().getUsername());
-        new SendThread(connectionData1, true).start();
-//        ConnectionData connectionData2 = new ConnectionData(Client.getClientThread().getUsername(), false);
-//        new SendThread(connectionData2, true).start();
+        ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUsername(), false);
+        new SendThread(connectionData, true).start();
     }
 
     /**

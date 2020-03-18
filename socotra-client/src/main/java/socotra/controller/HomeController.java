@@ -5,10 +5,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
@@ -47,6 +50,11 @@ public class HomeController {
      */
     @FXML
     private Button sendAudioButton;
+    /**
+     * Snake Game button
+     */
+    @FXML
+    private Button snakeGameButton;
     /**
      * Send text button.
      */
@@ -526,6 +534,36 @@ public class HomeController {
     @FXML
     public void sendAudio(ActionEvent event) {
         Client.getHomeModel().handleSendAudio();
+    }
+
+    /**
+     * Snake Game event of snakeGameButton
+     */
+    @FXML
+    public void snakeGame(ActionEvent event) {
+        loadSnakeGamePage();
+    }
+
+    /**
+     * Load Snake Game page once click
+     */
+    private void loadSnakeGamePage(){
+        // Load .fxml file
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/board.fxml"));
+        Pane tempPane = null;
+        try {
+            tempPane = loader.load();
+
+            Client.setBoardController(loader.getController());
+
+            // Construct scene
+            Scene tempScene = new Scene(tempPane);
+            // Set scene
+            Client.setScene(tempScene);
+        } catch (Exception e){
+            e.printStackTrace();
+            Util.generateAlert(Alert.AlertType.ERROR, "Error", "Unexpected Error.", "Try again.").show();
+        }
     }
 
     /**
