@@ -12,6 +12,11 @@ import java.util.TreeSet;
 
 public abstract class Util {
 
+    /**
+     * Broadcast connectionData to all connected clients.
+     *
+     * @param connectionData The connectionData needs to broadcast.
+     */
     public synchronized static void broadcast(ConnectionData connectionData) {
         Server.getClients().forEach((k, v) -> {
             try {
@@ -22,6 +27,13 @@ public abstract class Util {
         });
     }
 
+    /**
+     * Send special connectionData to certain user and broadcast other same connectionData to others.
+     *
+     * @param connectionData        The connectionData needs to broadcast to others.
+     * @param username              The certain user needs to send the special connectionData.
+     * @param specialConnectionData The special connectionData needs to be sent to the certain user.
+     */
     public synchronized static void broadcast(ConnectionData connectionData, String username, ConnectionData specialConnectionData) {
         Server.getClients().forEach((k, v) -> {
             try {
@@ -36,6 +48,12 @@ public abstract class Util {
         });
     }
 
+    /**
+     * Broadcast connectionData to all online clients except the certain user.
+     *
+     * @param connectionData The connectionData needs to broadcast.
+     * @param username       The certain user that will not receive the broadcast connectionData.
+     */
     public synchronized static void broadcast(ConnectionData connectionData, String username) {
         Server.getClients().forEach((k, v) -> {
             try {
@@ -48,6 +66,12 @@ public abstract class Util {
         });
     }
 
+    /**
+     * Send private connectionData to certain user.
+     *
+     * @param connectionData The private connectionData.
+     * @param toUsername     The certain user.
+     */
     public static void privateSend(ConnectionData connectionData, String toUsername) {
         try {
             Server.getClients().get(toUsername).writeObject(connectionData);
@@ -56,10 +80,15 @@ public abstract class Util {
         }
     }
 
+    /**
+     * Send connectionData to a group.
+     *
+     * @param connectionData The connectionData needs to be sent.
+     * @param toUsernames    The user names in the group.
+     */
     public static void groupSend(ConnectionData connectionData, TreeSet<String> toUsernames) {
         ArrayList<String> clients = new ArrayList<>(toUsernames);
         clients.remove(connectionData.getUserSignature());
-//        System.out.println(clients);
         for (String toUsername : clients) {
             Server.getClients().forEach((k, v) -> {
                 try {
@@ -73,6 +102,12 @@ public abstract class Util {
         }
     }
 
+    /**
+     * Check if any of the given users is online.
+     *
+     * @param toUsernames The given user names.
+     * @return The boolean indicates whether any of the given users is online.
+     */
     public static boolean isAnyOnline(TreeSet<String> toUsernames) {
         for (String username : toUsernames) {
             if (Server.getClients().keySet().contains(username)) {
@@ -93,6 +128,11 @@ public abstract class Util {
         return result.substring(1, result.length() - 1);
     }
 
+    /**
+     * Print clientsChatData.
+     *
+     * @param clientsChatData The chat history data of all clients.
+     */
     public static void printClientsChatData(HashMap<String, HashMap<ChatSession, List<ConnectionData>>> clientsChatData) {
         clientsChatData.forEach((k, v) -> {
             System.out.println("============" + k);

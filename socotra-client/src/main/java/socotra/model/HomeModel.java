@@ -80,6 +80,23 @@ public class HomeModel {
         audioFormat = getAudioFormat();
     }
 
+<<<<<<< HEAD
+=======
+    /**
+     * Set chat history data from server to chatData.
+     *
+     * @param chatData The chat history data from server.
+     */
+    public void setChatData(HashMap<ChatSession, List<ConnectionData>> chatData) {
+        Platform.runLater(() -> {
+            chatData.forEach((k, v) -> {
+                this.chatData.put(k, FXCollections.observableArrayList(v));
+                chatSessionList.add(k);
+            });
+        });
+    }
+
+>>>>>>> 80f3bfd8df9664fddda866931e25ff80e72f7f0f
     /**
      * Getter for currentChatSession.
      *
@@ -392,8 +409,18 @@ public class HomeModel {
      * Send log out connectionData to server.
      */
     public void handleLogout() {
+<<<<<<< HEAD
         ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUsername(), false);
         new SendThread(connectionData, true).start();
+=======
+        HashMap<ChatSession, List<ConnectionData>> newChatData = new HashMap<>();
+        chatData.forEach((k, v) -> {
+            List<ConnectionData> connectionDataList = new ArrayList<>(v);
+            newChatData.put(k, connectionDataList);
+        });
+        ConnectionData connectionData1 = new ConnectionData(newChatData, Client.getClientThread().getUsername());
+        new SendThread(connectionData1, true).start();
+>>>>>>> 80f3bfd8df9664fddda866931e25ff80e72f7f0f
     }
 
     /**
@@ -415,6 +442,23 @@ public class HomeModel {
             }
         }
         return searchList;
+    }
+
+    /**
+     * The go back chat function
+     *
+     * @return a list of all chatdata.
+     */
+    public ArrayList<ConnectionData> oldChat() {
+        List<ConnectionData> chatList = chatData.get(currentChatSession);
+        ArrayList<ConnectionData> oldChatList = new ArrayList<>();
+
+        for (ConnectionData cd : chatList) {
+            if (cd.getType() == 1) {
+                oldChatList.add(cd);
+            }
+        }
+        return oldChatList;
     }
 
     /**
@@ -484,6 +528,5 @@ public class HomeModel {
             }
         }
     }
-
 
 }

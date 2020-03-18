@@ -64,6 +64,9 @@ public class ConnectionData implements Serializable {
      * The chat session that data send to.
      */
     private ChatSession chatSession;
+    /**
+     * The chat history data of certain user.
+     */
     private HashMap<ChatSession, List<ConnectionData>> chatData;
 
     /**
@@ -139,6 +142,15 @@ public class ConnectionData implements Serializable {
         this.chatSession = chatSession;
     }
 
+    /**
+     * The constructor for recreating the connectionData according to existing textData, userSignature, uuid,
+     * chatSession.
+     *
+     * @param textData      The textData of connectionData.
+     * @param uuid          The uuid of connectionData.
+     * @param userSignature The userSignature of connectionData.
+     * @param chatSession   The chatSession of connectionData.
+     */
     public ConnectionData(String textData, UUID uuid, String userSignature, ChatSession chatSession) {
         this.uuid = uuid;
         this.type = 1;
@@ -163,6 +175,12 @@ public class ConnectionData implements Serializable {
         this.chatSession = chatSession;
     }
 
+    /**
+     * If connection data is about chatData, the connectino data's type is 3.
+     *
+     * @param chatData      The chat history data of user.
+     * @param userSignature The user want to store the chatData.
+     */
     public ConnectionData(HashMap<ChatSession, List<ConnectionData>> chatData, String userSignature) {
         this.type = 3;
         this.chatData = chatData;
@@ -319,6 +337,11 @@ public class ConnectionData implements Serializable {
         return chatSession;
     }
 
+    /**
+     * Getter for chatData.
+     *
+     * @return The chat history data of the user connection data sends to.
+     */
     public HashMap<ChatSession, List<ConnectionData>> getChatData() {
         if (type != 3) {
             throw new IllegalStateException("Type isn't 3, cannot get chatData.");

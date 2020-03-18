@@ -2,7 +2,6 @@ package socotra;
 
 import socotra.jdbc.JdbcUtil;
 import socotra.service.ServerThread;
-import socotra.util.Util;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.*;
@@ -139,6 +138,5 @@ public class Server {
     public synchronized static void removeClient(String username) {
         Server.clients.remove(username);
     }
-
 
 }
