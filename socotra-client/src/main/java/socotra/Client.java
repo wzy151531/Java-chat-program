@@ -5,11 +5,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import socotra.controller.BoardController;
 import socotra.controller.HomeController;
 import socotra.controller.LoginController;
-import socotra.model.ClientThread;
-import socotra.model.HomeModel;
-import socotra.model.LoginModel;
+import socotra.model.*;
 import socotra.util.SetChatData;
 import socotra.util.SetOnlineUsers;
 
@@ -39,6 +38,16 @@ public class Client extends Application {
      * Model of home page.
      */
     private static HomeModel homeModel;
+    /**
+     * Controller of SnakeGame page
+     */
+    private static socotra.controller.BoardController BoardController;
+    /**
+     * Model of Food, Sanke, SnakePart in SnakeGame.
+     */
+    private static socotra.model.Food Food;
+    private static socotra.model.Snake Snake;
+    private static SnakePart SnakePart;
     /**
      * Communication thread with server.
      */
@@ -132,6 +141,57 @@ public class Client extends Application {
                 setChatData.notify();
             }
         }
+    }
+
+    /**
+     * Getter for BoardController.
+     *
+     * @return Controller of SnakeGame page.
+     */
+    public static BoardController getBoardController(){
+        return BoardController;
+    }
+
+    /**
+     * Setter for BoardController.
+     *
+     * @param boardController Controller of SnakeGame page.
+     */
+    public static void setBoardController(BoardController boardController){
+        Client.BoardController = BoardController;
+    }
+
+    /**
+     * Getter for Food, Sanke, SnakePart in SnakeGame.
+     *
+     * @return
+     */
+    public static Food getFood() {
+        return Food;
+    }
+
+    public static Snake getSnake() {
+        return Snake;
+    }
+
+    public static SnakePart getSnakePart() {
+        return SnakePart;
+    }
+    /**
+     * Setter for Food, Sanke, SnakePart in SnakeGame.
+     *
+     * @return
+     */
+    public static void setFood(Food food)  {
+        Client.Food = Food;
+    }
+
+    public static void setSnake(Snake snake)  {
+        Client.Snake = Snake;
+    }
+    
+    public static void setSnakePart(SnakePart snakePart)  {
+        Client.SnakePart = SnakePart;
     }
 
     /**

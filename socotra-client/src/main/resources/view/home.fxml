@@ -22,8 +22,6 @@
         <TextField fx:id="messageField" layoutX="257.0" layoutY="406.0" prefHeight="27.0" prefWidth="317.0"/>
         <Button fx:id="searchButton" layoutX="643.0" layoutY="24.0" mnemonicParsing="false" onAction="#searchText"
                 prefHeight="27.0" prefWidth="62.0" text="search"/>
-        <Button fx:id="backButton" layoutX="710.0" layoutY="24.0" mnemonicParsing="false" onAction="#back"
-                prefHeight="27.0" prefWidth="31.0" text="🡸"/>
         <TextField fx:id="searchBox" layoutX="536.0" layoutY="24.0" prefHeight="27.0" prefWidth="100.0"/>
         <Button fx:id="sendTextButton" defaultButton="true" layoutX="643.0" layoutY="406.0" mnemonicParsing="false"
                 onAction="#sendText" prefHeight="27.0" prefWidth="62.0" text="send"/>
@@ -33,6 +31,8 @@
                 prefHeight="27.0" prefWidth="49.0" text="stop"/>
         <Button fx:id="sendAudioButton" layoutX="426.0" layoutY="448.0" mnemonicParsing="false" onAction="#sendAudio"
                 prefHeight="27.0" prefWidth="97.0" text="send audio"/>
+        <Button fx:id="snakeGameButton" layoutX="543.0" layoutY="448.0" mnemonicParsing="false" onAction="#snakeGame"
+                prefHeight="27.0" prefWidth="80.0" text="Snake Game"/>
         <ListView fx:id="chatList" layoutX="257.0" layoutY="62.0" prefHeight="330.0" prefWidth="446.0"/>
         <Button fx:id="emojiButton" layoutX="574.0" layoutY="406.0" mnemonicParsing="false" onAction="#showEmojiList"
                 prefHeight="27.0" prefWidth="62.0" text="emoji"/>

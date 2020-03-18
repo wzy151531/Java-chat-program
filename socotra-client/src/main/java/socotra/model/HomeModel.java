@@ -80,11 +80,6 @@ public class HomeModel {
         audioFormat = getAudioFormat();
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 80f3bfd8df9664fddda866931e25ff80e72f7f0f
     /**
      * Set chat history data from server to chatData.
      *
@@ -99,7 +94,6 @@ public class HomeModel {
         });
     }
 
->>>>>>> 80f3bfd8df9664fddda866931e25ff80e72f7f0f
     /**
      * Getter for currentChatSession.
      *
@@ -412,10 +406,9 @@ public class HomeModel {
      * Send log out connectionData to server.
      */
     public void handleLogout() {
-<<<<<<< HEAD
         ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUsername(), false);
         new SendThread(connectionData, true).start();
-=======
+
         HashMap<ChatSession, List<ConnectionData>> newChatData = new HashMap<>();
         chatData.forEach((k, v) -> {
             List<ConnectionData> connectionDataList = new ArrayList<>(v);
@@ -423,10 +416,6 @@ public class HomeModel {
         });
         ConnectionData connectionData1 = new ConnectionData(newChatData, Client.getClientThread().getUsername());
         new SendThread(connectionData1, true).start();
-<<<<<<< HEAD
->>>>>>> 80f3bfd8df9664fddda866931e25ff80e72f7f0f
-=======
->>>>>>> 80f3bfd8df9664fddda866931e25ff80e72f7f0f
     }
 
     /**

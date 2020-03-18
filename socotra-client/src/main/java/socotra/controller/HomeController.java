@@ -632,19 +632,4 @@ public class HomeController {
         this.cancelAdding(event);
     }
 
-    /**
-     * Displays previous chats after a search
-     *
-     * @param event The event of the back button.
-     */
-    @FXML
-    public void back(ActionEvent event) {
-        if (Client.getHomeModel().getCurrentChatSession() == null) {
-            return;
-        }
-        ArrayList<ConnectionData> chatData = Client.getHomeModel().oldChat();
-        ObservableList<ConnectionData> oldChat = FXCollections.observableArrayList(chatData);
-        setChatListItems(oldChat);
-    }
-
 }
