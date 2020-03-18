@@ -153,7 +153,7 @@ public class JdbcUtil {
      * @param sql The sql wants to be executed.
      * @throws Exception Exception thrown while executing the sql.
      */
-    private synchronized static void insert(String sql) throws Exception {
+    public synchronized static void insert(String sql) throws Exception {
         Statement statement = connection.createStatement();
         statement.executeUpdate(sql);
     }

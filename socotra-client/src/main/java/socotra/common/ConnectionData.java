@@ -322,6 +322,9 @@ public class ConnectionData implements Serializable {
      * @return The userSignature of the connection data.
      */
     public String getUserSignature() {
+        if (type != -2 && type != -4 && type != 1 && type != 2 && type != 3) {
+            throw new IllegalStateException("Type isn't -2 or -4 or 1 or 2 or 3, cannot get text data.");
+        }
         return userSignature;
     }
 
