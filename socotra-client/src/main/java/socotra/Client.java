@@ -178,7 +178,7 @@ public class Client extends Application {
         return SnakePart;
     }
     /**
-     * Setter for Food, Sanke, SnakePart in SnakeGame.
+     * Setter for Food, Snake, SnakePart in SnakeGame.
      *
      * @return
      */
@@ -189,7 +189,7 @@ public class Client extends Application {
     public static void setSnake(Snake snake)  {
         Client.Snake = Snake;
     }
-    
+
     public static void setSnakePart(SnakePart snakePart)  {
         Client.SnakePart = SnakePart;
     }

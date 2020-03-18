@@ -32,7 +32,7 @@
         <Button fx:id="sendAudioButton" layoutX="426.0" layoutY="448.0" mnemonicParsing="false" onAction="#sendAudio"
                 prefHeight="27.0" prefWidth="97.0" text="send audio"/>
         <Button fx:id="snakeGameButton" layoutX="543.0" layoutY="448.0" mnemonicParsing="false" onAction="#snakeGame"
-                prefHeight="27.0" prefWidth="80.0" text="Snake Game"/>
+                prefHeight="27.0" prefWidth="150.0" text="Snake Game"/>
         <ListView fx:id="chatList" layoutX="257.0" layoutY="62.0" prefHeight="330.0" prefWidth="446.0"/>
         <Button fx:id="emojiButton" layoutX="574.0" layoutY="406.0" mnemonicParsing="false" onAction="#showEmojiList"
                 prefHeight="27.0" prefWidth="62.0" text="emoji"/>
