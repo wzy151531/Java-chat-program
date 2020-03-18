@@ -320,7 +320,9 @@ public class JdbcUtil {
                         storeSession(userId, sessionName);
                         v1.forEach(n -> {
                             try {
-                                storeChatHistory(n.getUuid().toString(), n.getTextData(), n.getUserSignature(), sessionName);
+                                if (n.getType() == 1) {
+                                    storeChatHistory(n.getUuid().toString(), n.getTextData(), n.getUserSignature(), sessionName);
+                                }
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
