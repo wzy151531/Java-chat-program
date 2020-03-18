@@ -126,18 +126,17 @@ public class JdbcUtil {
      * @return The connection to database.
      * @throws Exception Exception thrown while connecting to database.
      */
-    public static Connection connect() throws Exception {
+    public static void connect() throws Exception {
         String url = "jdbc:postgresql://localhost:" + forwardPort + "/" + dbUser;
         Class.forName("org.postgresql.Driver");
         connection = DriverManager.getConnection(url, dbUser, dbPassword);
         if (connection != null) {
             System.out.println("Database connected.");
         }
-        return connection;
     }
 
     /**
-     * Send some sql statement to database for results.
+     * Send query sql statement to database for results.
      *
      * @param sql The sql wants to be executed.
      * @return The results from database.
@@ -148,6 +147,12 @@ public class JdbcUtil {
         return statement.executeQuery(sql);
     }
 
+    /**
+     * Send insert sql statement to database.
+     *
+     * @param sql The sql wants to be executed.
+     * @throws Exception Exception thrown while executing the sql.
+     */
     private synchronized static void insert(String sql) throws Exception {
         Statement statement = connection.createStatement();
         statement.executeUpdate(sql);
@@ -229,7 +234,7 @@ public class JdbcUtil {
      * @param currentUser The user who wants this session info.
      * @return Chat session members.
      */
-    private static TreeSet<String> generateSessionMembers(String sessionName, String currentUser) {
+    public static TreeSet<String> generateSessionMembers(String sessionName, String currentUser) {
         String[] usernames = sessionName.split(",");
         TreeSet<String> result = new TreeSet<>();
         for (String username : usernames) {
