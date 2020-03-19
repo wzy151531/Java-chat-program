@@ -1,7 +1,9 @@
 package socotra.util;
 
-import org.junit.Test;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import socotra.Server;
 
 import java.io.ObjectOutputStream;
@@ -27,23 +29,20 @@ public class UtilTest {
     }
 
     @Test
-    public void testGenerateChatName1() {
+    public void testGenerateChatName() {
         TreeSet<String> toUsernames = generateTreeSet("admin");
         String expected = "admin";
         String actual = Util.generateChatName(toUsernames);
-        Assert.assertEquals(expected, actual);
+        assertEquals(expected, actual);
+
+        toUsernames = generateTreeSet("admin", "admin1", "admin2");
+        expected = "admin,admin1,admin2";
+        actual = Util.generateChatName(toUsernames);
+        assertEquals(expected, actual);
     }
 
     @Test
-    public void testGenerateChatName2() {
-        TreeSet<String> toUsernames = generateTreeSet("admin", "admin1", "admin2");
-        String expected = "admin,admin1,admin2";
-        String actual = Util.generateChatName(toUsernames);
-        Assert.assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testIsAnyOnline1() {
+    public void testIsAnyOnline() {
         HashMap<String, ObjectOutputStream> onlineUsers = generateHashMap("admin", "admin1", "admin2");
         Server.getClients().clear();
         onlineUsers.forEach((k, v) -> {
@@ -51,31 +50,25 @@ public class UtilTest {
         });
         TreeSet<String> users = generateTreeSet("admin");
         boolean actual = Util.isAnyOnline(users);
-        Assert.assertTrue(actual);
-    }
+        assertTrue(actual);
 
-    @Test
-    public void testIsAnyOnline2() {
-        HashMap<String, ObjectOutputStream> onlineUsers = generateHashMap("admin", "admin1");
+        onlineUsers = generateHashMap("admin", "admin1");
         Server.getClients().clear();
         onlineUsers.forEach((k, v) -> {
             Server.addClient(k, v);
         });
-        TreeSet<String> users = generateTreeSet("admin1", "admin2");
-        boolean actual = Util.isAnyOnline(users);
-        Assert.assertTrue(actual);
-    }
+        users = generateTreeSet("admin1", "admin2");
+        actual = Util.isAnyOnline(users);
+        assertTrue(actual);
 
-    @Test
-    public void testIsAnyOnline3() {
-        HashMap<String, ObjectOutputStream> onlineUsers = generateHashMap("admin", "admin1");
+        onlineUsers = generateHashMap("admin", "admin1");
         Server.getClients().clear();
         onlineUsers.forEach((k, v) -> {
             Server.addClient(k, v);
         });
-        TreeSet<String> users = generateTreeSet("admin2", "admin3");
-        boolean actual = Util.isAnyOnline(users);
-        Assert.assertFalse(actual);
+        users = generateTreeSet("admin2", "admin3");
+        actual = Util.isAnyOnline(users);
+        assertFalse(actual);
     }
 
 }
