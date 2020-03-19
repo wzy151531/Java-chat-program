@@ -13,13 +13,18 @@ repositories {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.10'
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
 }
 
 
 mainClassName = 'socotra.Server'
+
+test {
+    useJUnitPlatform()
+}
 
 jar {
     manifest {
