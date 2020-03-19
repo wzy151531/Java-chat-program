@@ -32,7 +32,6 @@ public class LoginModel {
         Client.getClientThread().start();
         synchronized (this) {
             try {
-//                Thread.sleep(500);
                 this.wait();
             } catch (Exception e) {
                 e.printStackTrace();
