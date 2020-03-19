@@ -76,7 +76,7 @@ java --module-path $PATHTOJAVAFXSDK11 --add-modules javafx.controls,javafx.fxml,
 
 ## Contributing
 
-`NOTE: Please confirm that ConnectionData.java file is same on both client and server project.`
+`NOTE: Please confirm that files under 'common' directory are same on both client and server project.`
 
 First clone the project, and in your local git repository, create a new branch named as your name, for example:
 
