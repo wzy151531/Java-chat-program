@@ -8,14 +8,17 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.Stage;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
@@ -545,24 +548,18 @@ public class HomeController {
     }
 
     /**
-     * Load Snake Game page once click
+     * Load Rules page once click
      */
     private void loadSnakeGamePage(){
-        // Load .fxml file
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/board.fxml"));
-        Pane tempPane = null;
+
         try {
-            tempPane = loader.load();
-
-            Client.setBoardController(loader.getController());
-
-            // Construct scene
-            Scene tempScene = new Scene(tempPane);
-            // Set scene
-            Client.setScene(tempScene);
+            Parent anotherRoot = FXMLLoader.load(getClass().getResource("/view/board.fxml"));
+            Stage anotherStage = new Stage();
+            anotherStage.setTitle("Snake Game");
+            anotherStage.setScene(new Scene(anotherRoot, 600, 400));
+            anotherStage.show();
         } catch (Exception e){
             e.printStackTrace();
-            Util.generateAlert(Alert.AlertType.ERROR, "Error", "Unexpected Error.", "Try again.").show();
         }
     }
 
