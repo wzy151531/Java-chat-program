@@ -24,12 +24,28 @@ import java.util.ResourceBundle;
 //import java.net.URL;
 //import java.util.ResourceBundle;
 
+/**
+ * This class is about controller of Snake Game page.
+ */
+
 public class BoardController implements Initializable, Runnable {
     public Canvas canvas;
     public BorderPane pane;
+    /**
+     * Pause button.
+     */
     public Button pauseButton;
+    /**
+     * Restart game button.
+     */
     public Button restartButton;
+    /**
+     * End game button.
+     */
     public Button endGameButton;
+    /**
+     * The score of the game
+     */
     public Label score;
 
     private GraphicsContext graphicsContext;

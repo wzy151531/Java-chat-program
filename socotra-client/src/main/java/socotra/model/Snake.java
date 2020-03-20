@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * This class is about the Snake in Snake Game.
+ */
+
 public class Snake{
     private List<SnakePart> snake = new ArrayList<>();
     private int speed;

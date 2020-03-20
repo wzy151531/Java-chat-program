@@ -4,6 +4,10 @@ import socotra.util.Colors;
 
 import java.util.Random;
 
+/**
+ * This class is about the food in Snake Game.
+ */
+
 public class Food{
     private int x;
     private int y;

@@ -2,6 +2,10 @@ package socotra.model;
 
 import socotra.util.Direction;
 
+/**
+ * This class is about the Snake moving part in Snake Game.
+ */
+
 public class SnakePart{
     private int x;
     private int y;
