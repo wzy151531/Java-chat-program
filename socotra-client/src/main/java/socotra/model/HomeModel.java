@@ -72,12 +72,15 @@ public class HomeModel {
      * The data line where it will be delivered to the speaker.
      */
     private SourceDataLine sourceDataLine;
-
     /**
      * Constructor for HomeModel.
      */
     public HomeModel() {
         audioFormat = getAudioFormat();
+    }
+
+    public HashMap<ChatSession, ObservableList<ConnectionData>> getChatData() {
+        return chatData;
     }
 
     /**
