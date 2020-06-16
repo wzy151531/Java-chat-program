@@ -25,7 +25,7 @@ public class TestClient {
         this.username = username;
         this.identityKeyPair = KeyHelper.generateIdentityKeyPair();
         this.registrationId = KeyHelper.generateRegistrationId(false);
-        this.preKeys = KeyHelper.generatePreKeys(0, 100);
+        this.preKeys = KeyHelper.generatePreKeys(0, 2);
         this.signedPreKey = KeyHelper.generateSignedPreKey(this.identityKeyPair, userId);
         this.sessionStore = new MySessionStore();
         this.preKeyStore = new MyPreKeyStore();

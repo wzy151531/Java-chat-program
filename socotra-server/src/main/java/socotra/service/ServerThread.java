@@ -132,6 +132,15 @@ public class ServerThread extends Thread {
                     case 3:
                         JdbcUtil.updateClientsChatData(connectionData.getUserSignature(), connectionData.getChatData());
                         break;
+                    case 4:
+                        JdbcUtil.storeIdentityKey(connectionData.getUserId(), connectionData.getIdentityKey(), connectionData.getPreKeys());
+                        break;
+                    case 5:
+                        List<byte[]> keyBundle = JdbcUtil.queryKeyBundle(connectionData.getUserId());
+                        byte[] identityKey = keyBundle.get(0);
+                        byte[] preKey = keyBundle.get(1);
+                        Util.privateSend(new ConnectionData(identityKey, preKey, connectionData.getUserId()), "admin");
+                        break;
                     default:
                         System.out.println("Unknown data.");
                 }

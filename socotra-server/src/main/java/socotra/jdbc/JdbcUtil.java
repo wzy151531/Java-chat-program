@@ -6,10 +6,7 @@ import socotra.common.ConnectionData;
 import socotra.util.Util;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 
 /**
@@ -400,6 +397,48 @@ public class JdbcUtil {
         } else {
             System.out.println("'" + dataText + "' has already existed.");
         }
+    }
+
+    public static void storeIdentityKey(int userId, byte[] identityKey, List<byte[]> preKeys) throws Exception {
+        String sql = "insert into key_bundle(userId, identityKey, preKeys) values (?, ?, ?)";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, userId);
+        ps.setBytes(2, identityKey);
+        byte[] preKeysArr = new byte[33 * preKeys.size()];
+        for (int i = 0; i < preKeys.size(); i++) {
+            for (int j = 0; j < 33; j++) {
+                preKeysArr[i * 33 + j] = preKeys.get(i)[j];
+            }
+        }
+        ps.setBytes(3, preKeysArr);
+        ps.executeUpdate();
+    }
+
+    public static List<byte[]> queryKeyBundle(int userId) throws Exception {
+        List<byte[]> result = new ArrayList<>();
+        ResultSet resultSet = inquire("select * from key_bundle where userId='" + userId + "'");
+        while (resultSet.next()) {
+            byte[] identityKey = resultSet.getBytes("identityKey");
+            byte[] preKeys = resultSet.getBytes("preKeys");
+            byte[] preKey = new byte[33];
+            for (int i = 0; i < 33; i++) {
+                preKey[i] = preKeys[i];
+            }
+            byte[] updatedPreKeys = new byte[preKeys.length - 33];
+            for (int i = 0; i < preKeys.length - 33; i++) {
+                updatedPreKeys[i] = preKeys[i + 33];
+            }
+            String sql = "update key_bundle SET preKeys = ? WHERE userId='" + userId + "'";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setBytes(1, updatedPreKeys);
+            ps.executeUpdate();
+            System.out.println(new String(preKey));
+            result.add(identityKey);
+            result.add(preKey);
+            return result;
+
+        }
+        throw new IllegalArgumentException("UserId does not exist.");
     }
 
 }

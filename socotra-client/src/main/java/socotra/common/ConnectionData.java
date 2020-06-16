@@ -69,6 +69,11 @@ public class ConnectionData implements Serializable {
      */
     private HashMap<ChatSession, List<ConnectionData>> chatData;
 
+    private byte[] identityKey;
+    private int userId;
+    private List<byte[]> preKeys;
+    private byte[] preKey;
+
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
      *
@@ -185,6 +190,54 @@ public class ConnectionData implements Serializable {
         this.type = 3;
         this.chatData = chatData;
         this.userSignature = userSignature;
+    }
+
+    public ConnectionData(byte[] identityKey, List<byte[]> preKeys, int userId) {
+        this.type = 4;
+        this.identityKey = identityKey;
+        this.preKeys = preKeys;
+        this.userId = userId;
+    }
+
+
+    public ConnectionData(int userId) {
+        this.type = 5;
+        this.userId = userId;
+    }
+
+    public ConnectionData(byte[] identityKey, byte[] preKey, int userId) {
+        this.type = 6;
+        this.identityKey = identityKey;
+        this.preKey = preKey;
+        this.userId = userId;
+    }
+
+    public byte[] getIdentityKey() {
+        if (type != 4 && type != 6) {
+            throw new IllegalStateException("Type isn't 4, cannot get identityKey");
+        }
+        return this.identityKey;
+    }
+
+    public int getUserId() {
+        if (type != 4 && type != 5) {
+            throw new IllegalStateException("Type isn't 4, cannot get userId");
+        }
+        return this.userId;
+    }
+
+    public List<byte[]> getPreKeys() {
+        if (type != 4) {
+            throw new IllegalStateException("Type isn't 4, cannot get preKeys");
+        }
+        return this.preKeys;
+    }
+
+    public byte[] getPreKey() {
+        if (type != 6) {
+            throw new IllegalStateException("Type isn't 6, cannot get preKey");
+        }
+        return this.preKey;
     }
 
     /**
@@ -322,7 +375,7 @@ public class ConnectionData implements Serializable {
      * @return The userSignature of the connection data.
      */
     public String getUserSignature() {
-        if (type != -2 && type != -4 && type != 1 && type != 2 && type != 3) {
+        if (type != -2 && type != -4 && type != 1 && type != 2 && type != 3 && type != 5) {
             throw new IllegalStateException("Type isn't -2 or -4 or 1 or 2 or 3, cannot get text data.");
         }
         return userSignature;

@@ -4,7 +4,7 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
-group 'bham.view'
+group 'bham.socotra'
 version '3.3.0-SNAPSHOT'
 
 sourceCompatibility = 11

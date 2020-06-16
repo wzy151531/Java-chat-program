@@ -5,6 +5,7 @@ import socotra.common.ConnectionData;
 import socotra.util.SendThread;
 import socotra.util.SetChatData;
 import socotra.util.SetOnlineUsers;
+import socotra.util.TestProtocol;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.*;
@@ -147,6 +148,7 @@ public class ClientThread extends Thread {
                         synchronized (loginModel) {
                             loginModel.notify();
                         }
+                        TestProtocol.init();
                         break;
                     // If connectionData is about users online information.
                     case -2:
@@ -163,6 +165,7 @@ public class ClientThread extends Thread {
                         SetOnlineUsers setOnlineUsers = new SetOnlineUsers(connectionData.getOnlineUsers());
                         Client.setSetOnlineUsers(setOnlineUsers);
                         setOnlineUsers.start();
+                        TestProtocol.query();
                         break;
                     // If connectionData is about received hint.
                     case -4:
@@ -179,6 +182,12 @@ public class ClientThread extends Thread {
                         SetChatData setChatData = new SetChatData(connectionData.getChatData());
                         Client.setSetChatData(setChatData);
                         setChatData.start();
+                        break;
+                    case 6:
+//                        System.out.println("remote: " + new String(connectionData.getIdentityKey()));
+                        TestProtocol.identityKey = connectionData.getIdentityKey();
+                        TestProtocol.preKey = connectionData.getPreKey();
+                        TestProtocol.test();
                         break;
                     default:
                         System.out.println("Unknown data.");
