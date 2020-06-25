@@ -65,7 +65,8 @@ public class Server {
             System.out.println("Server bound.");
             JdbcUtil.init();
             JdbcUtil.connect();
-            JdbcUtil.setClientsChatData(JdbcUtil.queryClientsChatData());
+            // TODO
+//            JdbcUtil.setClientsChatData(JdbcUtil.queryClientsChatData());
             System.out.println("Clients chat data loaded.");
 //            Util.printClientsChatData(JdbcUtil.getClientsChatData());
         } catch (IOException e) {

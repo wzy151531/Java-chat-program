@@ -1,5 +1,6 @@
 package socotra.service;
 
+import jdk.jshell.spi.ExecutionControlProvider;
 import socotra.Server;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -61,91 +63,57 @@ public class ServerThread extends Thread {
         client.close();
     }
 
+    String getUsername() {
+        return username;
+    }
+
+    void setUsername(String username) {
+        this.username = username;
+    }
+
+    void inform(ConnectionData connectionData) throws IOException {
+        toClient.writeObject(connectionData);
+    }
+
+    void appendClient() {
+        Server.addClient(username, toClient);
+    }
+
+    boolean processSignUp(ConnectionData connectionData) {
+        try {
+            int userId = JdbcUtil.signUp(connectionData.getUsername(), connectionData.getPassword());
+            // TODO
+            JdbcUtil.storeKeyBundle(userId, connectionData.getKeyBundle());
+            toClient.writeObject(new ConnectionData(-5, true));
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+            try {
+                toClient.writeObject(new ConnectionData(-5, false));
+                return false;
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
     /**
      * Start handle the communication with client.
      */
     public void run() {
         try {
+            DataHandler dataHandler = new DataHandler(this);
             while (true) {
                 ConnectionData connectionData = (ConnectionData) fromClient.readObject();
                 System.out.println("Received data.");
-                switch (connectionData.getType()) {
-                    // If connection data is about login.
-                    case 0:
-                        username = connectionData.getUsername();
-                        String password = connectionData.getPassword();
-                        try {
-                            if (!JdbcUtil.validateUser(username, password)) {
-                                System.out.println("Invalidated user.");
-                                toClient.writeObject(new ConnectionData(false));
-                                endClient();
-                                return;
-                            } else {
-                                Server.addClient(username, toClient);
-                                System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
-                                Util.privateSend(new ConnectionData(true), username);
-
-                                HashMap<ChatSession, List<ConnectionData>> chatData = JdbcUtil.getCertainChatData(username);
-                                if (chatData != null) {
-                                    Util.privateSend(new ConnectionData(chatData, "server"), username);
-                                }
-
-                                TreeSet<String> allClientsName = new TreeSet<>(Server.getClients().keySet());
-                                allClientsName.remove(username);
-                                // Inform the new client current online users and inform other clients that the new client is online.
-                                Util.broadcast(new ConnectionData(username, true), username, new ConnectionData(allClientsName));
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    // If connection data is about logout.
-                    case -2:
-                        Util.broadcast(new ConnectionData(username, false), username);
-                        Server.removeClient(username);
-                        System.out.println("User log out. Current online users: " + Server.getClients().keySet());
-                        endClient();
-                        return;
-                    // If connection data is about received hint.
-                    case -4:
-                        Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
-                        break;
-                    // If connection data is about normal chat message.
-                    case 1:
-                        connectionData.setIsSent(true);
-                        // Once received the text data, use a new thread to insert it into database.
-                        JdbcUtil.insertClientChatData(connectionData);
-                    case 2:
-                        connectionData.setIsSent(true);
-                        // If want to given received hint once server receive connectionData.
-                        if (connectionData.getChatSession().getToUsernames().size() == 1) {
-                            Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
-                            Util.broadcast(connectionData, connectionData.getUserSignature());
-                        } else {
-                            if (!Util.isAnyOnline(connectionData.getChatSession().getToUsernames())) {
-                                Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
-                            }
-                            Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
-                        }
-                        break;
-                    // If connection data is about store chat history.
-                    case 3:
-                        JdbcUtil.updateClientsChatData(connectionData.getUserSignature(), connectionData.getChatData());
-                        break;
-                    case 4:
-                        JdbcUtil.storeIdentityKey(connectionData.getUserId(), connectionData.getIdentityKey(), connectionData.getPreKeys());
-                        break;
-                    case 5:
-                        List<byte[]> keyBundle = JdbcUtil.queryKeyBundle(connectionData.getUserId());
-                        byte[] identityKey = keyBundle.get(0);
-                        byte[] preKey = keyBundle.get(1);
-                        Util.privateSend(new ConnectionData(identityKey, preKey, connectionData.getUserId()), "admin");
-                        break;
-                    default:
-                        System.out.println("Unknown data.");
+                if (!dataHandler.handle(connectionData)) {
+                    return;
                 }
             }
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("Something went wrong. Ending service to client...");
             Server.removeClient(username, toClient);
             System.out.println("User removed. Current online users: " + Server.getClients().keySet());

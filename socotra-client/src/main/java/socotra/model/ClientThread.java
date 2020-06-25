@@ -1,11 +1,10 @@
 package socotra.model;
 
+import org.whispersystems.libsignal.state.PreKeyRecord;
 import socotra.Client;
 import socotra.common.ConnectionData;
-import socotra.util.SendThread;
-import socotra.util.SetChatData;
-import socotra.util.SetOnlineUsers;
-import socotra.util.TestProtocol;
+import socotra.common.KeyBundle;
+import socotra.protocol.EncryptedClient;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.*;
@@ -14,6 +13,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.KeyStore;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This thread is used to communicate with server.
@@ -21,10 +22,6 @@ import java.security.KeyStore;
 
 public class ClientThread extends Thread {
 
-    /**
-     * The controller of login page.
-     */
-    private final LoginModel loginModel;
     /**
      * Current connected server name.
      */
@@ -38,6 +35,11 @@ public class ClientThread extends Thread {
      */
     private final String password;
     /**
+     * The controller of login page.
+     */
+    private final LoginModel loginModel = Client.getLoginModel();
+    private final SignUpModel signUpModel = Client.getSignUpModel();
+    /**
      * The output stream of connection.
      */
     private ObjectOutputStream toServer;
@@ -50,21 +52,21 @@ public class ClientThread extends Thread {
      */
     private SSLSocket server;
 
+    private int type;
+
     /**
      * The constructor is given the server's name. It opens a socket connection to the server and extracts it input and
      * out streams.
      *
      * @param serverName The server want to connect.
-     * @param loginModel The controller of login page.
      * @param username   The user's username.
      * @param password   The user's password.
      */
-    public ClientThread(String serverName, LoginModel loginModel, String username, String password) {
+    ClientThread(String serverName, String username, String password, int type) {
         this.serverName = serverName;
-        this.loginModel = loginModel;
         this.username = username;
         this.password = password;
-
+        this.type = type;
     }
 
     /**
@@ -125,6 +127,79 @@ public class ClientThread extends Thread {
         server.startHandshake();
     }
 
+    private void processLogin() throws IOException {
+        loginModel.setErrorType(0);
+        toServer.writeObject(new ConnectionData(-1, username, password));
+    }
+
+    private KeyBundle generateKeyBundle(EncryptedClient encryptedClient) {
+        int registrationId = encryptedClient.getRegistrationId();
+        byte[] identityKey = encryptedClient.getIdentityKeyPair().getPublicKey().serialize();
+        List<byte[]> preKeys = encryptedClient.getFlattenedPreKeys();
+        int signedPreKeyId = encryptedClient.getSignedPreKey().getId();
+        byte[] signedPreKey = encryptedClient.getSignedPreKey().getKeyPair().getPublicKey().serialize();
+        byte[] signedPreKeySignature = encryptedClient.getSignedPreKey().getSignature();
+        return new KeyBundle(registrationId, identityKey, preKeys, signedPreKeyId, signedPreKey, signedPreKeySignature);
+    }
+
+    private void processSignUp() throws IOException {
+        signUpModel.setErrorType(0);
+        EncryptedClient encryptedClient = Client.getEncryptedClient();
+        toServer.writeObject(new ConnectionData(username, password, generateKeyBundle(encryptedClient)));
+    }
+
+    private void handleIOException(IOException e) {
+        switch (type) {
+            case 1:
+                loginModel.setErrorType(1);
+                break;
+            case 2:
+                signUpModel.setErrorType(1);
+                break;
+            default:
+                break;
+        }
+        e.printStackTrace();
+        System.out.println("Socket communication broke.");
+    }
+
+    private void handleFinally() {
+        System.out.println("Finally handled.");
+        switch (type) {
+            case 1:
+                synchronized (loginModel) {
+                    loginModel.notify();
+                }
+                break;
+            case 2:
+                synchronized (signUpModel) {
+                    signUpModel.notify();
+                }
+                break;
+            default:
+                break;
+        }
+        try {
+            endConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initAction() throws IOException {
+        switch (type) {
+            case 1:
+                processLogin();
+                break;
+            case 2:
+                processSignUp();
+                break;
+            default:
+                System.out.println("Bad type.");
+                break;
+        }
+    }
+
     /**
      * The thread's job.
      */
@@ -133,70 +208,17 @@ public class ClientThread extends Thread {
             initTLS();
             toServer = new ObjectOutputStream(server.getOutputStream());
             fromServer = new ObjectInputStream(server.getInputStream());
-            loginModel.setErrorType(0);
-            toServer.writeObject(new ConnectionData(-1, username, password));
+            initAction();
+            DataHandler dataHandler = new DataHandler();
             while (true) {
                 ConnectionData connectionData = (ConnectionData) fromServer.readObject();
                 System.out.println("Received connectionData.");
-                switch (connectionData.getType()) {
-                    // If connectionData is about the result of user's validation.
-                    case -1:
-                        if (!connectionData.getValidated()) {
-                            loginModel.setErrorType(2);
-                            endConnection();
-                        }
-                        synchronized (loginModel) {
-                            loginModel.notify();
-                        }
-                        TestProtocol.init();
-                        break;
-                    // If connectionData is about users online information.
-                    case -2:
-                        System.out.println(connectionData.getUserSignature() + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
-                        if (connectionData.getIsOnline()) {
-                            Client.getHomeModel().appendClientsList(connectionData.getUserSignature());
-                        } else {
-                            Client.getHomeModel().removeClientsList(connectionData.getUserSignature());
-                        }
-                        break;
-                    // If connectionData is about set online users.
-                    case -3:
-                        System.out.println(connectionData.getOnlineUsers());
-                        SetOnlineUsers setOnlineUsers = new SetOnlineUsers(connectionData.getOnlineUsers());
-                        Client.setSetOnlineUsers(setOnlineUsers);
-                        setOnlineUsers.start();
-                        TestProtocol.query();
-                        break;
-                    // If connectionData is about received hint.
-                    case -4:
-                        Client.getHomeModel().updateChatData(connectionData.getUuid(), connectionData.getChatSession());
-                        break;
-                    // If connectionData is about normal chat messages.
-                    case 1:
-                    case 2:
-                        Client.getHomeModel().appendChatData(connectionData);
-                        new SendThread(new ConnectionData(connectionData.getUuid(), this.username, connectionData.getChatSession())).start();
-                        break;
-                    // If connectionData is about chat history data.
-                    case 3:
-                        SetChatData setChatData = new SetChatData(connectionData.getChatData());
-                        Client.setSetChatData(setChatData);
-                        setChatData.start();
-                        break;
-                    case 6:
-//                        System.out.println("remote: " + new String(connectionData.getIdentityKey()));
-                        TestProtocol.identityKey = connectionData.getIdentityKey();
-                        TestProtocol.preKey = connectionData.getPreKey();
-                        TestProtocol.test();
-                        break;
-                    default:
-                        System.out.println("Unknown data.");
+                if (!dataHandler.handle(connectionData)) {
+                    return;
                 }
             }
         } catch (IOException e) {
-            loginModel.setErrorType(1);
-            e.printStackTrace();
-            System.out.println("Socket communication broke.");
+            handleIOException(e);
         } catch (IllegalStateException e) {
             e.printStackTrace();
             System.out.println(e.getMessage());
@@ -204,16 +226,8 @@ public class ClientThread extends Thread {
             e.printStackTrace();
             System.out.println("Unexpected Error.");
         } finally {
-            System.out.println("Finally handled.");
-            // Notify the loginModel thread anyway.
-            synchronized (loginModel) {
-                loginModel.notify();
-            }
-            try {
-                endConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            // TODO: invalidated server.
+            handleFinally();
         }
     }
 

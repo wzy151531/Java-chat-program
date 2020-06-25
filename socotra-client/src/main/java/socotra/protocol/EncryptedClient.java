@@ -4,13 +4,13 @@ import org.whispersystems.libsignal.IdentityKeyPair;
 import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.state.*;
 import org.whispersystems.libsignal.util.KeyHelper;
+import socotra.Client;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class TestClient {
+public class EncryptedClient {
 
-    private int userId;
-    private String username;
     private IdentityKeyPair identityKeyPair;
     private int registrationId;
     private List<PreKeyRecord> preKeys;
@@ -20,13 +20,30 @@ public class TestClient {
     private SignedPreKeyStore signedPreKeyStore;
     private IdentityKeyStore identityKeyStore;
 
-    public TestClient(int userId, String username) throws InvalidKeyException {
-        this.userId = userId;
-        this.username = username;
+    public EncryptedClient() {
+        Client.setEncryptedClient(this);
+        try {
+            create();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        }
+        init();
+    }
+
+    public EncryptedClient(String username) {
+        Client.setEncryptedClient(this);
+        // load();
+        init();
+    }
+
+    private void create() throws InvalidKeyException {
         this.identityKeyPair = KeyHelper.generateIdentityKeyPair();
         this.registrationId = KeyHelper.generateRegistrationId(false);
-        this.preKeys = KeyHelper.generatePreKeys(0, 2);
-        this.signedPreKey = KeyHelper.generateSignedPreKey(this.identityKeyPair, userId);
+        this.preKeys = KeyHelper.generatePreKeys(0, 10);
+        this.signedPreKey = KeyHelper.generateSignedPreKey(this.identityKeyPair, this.registrationId);
+    }
+
+    private void init() {
         this.sessionStore = new MySessionStore();
         this.preKeyStore = new MyPreKeyStore();
         this.signedPreKeyStore = new MySignedPreKeyStore();
@@ -35,6 +52,7 @@ public class TestClient {
         storeSignedPreKey();
     }
 
+
     private void storePreKeys() {
         for (PreKeyRecord preKeyRecord : this.preKeys) {
             preKeyStore.storePreKey(preKeyRecord.getId(), preKeyRecord);
@@ -42,15 +60,7 @@ public class TestClient {
     }
 
     private void storeSignedPreKey() {
-        signedPreKeyStore.storeSignedPreKey(this.userId, this.signedPreKey);
-    }
-
-    public int getUserId() {
-        return this.userId;
-    }
-
-    public String getUsername() {
-        return this.username;
+        signedPreKeyStore.storeSignedPreKey(this.signedPreKey.getId(), this.signedPreKey);
     }
 
     public IdentityKeyPair getIdentityKeyPair() {
@@ -59,6 +69,14 @@ public class TestClient {
 
     public List<PreKeyRecord> getPreKeys() {
         return this.preKeys;
+    }
+
+    public List<byte[]> getFlattenedPreKeys() {
+        List<byte[]> result = new ArrayList<>();
+        for (PreKeyRecord pk : this.preKeys) {
+            result.add(pk.getKeyPair().getPublicKey().serialize());
+        }
+        return result;
     }
 
     public SignedPreKeyRecord getSignedPreKey() {

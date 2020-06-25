@@ -3,9 +3,11 @@ package socotra.jdbc;
 import com.jcraft.jsch.*;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.KeyBundle;
 import socotra.util.Util;
 
 import java.io.*;
+import java.security.Key;
 import java.sql.*;
 import java.util.*;
 
@@ -19,6 +21,8 @@ public class JdbcUtil {
      * SshIP used to connect to school's ssh service.
      */
     private static String sshIP = "tinky-winky.cs.bham.ac.uk";
+    //    private static String dbHost = "mod-msc-sw1.cs.bham.ac.uk";
+    private static String dbHost = "dbteach2";
     /**
      * SshUser used to connect to school's ssh service.
      */
@@ -102,7 +106,7 @@ public class JdbcUtil {
         session.setConfig("StrictHostKeyChecking", "no");
         session.connect();
         System.out.println(session.getServerVersion());
-        forwardPort = session.setPortForwardingL(50001, "mod-msc-sw1.cs.bham.ac.uk", 5432);
+        forwardPort = session.setPortForwardingL(50001, dbHost, 5432);
         System.out.println("localhost:" + forwardPort);
     }
 
@@ -164,7 +168,12 @@ public class JdbcUtil {
      * @throws Exception Exception when doing sql statement.
      */
     public static boolean validateUser(String username, String password) throws Exception {
-        ResultSet resultSet = inquire("select * from test_user where username='" + username + "' and password='" + password + "'");
+        ResultSet resultSet = inquire("select * from users where username='" + username + "' and password='" + password + "'");
+        return resultSet.next();
+    }
+
+    private static boolean userExists(String username) throws Exception {
+        ResultSet resultSet = inquire("select * from users where username='" + username + "'");
         return resultSet.next();
     }
 
@@ -216,7 +225,7 @@ public class JdbcUtil {
      * @throws Exception The exception when query in database.
      */
     private static HashMap<Integer, String> queryUserIdNameMap() throws Exception {
-        ResultSet resultSet = inquire("select id, username from test_user");
+        ResultSet resultSet = inquire("select id, username from users");
         HashMap<Integer, String> result = new HashMap<>();
         while (resultSet.next()) {
             result.put(resultSet.getInt("id"), resultSet.getString("username"));
@@ -351,7 +360,7 @@ public class JdbcUtil {
      * @throws Exception The exception when query in database.
      */
     static int queryUserId(String username) throws Exception {
-        ResultSet resultSet = inquire("select id from test_user where username='" + username + "'");
+        ResultSet resultSet = inquire("select id from users where username='" + username + "'");
         while (resultSet.next()) {
             return resultSet.getInt("id");
         }
@@ -399,18 +408,43 @@ public class JdbcUtil {
         }
     }
 
-    public static void storeIdentityKey(int userId, byte[] identityKey, List<byte[]> preKeys) throws Exception {
-        String sql = "insert into key_bundle(userId, identityKey, preKeys) values (?, ?, ?)";
+    /**
+     * @param username
+     * @param password
+     * @return
+     */
+    // TODO
+    synchronized public static int signUp(String username, String password) throws Exception {
+        if (userExists(username)) {
+            throw new IllegalArgumentException("User already exists.");
+        }
+        insert("insert into users(username, password) values ('" + username + "', '" + password + "')");
+        ResultSet resultSet = inquire("select id from users where username='" + username + "'");
+        if (resultSet.next()) {
+            return resultSet.getInt("id");
+        }
+        throw new IllegalStateException("Insertion not success.");
+    }
+
+    private static byte[] flattenPreKeys(List<byte[]> preKeys) {
+        byte[] result = new byte[33 * preKeys.size()];
+        for (int i = 0; i < preKeys.size(); i++) {
+            System.arraycopy(preKeys.get(i), 0, result, 33 * i, 33);
+        }
+        return result;
+    }
+
+    public static void storeKeyBundle(int userId, KeyBundle keyBundle) throws Exception {
+        String sql = "insert into key_bundle(userId, registrationId, identityKey, preKeysId, preKeys, signedPreKeyId, signedPreKey, signedPreKeySignature) values (?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setInt(1, userId);
-        ps.setBytes(2, identityKey);
-        byte[] preKeysArr = new byte[33 * preKeys.size()];
-        for (int i = 0; i < preKeys.size(); i++) {
-            for (int j = 0; j < 33; j++) {
-                preKeysArr[i * 33 + j] = preKeys.get(i)[j];
-            }
-        }
-        ps.setBytes(3, preKeysArr);
+        ps.setInt(2, keyBundle.getRegistrationId());
+        ps.setBytes(3, keyBundle.getIdentityKey());
+        ps.setInt(4, 0);
+        ps.setBytes(5, flattenPreKeys(keyBundle.getPreKeys()));
+        ps.setInt(6, keyBundle.getSignedPreKeyId());
+        ps.setBytes(7, keyBundle.getSignedPreKey());
+        ps.setBytes(8, keyBundle.getSignedPreKeySignature());
         ps.executeUpdate();
     }
 
@@ -421,18 +455,15 @@ public class JdbcUtil {
             byte[] identityKey = resultSet.getBytes("identityKey");
             byte[] preKeys = resultSet.getBytes("preKeys");
             byte[] preKey = new byte[33];
-            for (int i = 0; i < 33; i++) {
-                preKey[i] = preKeys[i];
-            }
-            byte[] updatedPreKeys = new byte[preKeys.length - 33];
-            for (int i = 0; i < preKeys.length - 33; i++) {
-                updatedPreKeys[i] = preKeys[i + 33];
-            }
+            int preKeysLength = preKeys.length;
+            System.arraycopy(preKeys, 0, preKey, 0, 33);
+            byte[] updatedPreKeys = new byte[preKeysLength - 33];
+            System.arraycopy(preKeys, 33, updatedPreKeys, 0, preKeysLength - 33);
             String sql = "update key_bundle SET preKeys = ? WHERE userId='" + userId + "'";
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setBytes(1, updatedPreKeys);
             ps.executeUpdate();
-            System.out.println(new String(preKey));
+//            System.out.println(new String(preKey));
             result.add(identityKey);
             result.add(preKey);
             return result;

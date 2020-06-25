@@ -48,6 +48,9 @@ public class ConnectionData implements Serializable {
      * The validation result of the login connection data.
      */
     private boolean validated;
+
+    private boolean signUpSuccess;
+
     /**
      * The audio message of the audio connection data.
      */
@@ -69,10 +72,8 @@ public class ConnectionData implements Serializable {
      */
     private HashMap<ChatSession, List<ConnectionData>> chatData;
 
-    private byte[] identityKey;
-    private int userId;
-    private List<byte[]> preKeys;
-    private byte[] preKey;
+    private String receiverUsername;
+    private KeyBundle keyBundle;
 
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
@@ -117,6 +118,11 @@ public class ConnectionData implements Serializable {
         this.type = -4;
         this.userSignature = userSignature;
         this.chatSession = chatSession;
+    }
+
+    public ConnectionData(int type, boolean signUpSuccess) {
+        this.type = -5;
+        this.signUpSuccess = signUpSuccess;
     }
 
     /**
@@ -192,52 +198,38 @@ public class ConnectionData implements Serializable {
         this.userSignature = userSignature;
     }
 
-    public ConnectionData(byte[] identityKey, List<byte[]> preKeys, int userId) {
+    public ConnectionData(String username, String password, KeyBundle keyBundle) {
         this.type = 4;
-        this.identityKey = identityKey;
-        this.preKeys = preKeys;
-        this.userId = userId;
+        this.username = username;
+        this.password = password;
+        this.keyBundle = keyBundle;
     }
 
 
-    public ConnectionData(int userId) {
+    public ConnectionData(String receiverUsername, String userSignature) {
         this.type = 5;
-        this.userId = userId;
+        this.receiverUsername = receiverUsername;
+        this.userSignature = userSignature;
     }
 
-    public ConnectionData(byte[] identityKey, byte[] preKey, int userId) {
+    public ConnectionData(KeyBundle keyBundle, String receiverUsername) {
         this.type = 6;
-        this.identityKey = identityKey;
-        this.preKey = preKey;
-        this.userId = userId;
+        this.keyBundle = keyBundle;
+        this.receiverUsername = receiverUsername;
     }
 
-    public byte[] getIdentityKey() {
+    public KeyBundle getKeyBundle() {
         if (type != 4 && type != 6) {
-            throw new IllegalStateException("Type isn't 4, cannot get identityKey");
+            throw new IllegalStateException("Type isn't 4 or 6, cannot get keyBundle");
         }
-        return this.identityKey;
+        return this.keyBundle;
     }
 
-    public int getUserId() {
-        if (type != 4 && type != 5) {
-            throw new IllegalStateException("Type isn't 4, cannot get userId");
+    public String getReceiverUsername() {
+        if (type != 5 && type != 6) {
+            throw new IllegalStateException("Type isn't 5 or 6, cannot get receiverUsername");
         }
-        return this.userId;
-    }
-
-    public List<byte[]> getPreKeys() {
-        if (type != 4) {
-            throw new IllegalStateException("Type isn't 4, cannot get preKeys");
-        }
-        return this.preKeys;
-    }
-
-    public byte[] getPreKey() {
-        if (type != 6) {
-            throw new IllegalStateException("Type isn't 6, cannot get preKey");
-        }
-        return this.preKey;
+        return this.receiverUsername;
     }
 
     /**
@@ -291,7 +283,7 @@ public class ConnectionData implements Serializable {
      * @return The username of the login connection data.
      */
     public String getUsername() {
-        if (type != 0) {
+        if (type != 0 && type != 4) {
             throw new IllegalStateException("Type isn't 0, cannot get username.");
         }
         return username;
@@ -303,7 +295,7 @@ public class ConnectionData implements Serializable {
      * @return The password of the login connection data.
      */
     public String getPassword() {
-        if (type != 0) {
+        if (type != 0 && type != 4) {
             throw new IllegalStateException("Type isn't 0, cannot get password.");
         }
         return password;
@@ -343,6 +335,13 @@ public class ConnectionData implements Serializable {
             throw new IllegalStateException("Type isn't -1, cannot get validated.");
         }
         return validated;
+    }
+
+    public boolean getSignUpSuccess() {
+        if (type != -5) {
+            throw new IllegalStateException("Type isn't -5, cannot get signUpSuccess.");
+        }
+        return signUpSuccess;
     }
 
     /**

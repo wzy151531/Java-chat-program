@@ -1,9 +1,10 @@
 package socotra.model;
 
 import socotra.Client;
+import socotra.protocol.EncryptedClient;
 import socotra.util.Util;
 
-public class LoginModel {
+public class SignUpModel {
 
     /**
      * The error type of the connection.
@@ -22,13 +23,17 @@ public class LoginModel {
     /**
      * Send login connectionData to inform server.
      *
-     * @param serverName The server name needs to connect.
-     * @param username   The username used to login.
-     * @param password   The password used to login.
+     * @param username The username used to login.
+     * @param password The password used to login.
      * @return The errorType after login.
      */
-    public int handleLogin(String serverName, String username, String password) {
-        Client.setClientThread(new ClientThread(Util.isEmpty(serverName) ? "localhost" : serverName, username, password, 1));
+    public int handleSignUp(String username, String password) {
+        try {
+            EncryptedClient encryptedClient = new EncryptedClient();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Client.setClientThread(new ClientThread("localhost", username, password, 2));
         Client.getClientThread().start();
         synchronized (this) {
             try {
@@ -37,7 +42,8 @@ public class LoginModel {
                 e.printStackTrace();
             }
         }
-        System.out.println(errorType);
+        // TODO store key_bundle.
+        System.out.println(errorType); // 0
         return errorType;
     }
 

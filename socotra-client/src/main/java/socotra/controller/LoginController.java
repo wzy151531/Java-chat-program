@@ -13,6 +13,8 @@ import socotra.Client;
 import socotra.model.LoginModel;
 import socotra.util.Util;
 
+import java.io.IOException;
+
 /**
  * This file is about controller of login page.
  */
@@ -39,6 +41,11 @@ public class LoginController {
      */
     @FXML
     private Button loginButton;
+    /**
+     * The signUp button.
+     */
+    @FXML
+    private Button signUpButton;
 
     /**
      * Login event of loginButton.
@@ -68,28 +75,30 @@ public class LoginController {
                 Util.generateAlert(Alert.AlertType.ERROR, "Validation Error", "Invalidated user.", "Try again.").show();
                 break;
             default:
-                loadHomePage();
+                ControllerUtil controllerUtil = new ControllerUtil();
+                controllerUtil.loadHomePage();
                 break;
         }
     }
 
     /**
-     * Load home page once log in.
+     * Load sign up page.
+     *
+     * @param event The sign up button click event.
      */
-    private void loadHomePage() {
-        // Load .fxml file
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/home.fxml"));
+    public void signUp(ActionEvent event) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/signUp.fxml"));
         Pane tempPane = null;
         try {
             tempPane = loader.load();
 
-            Client.setHomeController(loader.getController());
+            Client.setSignUpController(loader.getController());
 
             // Construct scene
             Scene tempScene = new Scene(tempPane);
             // Set scene
             Client.setScene(tempScene);
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             Util.generateAlert(Alert.AlertType.ERROR, "Error", "Unexpected Error.", "Try again.").show();
         }

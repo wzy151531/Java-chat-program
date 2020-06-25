@@ -16,11 +16,13 @@ import socotra.common.ConnectionData;
 import socotra.controller.BoardController;
 import socotra.controller.HomeController;
 import socotra.controller.LoginController;
+import socotra.controller.SignUpController;
 import socotra.model.*;
 import socotra.protocol.*;
 import socotra.util.SendThread;
 import socotra.util.SetChatData;
 import socotra.util.SetOnlineUsers;
+import socotra.util.TestProtocol;
 
 import java.nio.charset.StandardCharsets;
 
@@ -50,6 +52,13 @@ public class Client extends Application {
      * Model of home page.
      */
     private static HomeModel homeModel;
+
+    private static SignUpController signUpController;
+
+    private static SignUpModel signUpModel;
+
+    private static EncryptedClient encryptedClient;
+
     /**
      * Controller of SnakeGame page
      */
@@ -60,6 +69,7 @@ public class Client extends Application {
     private static socotra.model.Food Food;
     private static socotra.model.Snake Snake;
     private static SnakePart SnakePart;
+
     /**
      * Communication thread with server.
      */
@@ -127,6 +137,14 @@ public class Client extends Application {
         Client.homeController = homeController;
     }
 
+    public static SignUpController getSignUpController() {
+        return signUpController;
+    }
+
+    public static void setSignUpController(SignUpController signUpController) {
+        Client.signUpController = signUpController;
+    }
+
     /**
      * Getter for homeModel.
      *
@@ -153,6 +171,22 @@ public class Client extends Application {
                 setChatData.notify();
             }
         }
+    }
+
+    public static SignUpModel getSignUpModel() {
+        return signUpModel;
+    }
+
+    public static void setSignUpModel(SignUpModel signUpModel) {
+        Client.signUpModel = signUpModel;
+    }
+
+    public static EncryptedClient getEncryptedClient() {
+        return encryptedClient;
+    }
+
+    public static void setEncryptedClient(EncryptedClient encryptedClient) {
+        Client.encryptedClient = encryptedClient;
     }
 
     /**
@@ -280,6 +314,8 @@ public class Client extends Application {
         // Show the stage
         primaryStage.show();
         stage = primaryStage;
+
+        TestProtocol.test();
     }
 
 }

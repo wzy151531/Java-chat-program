@@ -1,11 +1,15 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.scene.text.* ?>
 <?import javafx.scene.control.* ?>
 <?import javafx.scene.layout.* ?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="380.0"
-            prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1"
+            prefWidth="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="socotra.controller.LoginController">
     <children>
         <Label layoutX="174.0" layoutY="34.0" prefHeight="80.0" prefWidth="134.0" text="Login">
@@ -19,8 +23,8 @@
         <TextField fx:id="serverField" layoutX="172.0" layoutY="95.0"/>
         <TextField fx:id="usernameField" layoutX="172.0" layoutY="156.0"/>
         <PasswordField fx:id="passwordField" layoutX="172.0" layoutY="217.0"/>
-        <Button defaultButton="true" onAction="#login" fx:id="loginButton" layoutX="295.0" layoutY="293.0"
-                mnemonicParsing="false"
-                text="login"/>
+        <Button fx:id="loginButton" defaultButton="true" layoutX="295.0" layoutY="293.0" mnemonicParsing="false"
+                onAction="#login" text="login"/>
+        <Button fx:id="signUpButton" layoutX="225.0" layoutY="293.0" mnemonicParsing="false" onAction="#signUp" text="SignUp"/>
     </children>
 </AnchorPane>
