@@ -113,7 +113,7 @@ public class ServerThread extends Thread {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             System.out.println("Something went wrong. Ending service to client...");
             Server.removeClient(username, toClient);
             System.out.println("User removed. Current online users: " + Server.getClients().keySet());

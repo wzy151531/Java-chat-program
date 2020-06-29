@@ -5,18 +5,27 @@ import org.whispersystems.libsignal.IdentityKeyPair;
 import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.state.IdentityKeyStore;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
-public class MyIdentityKeyStore implements IdentityKeyStore {
+public class MyIdentityKeyStore implements IdentityKeyStore, Serializable {
 
     private final IdentityKeyPair identityKeyPair;
     private final int localRegistrationId;
     private final HashMap<SignalProtocolAddress, IdentityKey> identityKeyMap;
 
-    public MyIdentityKeyStore(IdentityKeyPair identityKeyPair, int localRegistrationId) {
+    MyIdentityKeyStore(IdentityKeyPair identityKeyPair, int localRegistrationId) {
         this.identityKeyPair = identityKeyPair;
         this.localRegistrationId = localRegistrationId;
         this.identityKeyMap = new HashMap<>();
+    }
+
+    HashMap<String, byte[]> getFormattedIdentityKeyMap() {
+        HashMap<String, byte[]> result = new HashMap<>();
+        identityKeyMap.forEach((k, v) -> {
+            result.put(k.getName(), v.serialize());
+        });
+        return result;
     }
 
     @Override

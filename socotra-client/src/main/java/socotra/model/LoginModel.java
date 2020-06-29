@@ -1,6 +1,7 @@
 package socotra.model;
 
 import socotra.Client;
+import socotra.protocol.Loader;
 import socotra.util.Util;
 
 public class LoginModel {
@@ -18,6 +19,7 @@ public class LoginModel {
     void setErrorType(int errorType) {
         this.errorType = errorType;
     }
+
 
     /**
      * Send login connectionData to inform server.
@@ -38,6 +40,10 @@ public class LoginModel {
             }
         }
         System.out.println(errorType);
+        if (errorType == 0) {
+            Loader loader = new Loader(username);
+            loader.loadStores();
+        }
         return errorType;
     }
 

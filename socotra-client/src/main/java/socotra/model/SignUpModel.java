@@ -2,7 +2,7 @@ package socotra.model;
 
 import socotra.Client;
 import socotra.protocol.EncryptedClient;
-import socotra.util.Util;
+import socotra.protocol.Saver;
 
 public class SignUpModel {
 
@@ -20,6 +20,7 @@ public class SignUpModel {
         this.errorType = errorType;
     }
 
+
     /**
      * Send login connectionData to inform server.
      *
@@ -28,11 +29,7 @@ public class SignUpModel {
      * @return The errorType after login.
      */
     public int handleSignUp(String username, String password) {
-        try {
-            EncryptedClient encryptedClient = new EncryptedClient();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        EncryptedClient encryptedClient = new EncryptedClient();
         Client.setClientThread(new ClientThread("localhost", username, password, 2));
         Client.getClientThread().start();
         synchronized (this) {
@@ -43,7 +40,10 @@ public class SignUpModel {
             }
         }
         // TODO store key_bundle.
-        System.out.println(errorType); // 0
+        if (errorType == 0) {
+            Saver saver = new Saver(username, encryptedClient);
+            saver.saveStores();
+        }
         return errorType;
     }
 

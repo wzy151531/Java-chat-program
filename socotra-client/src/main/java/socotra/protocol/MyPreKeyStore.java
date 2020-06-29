@@ -11,8 +11,16 @@ public class MyPreKeyStore implements PreKeyStore {
 
     private final HashMap<Integer, PreKeyRecord> preKeyMap;
 
-    public MyPreKeyStore() {
+    MyPreKeyStore() {
         this.preKeyMap = new HashMap<>();
+    }
+
+    HashMap<String, byte[]> getFormattedPreKeyMap() {
+        HashMap<String, byte[]> result = new HashMap<>();
+        preKeyMap.forEach((k, v) -> {
+            result.put(k.toString(), v.serialize());
+        });
+        return result;
     }
 
     @Override

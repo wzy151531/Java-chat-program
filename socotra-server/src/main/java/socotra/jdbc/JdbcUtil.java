@@ -453,19 +453,20 @@ public class JdbcUtil {
         ResultSet resultSet = inquire("select * from key_bundle where userId='" + userId + "'");
         while (resultSet.next()) {
             byte[] identityKey = resultSet.getBytes("identityKey");
-            byte[] preKeys = resultSet.getBytes("preKeys");
-            byte[] preKey = new byte[33];
-            int preKeysLength = preKeys.length;
-            System.arraycopy(preKeys, 0, preKey, 0, 33);
-            byte[] updatedPreKeys = new byte[preKeysLength - 33];
-            System.arraycopy(preKeys, 33, updatedPreKeys, 0, preKeysLength - 33);
-            String sql = "update key_bundle SET preKeys = ? WHERE userId='" + userId + "'";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setBytes(1, updatedPreKeys);
-            ps.executeUpdate();
-//            System.out.println(new String(preKey));
-            result.add(identityKey);
-            result.add(preKey);
+            System.out.println(new String(identityKey));
+//            byte[] preKeys = resultSet.getBytes("preKeys");
+//            byte[] preKey = new byte[33];
+//            int preKeysLength = preKeys.length;
+//            System.arraycopy(preKeys, 0, preKey, 0, 33);
+//            byte[] updatedPreKeys = new byte[preKeysLength - 33];
+//            System.arraycopy(preKeys, 33, updatedPreKeys, 0, preKeysLength - 33);
+//            String sql = "update key_bundle SET preKeys = ? WHERE userId='" + userId + "'";
+//            PreparedStatement ps = connection.prepareStatement(sql);
+//            ps.setBytes(1, updatedPreKeys);
+//            ps.executeUpdate();
+////            System.out.println(new String(preKey));
+//            result.add(identityKey);
+//            result.add(preKey);
             return result;
 
         }

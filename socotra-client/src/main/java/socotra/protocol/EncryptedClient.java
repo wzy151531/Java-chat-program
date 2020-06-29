@@ -15,10 +15,10 @@ public class EncryptedClient {
     private int registrationId;
     private List<PreKeyRecord> preKeys;
     private SignedPreKeyRecord signedPreKey;
-    private SessionStore sessionStore;
-    private PreKeyStore preKeyStore;
-    private SignedPreKeyStore signedPreKeyStore;
-    private IdentityKeyStore identityKeyStore;
+    private MySessionStore sessionStore;
+    private MyPreKeyStore preKeyStore;
+    private MySignedPreKeyStore signedPreKeyStore;
+    private MyIdentityKeyStore identityKeyStore;
 
     public EncryptedClient() {
         Client.setEncryptedClient(this);
@@ -28,12 +28,22 @@ public class EncryptedClient {
             e.printStackTrace();
         }
         init();
+        register();
     }
 
-    public EncryptedClient(String username) {
+    EncryptedClient(byte[] serializedIdentityKeyPair, int registrationId) {
         Client.setEncryptedClient(this);
-        // load();
+        try {
+            load(serializedIdentityKeyPair, registrationId);
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        }
         init();
+    }
+
+    private void load(byte[] serializedIdentityKeyPair, int registrationId) throws InvalidKeyException {
+        this.identityKeyPair = new IdentityKeyPair(serializedIdentityKeyPair);
+        this.registrationId = registrationId;
     }
 
     private void create() throws InvalidKeyException {
@@ -48,10 +58,12 @@ public class EncryptedClient {
         this.preKeyStore = new MyPreKeyStore();
         this.signedPreKeyStore = new MySignedPreKeyStore();
         this.identityKeyStore = new MyIdentityKeyStore(this.identityKeyPair, this.registrationId);
+    }
+
+    private void register() {
         storePreKeys();
         storeSignedPreKey();
     }
-
 
     private void storePreKeys() {
         for (PreKeyRecord preKeyRecord : this.preKeys) {
@@ -87,19 +99,19 @@ public class EncryptedClient {
         return this.registrationId;
     }
 
-    public SessionStore getSessionStore() {
+    public MySessionStore getSessionStore() {
         return this.sessionStore;
     }
 
-    public PreKeyStore getPreKeyStore() {
+    public MyPreKeyStore getPreKeyStore() {
         return this.preKeyStore;
     }
 
-    public SignedPreKeyStore getSignedPreKeyStore() {
+    public MySignedPreKeyStore getSignedPreKeyStore() {
         return this.signedPreKeyStore;
     }
 
-    public IdentityKeyStore getIdentityKeyStore() {
+    public MyIdentityKeyStore getIdentityKeyStore() {
         return this.identityKeyStore;
     }
 

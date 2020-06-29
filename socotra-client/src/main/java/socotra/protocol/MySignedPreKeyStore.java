@@ -13,8 +13,16 @@ public class MySignedPreKeyStore implements SignedPreKeyStore {
 
     private final HashMap<Integer, SignedPreKeyRecord> signedPreKeyMap;
 
-    public MySignedPreKeyStore() {
+    MySignedPreKeyStore() {
         this.signedPreKeyMap = new HashMap<>();
+    }
+
+    HashMap<String, byte[]> getFormattedSignedPreKeyMap() {
+        HashMap<String, byte[]> result = new HashMap<>();
+        signedPreKeyMap.forEach((k, v) -> {
+            result.put(k.toString(), v.serialize());
+        });
+        return result;
     }
 
     @Override

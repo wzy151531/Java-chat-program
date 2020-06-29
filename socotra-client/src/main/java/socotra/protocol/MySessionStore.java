@@ -13,8 +13,16 @@ public class MySessionStore implements SessionStore {
 
     private final HashMap<SignalProtocolAddress, SessionRecord> sessionMap;
 
-    public MySessionStore() {
+    MySessionStore() {
         this.sessionMap = new HashMap<>();
+    }
+
+    HashMap<String, byte[]> getFormattedSessionMap() {
+        HashMap<String, byte[]> result = new HashMap<>();
+        sessionMap.forEach((k, v) -> {
+            result.put(k.getName(), v.serialize());
+        });
+        return result;
     }
 
     @Override
