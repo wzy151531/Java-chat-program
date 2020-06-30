@@ -143,7 +143,7 @@ public class JdbcUtil {
      * @return The results from database.
      * @throws Exception Exception thrown while executing the sql.
      */
-    private static ResultSet inquire(String sql) throws Exception {
+    private static ResultSet inquire(String sql) throws SQLException {
         Statement statement = connection.createStatement();
         return statement.executeQuery(sql);
     }
@@ -359,9 +359,9 @@ public class JdbcUtil {
      * @return The userId of given user name.
      * @throws Exception The exception when query in database.
      */
-    static int queryUserId(String username) throws Exception {
+    static int queryUserId(String username) throws SQLException, IllegalArgumentException {
         ResultSet resultSet = inquire("select id from users where username='" + username + "'");
-        while (resultSet.next()) {
+        if (resultSet.next()) {
             return resultSet.getInt("id");
         }
         throw new IllegalArgumentException("Username does not exist.");
@@ -448,26 +448,30 @@ public class JdbcUtil {
         ps.executeUpdate();
     }
 
-    public static List<byte[]> queryKeyBundle(int userId) throws Exception {
-        List<byte[]> result = new ArrayList<>();
+    public static KeyBundle queryKeyBundle(String username) throws SQLException, IllegalArgumentException {
+        int userId = queryUserId(username);
         ResultSet resultSet = inquire("select * from key_bundle where userId='" + userId + "'");
         while (resultSet.next()) {
+            int registrationId = resultSet.getInt("registrationId");
             byte[] identityKey = resultSet.getBytes("identityKey");
-            System.out.println(new String(identityKey));
-//            byte[] preKeys = resultSet.getBytes("preKeys");
-//            byte[] preKey = new byte[33];
-//            int preKeysLength = preKeys.length;
-//            System.arraycopy(preKeys, 0, preKey, 0, 33);
-//            byte[] updatedPreKeys = new byte[preKeysLength - 33];
-//            System.arraycopy(preKeys, 33, updatedPreKeys, 0, preKeysLength - 33);
-//            String sql = "update key_bundle SET preKeys = ? WHERE userId='" + userId + "'";
-//            PreparedStatement ps = connection.prepareStatement(sql);
-//            ps.setBytes(1, updatedPreKeys);
-//            ps.executeUpdate();
+            int preKeysId = resultSet.getInt("preKeysId");
+            byte[] preKeys = resultSet.getBytes("preKeys");
+            int signedPreKeyId = resultSet.getInt("signedPreKeyId");
+            byte[] signedPreKey = resultSet.getBytes("signedPreKey");
+            byte[] signedPreKeySignature = resultSet.getBytes("signedPreKeySignature");
+
+            byte[] preKey = new byte[33];
+            int preKeysLength = preKeys.length;
+            System.arraycopy(preKeys, 0, preKey, 0, 33);
+            byte[] updatedPreKeys = new byte[preKeysLength - 33];
+            System.arraycopy(preKeys, 33, updatedPreKeys, 0, preKeysLength - 33);
+            String sql = "update key_bundle SET preKeys = ?, preKeysId = ? WHERE userId='" + userId + "'";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setBytes(1, updatedPreKeys);
+            ps.setInt(2, (preKeysId + 1) % 10);
+            ps.executeUpdate();
 ////            System.out.println(new String(preKey));
-//            result.add(identityKey);
-//            result.add(preKey);
-            return result;
+            return new KeyBundle(registrationId, identityKey, preKeysId, preKey, signedPreKeyId, signedPreKey, signedPreKeySignature);
 
         }
         throw new IllegalArgumentException("UserId does not exist.");

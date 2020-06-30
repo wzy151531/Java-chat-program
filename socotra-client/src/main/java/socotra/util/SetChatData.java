@@ -24,6 +24,7 @@ public class SetChatData extends Thread {
      * @param chatData The chat history data of user.
      */
     public SetChatData(HashMap<ChatSession, List<ConnectionData>> chatData) {
+        Client.setSetChatData(this);
         this.chatData = chatData;
     }
 

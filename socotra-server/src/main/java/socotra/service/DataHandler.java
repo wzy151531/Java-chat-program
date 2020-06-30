@@ -3,9 +3,11 @@ package socotra.service;
 import socotra.Server;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.KeyBundle;
 import socotra.jdbc.JdbcUtil;
 import socotra.util.Util;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -78,6 +80,7 @@ class DataHandler {
                 // Once received the text data, use a new thread to insert it into database.
                 JdbcUtil.insertClientChatData(connectionData);
             case 2:
+            case 7:
                 connectionData.setIsSent(true);
                 // If want to given received hint once server receive connectionData.
                 if (connectionData.getChatSession().getToUsernames().size() == 1) {
@@ -102,10 +105,12 @@ class DataHandler {
                 processOnline();
                 break;
             case 5:
-//                        List<byte[]> keyBundle = JdbcUtil.queryKeyBundle(connectionData.getReceiverUsername());
-//                        byte[] identityKey = keyBundle.get(0);
-//                        byte[] preKey = keyBundle.get(1);
-//                        Util.privateSend(new ConnectionData(identityKey, preKey, connectionData.getUserId()), connectionData.getUserSignature());
+                try {
+                    KeyBundle keyBundle = JdbcUtil.queryKeyBundle(connectionData.getReceiverUsername());
+                    Util.privateSend(new ConnectionData(keyBundle, connectionData.getReceiverUsername()), connectionData.getUserSignature());
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
                 break;
             default:
                 System.out.println("Unknown data.");

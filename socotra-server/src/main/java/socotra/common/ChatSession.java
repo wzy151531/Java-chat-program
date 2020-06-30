@@ -22,6 +22,8 @@ public class ChatSession implements Serializable {
      */
     private boolean hint;
 
+    private boolean encrypted;
+
     /**
      * Constructor for chatSession.
      *
@@ -31,6 +33,12 @@ public class ChatSession implements Serializable {
     public ChatSession(TreeSet<String> toUsernames, boolean hint) {
         this.toUsernames = toUsernames;
         this.hint = hint;
+    }
+
+    public ChatSession(TreeSet<String> toUsernames, boolean hint, boolean encrypted) {
+        this.toUsernames = toUsernames;
+        this.hint = hint;
+        this.encrypted = encrypted;
     }
 
     /**
@@ -69,6 +77,10 @@ public class ChatSession implements Serializable {
         this.hint = hint;
     }
 
+    public boolean isEncrypted() {
+        return encrypted;
+    }
+
     /**
      * Define own equal logic.
      *
@@ -78,7 +90,12 @@ public class ChatSession implements Serializable {
     @Override
     public boolean equals(Object o) {
         ChatSession chatSession = (ChatSession) o;
-        return this.toUsernames.equals(chatSession.toUsernames);
+        try {
+            return this.toUsernames.equals(chatSession.toUsernames);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**

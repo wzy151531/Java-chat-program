@@ -23,6 +23,7 @@ import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.model.HomeModel;
+import socotra.util.SendThread;
 import socotra.util.Util;
 
 import java.util.ArrayList;
@@ -403,8 +404,10 @@ public class HomeController {
                             clients.add(Client.getClientThread().getUsername());
                         }
                         if (!Client.getHomeModel().chatSessionExist(clients)) {
-                            ChatSession chatSession = new ChatSession(clients, true);
-                            Client.getHomeModel().appendChatSessionList(chatSession);
+//                            ChatSession chatSession = new ChatSession(clients, true);
+                            new SendThread(new ConnectionData(item, Client.getClientThread().getUsername())).start();
+
+//                            Client.getHomeModel().appendChatSessionList(chatSession);
                         }
                     });
                     Label clientName = new Label(item);
@@ -550,7 +553,7 @@ public class HomeController {
     /**
      * Load Rules page once click
      */
-    private void loadSnakeGamePage(){
+    private void loadSnakeGamePage() {
 
         try {
             Parent anotherRoot = FXMLLoader.load(getClass().getResource("/view/board.fxml"));
@@ -558,7 +561,7 @@ public class HomeController {
             anotherStage.setTitle("Snake Game");
             anotherStage.setScene(new Scene(anotherRoot, 600, 400));
             anotherStage.show();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -74,6 +74,8 @@ public class ConnectionData implements Serializable {
 
     private String receiverUsername;
     private KeyBundle keyBundle;
+    private byte[] cipherTextData;
+    private int cipherType;
 
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
@@ -205,7 +207,6 @@ public class ConnectionData implements Serializable {
         this.keyBundle = keyBundle;
     }
 
-
     public ConnectionData(String receiverUsername, String userSignature) {
         this.type = 5;
         this.receiverUsername = receiverUsername;
@@ -218,11 +219,34 @@ public class ConnectionData implements Serializable {
         this.receiverUsername = receiverUsername;
     }
 
+    public ConnectionData(byte[] cipherTextData, String userSignature, ChatSession chatSession, int cipherType) {
+        this.uuid = UUID.randomUUID();
+        this.type = 7;
+        this.cipherTextData = cipherTextData;
+        this.userSignature = userSignature;
+        this.chatSession = chatSession;
+        this.cipherType = cipherType;
+    }
+
     public KeyBundle getKeyBundle() {
         if (type != 4 && type != 6) {
             throw new IllegalStateException("Type isn't 4 or 6, cannot get keyBundle");
         }
         return this.keyBundle;
+    }
+
+    public byte[] getCipherTextData() {
+        if (type != 7) {
+            throw new IllegalStateException("Type isn't 7, cannot get cipherTextData");
+        }
+        return this.cipherTextData;
+    }
+
+    public int getCipherType() {
+        if (type != 7) {
+            throw new IllegalStateException("Type isn't 7, cannot get cipherType");
+        }
+        return this.cipherType;
     }
 
     public String getReceiverUsername() {
@@ -238,8 +262,8 @@ public class ConnectionData implements Serializable {
      * @return The uuid of connection data.
      */
     public UUID getUuid() {
-        if (type != 1 && type != 2 && type != -4) {
-            throw new IllegalStateException("Type isn't 1 or 2 or 4, cannot get uuid");
+        if (type != 1 && type != 2 && type != -4 && type != 7) {
+            throw new IllegalStateException("Type isn't 1 or 2 or 4 or 7, cannot get uuid");
         }
         return uuid;
     }
@@ -259,8 +283,8 @@ public class ConnectionData implements Serializable {
      * @return Indicates whether the connection data is sent.
      */
     public boolean getIsSent() {
-        if (type != 1 && type != 2) {
-            throw new IllegalStateException("Type isn't 1 or 2, cannot get isSent");
+        if (type != 1 && type != 2 && type != 7) {
+            throw new IllegalStateException("Type isn't 1 or 2 or 7, cannot get isSent");
         }
         return isSent;
     }
@@ -271,8 +295,8 @@ public class ConnectionData implements Serializable {
      * @param isSent Indicates whether the connection data is sent.
      */
     public void setIsSent(boolean isSent) {
-        if (type != 1 && type != 2) {
-            throw new IllegalStateException("Type isn't 1 or 2, cannot set isSent");
+        if (type != 1 && type != 2 && type != 7) {
+            throw new IllegalStateException("Type isn't 1 or 2 or 7, cannot set isSent");
         }
         this.isSent = isSent;
     }
@@ -284,7 +308,7 @@ public class ConnectionData implements Serializable {
      */
     public String getUsername() {
         if (type != 0 && type != 4) {
-            throw new IllegalStateException("Type isn't 0, cannot get username.");
+            throw new IllegalStateException("Type isn't 0 or 4, cannot get username.");
         }
         return username;
     }
@@ -296,7 +320,7 @@ public class ConnectionData implements Serializable {
      */
     public String getPassword() {
         if (type != 0 && type != 4) {
-            throw new IllegalStateException("Type isn't 0, cannot get password.");
+            throw new IllegalStateException("Type isn't 0 or 4, cannot get password.");
         }
         return password;
     }
@@ -374,8 +398,8 @@ public class ConnectionData implements Serializable {
      * @return The userSignature of the connection data.
      */
     public String getUserSignature() {
-        if (type != -2 && type != -4 && type != 1 && type != 2 && type != 3 && type != 5) {
-            throw new IllegalStateException("Type isn't -2 or -4 or 1 or 2 or 3, cannot get text data.");
+        if (type != -2 && type != -4 && type != 1 && type != 2 && type != 3 && type != 5 && type != 7) {
+            throw new IllegalStateException("Type isn't -2 or -4 or 1 or 2 or 3 or 5 or 7, cannot get text data.");
         }
         return userSignature;
     }
@@ -386,8 +410,8 @@ public class ConnectionData implements Serializable {
      * @return The chat session that connection data sent to.
      */
     public ChatSession getChatSession() {
-        if (type != 1 && type != 2 && type != -4) {
-            throw new IllegalStateException("Type isn't 1 or 2, cannot get chatSession");
+        if (type != 1 && type != 2 && type != -4 && type != 7) {
+            throw new IllegalStateException("Type isn't 1 or 2 or 4 or 7, cannot get chatSession");
         }
         return chatSession;
     }

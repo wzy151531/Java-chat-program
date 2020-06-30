@@ -10,15 +10,21 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
+import org.whispersystems.libsignal.SessionCipher;
+import org.whispersystems.libsignal.SignalProtocolAddress;
+import org.whispersystems.libsignal.UntrustedIdentityException;
+import org.whispersystems.libsignal.protocol.CiphertextMessage;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.controller.HomeController;
+import socotra.protocol.EncryptedClient;
 import socotra.util.SendThread;
 import socotra.util.Util;
 
 import javax.sound.sampled.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 
@@ -72,6 +78,7 @@ public class HomeModel {
      * The data line where it will be delivered to the speaker.
      */
     private SourceDataLine sourceDataLine;
+
     /**
      * Constructor for HomeModel.
      */
@@ -322,6 +329,29 @@ public class HomeModel {
         return new AudioFormat(sampleRate, sampleSizeInBits, channels, signed, bigEndian);
     }
 
+    private String generateReceiverUsername() throws IllegalStateException {
+        TreeSet<String> toUsernames = currentChatSession.getToUsernames();
+        if (toUsernames.size() != 2 || !toUsernames.contains(Client.getClientThread().getUsername())) {
+            throw new IllegalStateException("Bad current chat session.");
+        }
+        for (String username : toUsernames) {
+            if (!username.equals(Client.getClientThread().getUsername())) {
+                return username;
+            }
+        }
+        throw new IllegalStateException("Bad current chat session.");
+    }
+
+    private ConnectionData encryptTextData(String text) throws UntrustedIdentityException {
+        EncryptedClient encryptedClient = Client.getEncryptedClient();
+        String receiverUsername = generateReceiverUsername();
+        SessionCipher sessionCipher = new SessionCipher(encryptedClient.getSessionStore(), encryptedClient.getPreKeyStore(),
+                encryptedClient.getSignedPreKeyStore(), encryptedClient.getIdentityKeyStore(),
+                new SignalProtocolAddress(receiverUsername, 1));
+        CiphertextMessage ciphertextMessage = sessionCipher.encrypt(text.getBytes(StandardCharsets.UTF_8));
+        return new ConnectionData(ciphertextMessage.serialize(), Client.getClientThread().getUsername(), currentChatSession, ciphertextMessage.getType());
+    }
+
     /**
      * Send text to the server.
      *
@@ -335,7 +365,15 @@ public class HomeModel {
         } else {
             ConnectionData connectionData = new ConnectionData(text, Client.getClientThread().getUsername(), currentChatSession);
             appendChatData(connectionData);
-            new SendThread(connectionData).start();
+            if (currentChatSession.isEncrypted()) {
+                try {
+                    new SendThread(encryptTextData(text)).start();
+                } catch (UntrustedIdentityException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                new SendThread(connectionData).start();
+            }
         }
     }
 
