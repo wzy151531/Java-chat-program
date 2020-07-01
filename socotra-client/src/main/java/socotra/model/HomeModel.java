@@ -19,6 +19,7 @@ import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.controller.HomeController;
 import socotra.protocol.EncryptedClient;
+import socotra.protocol.Saver;
 import socotra.util.SendThread;
 import socotra.util.Util;
 
@@ -447,8 +448,8 @@ public class HomeModel {
      * Send log out connectionData to server.
      */
     public void handleLogout() {
-        ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUsername(), false);
-        new SendThread(connectionData, true).start();
+        Saver saver = new Saver(Client.getClientThread().getUsername(), Client.getEncryptedClient());
+        saver.saveStores();
 
         HashMap<ChatSession, List<ConnectionData>> newChatData = new HashMap<>();
         chatData.forEach((k, v) -> {
@@ -457,6 +458,9 @@ public class HomeModel {
         });
         ConnectionData connectionData1 = new ConnectionData(newChatData, Client.getClientThread().getUsername());
         new SendThread(connectionData1, true).start();
+
+//        ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUsername(), false);
+//        new SendThread(connectionData, true).start();
     }
 
     /**

@@ -159,7 +159,7 @@ public class ClientThread extends Thread {
             default:
                 break;
         }
-        e.printStackTrace();
+//        e.printStackTrace();
         System.out.println("Socket communication broke.");
     }
 

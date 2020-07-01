@@ -17,7 +17,7 @@ public class MySessionStore implements SessionStore {
         this.sessionMap = new HashMap<>();
     }
 
-    HashMap<String, byte[]> getFormattedSessionMap() {
+    public HashMap<String, byte[]> getFormattedSessionMap() {
         HashMap<String, byte[]> result = new HashMap<>();
         sessionMap.forEach((k, v) -> {
             result.put(k.getName(), v.serialize());
