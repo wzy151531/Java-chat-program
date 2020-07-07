@@ -1,6 +1,6 @@
 # Java Project
 
-This java project is about a client-server mode program based on socket.
+This java project is about a client-server mode and **E2EE** chat program based on socket and **Signal Protocol**.
 
 ## Alias
 
@@ -9,7 +9,7 @@ The whole project is divided into two parts: server and client. Both projects ar
 ## Current Function
 
 * Login validation via jdbc.
-* Send text message or audio to all connected clients or single connected client.
+* Send text message or audio to ~~all connected clients~~ or single connected client.
 * Local chat history in client memory.
 * Can send some emoji in chat.
 * Show current online clients.
@@ -17,7 +17,19 @@ The whole project is divided into two parts: server and client. Both projects ar
 * Show if the message is sent.
 * Search chat record at local.
 * Group chat.
-* Clients' text chat data stored in database.
+* ~~Clients' text chat data stored in database.~~
+* Single E2EE chat between two clients.
+* Save storages at client local.
+
+## TODO List
+
+- [] Server stores unreceived message until the receiver is online.
+- [] Save history message at client local.
+- [] Client appends pre keys to database.
+- [] Client update signed pre key in database.
+- [] Group chat.
+- [] Store symmetric encryption key that encrypts the history messages in client OP-TEE.
+- [] History messages backup from old device to new device.
 
 ## Quick Start
 
@@ -28,7 +40,7 @@ For server project, first you need to add a `jdbc.properties` file which include
 ```bash
 sshUser=aaa111
 sshPassword=password
-dbUser=socotra
+dbUser=username
 dbPassword=password
 ```
 
