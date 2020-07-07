@@ -10,6 +10,7 @@ import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
 import socotra.protocol.EncryptedClient;
+import socotra.protocol.EncryptionHandler;
 import socotra.util.SendThread;
 import socotra.util.SetOnlineUsers;
 
@@ -37,39 +38,6 @@ public class DataHandler {
         sessionBuilder.process(preKeyBundle);
     }
 
-    private String generateSenderUsername(ChatSession chatSession) throws IllegalStateException {
-        TreeSet<String> toUsernames = chatSession.getToUsernames();
-        if (toUsernames.size() != 2 || !toUsernames.contains(Client.getClientThread().getUsername())) {
-            throw new IllegalStateException("Bad current chat session.");
-        }
-        for (String username : toUsernames) {
-            if (!username.equals(Client.getClientThread().getUsername())) {
-                return username;
-            }
-        }
-        throw new IllegalStateException("Bad current chat session.");
-    }
-
-    private ConnectionData decryptTextData(ConnectionData connectionData) throws Exception {
-        EncryptedClient encryptedClient = Client.getEncryptedClient();
-        String senderUsername = generateSenderUsername(connectionData.getChatSession());
-        SignalProtocolAddress senderAddress = new SignalProtocolAddress(senderUsername, 1);
-        SessionCipher sessionCipher = new SessionCipher(encryptedClient.getSessionStore(), encryptedClient.getPreKeyStore(),
-                encryptedClient.getSignedPreKeyStore(), encryptedClient.getIdentityKeyStore(), senderAddress);
-        String plainText;
-        switch (connectionData.getCipherType()) {
-            case 2:
-                plainText = new String(sessionCipher.decrypt(new SignalMessage(connectionData.getCipherTextData())));
-                break;
-            case 3:
-                plainText = new String(sessionCipher.decrypt(new PreKeySignalMessage(connectionData.getCipherTextData())));
-                break;
-            default:
-                throw new IllegalStateException("Bad encrypted text.");
-        }
-        return new ConnectionData(plainText, connectionData.getUserSignature(), connectionData.getChatSession());
-    }
-
     boolean handle(ConnectionData connectionData) {
         switch (connectionData.getType()) {
             // If connectionData is about the result of user's validation.
@@ -81,7 +49,6 @@ public class DataHandler {
                 synchronized (loginModel) {
                     loginModel.notify();
                 }
-//                        TestProtocol.init();
                 break;
             // If connectionData is about users online information.
             case -2:
@@ -98,7 +65,6 @@ public class DataHandler {
                 SetOnlineUsers setOnlineUsers = new SetOnlineUsers(connectionData.getOnlineUsers());
                 Client.setSetOnlineUsers(setOnlineUsers);
                 setOnlineUsers.start();
-//                        TestProtocol.query();
                 break;
             // If connectionData is about received hint.
             case -4:
@@ -120,7 +86,7 @@ public class DataHandler {
             case 7:
                 if (connectionData.getType() == 7) {
                     try {
-                        Client.getHomeModel().appendChatData(decryptTextData(connectionData));
+                        Client.getHomeModel().appendChatData(EncryptionHandler.decryptTextData(connectionData));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -135,8 +101,8 @@ public class DataHandler {
 //                Client.setSetChatData(setChatData);
 //                setChatData.start();
 //                break;
+            // If connectionData is about receiver's key bundle.
             case 6:
-//                System.out.println("remote: " + new String(connectionData.getKeyBundle().getIdentityKey()));
                 TreeSet<String> clients = new TreeSet<>();
                 clients.add(connectionData.getReceiverUsername());
                 clients.add(Client.getClientThread().getUsername());

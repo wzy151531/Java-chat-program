@@ -19,6 +19,7 @@ import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.controller.HomeController;
 import socotra.protocol.EncryptedClient;
+import socotra.protocol.EncryptionHandler;
 import socotra.protocol.Saver;
 import socotra.util.SendThread;
 import socotra.util.Util;
@@ -330,29 +331,6 @@ public class HomeModel {
         return new AudioFormat(sampleRate, sampleSizeInBits, channels, signed, bigEndian);
     }
 
-    private String generateReceiverUsername() throws IllegalStateException {
-        TreeSet<String> toUsernames = currentChatSession.getToUsernames();
-        if (toUsernames.size() != 2 || !toUsernames.contains(Client.getClientThread().getUsername())) {
-            throw new IllegalStateException("Bad current chat session.");
-        }
-        for (String username : toUsernames) {
-            if (!username.equals(Client.getClientThread().getUsername())) {
-                return username;
-            }
-        }
-        throw new IllegalStateException("Bad current chat session.");
-    }
-
-    private ConnectionData encryptTextData(String text) throws UntrustedIdentityException {
-        EncryptedClient encryptedClient = Client.getEncryptedClient();
-        String receiverUsername = generateReceiverUsername();
-        SessionCipher sessionCipher = new SessionCipher(encryptedClient.getSessionStore(), encryptedClient.getPreKeyStore(),
-                encryptedClient.getSignedPreKeyStore(), encryptedClient.getIdentityKeyStore(),
-                new SignalProtocolAddress(receiverUsername, 1));
-        CiphertextMessage ciphertextMessage = sessionCipher.encrypt(text.getBytes(StandardCharsets.UTF_8));
-        return new ConnectionData(ciphertextMessage.serialize(), Client.getClientThread().getUsername(), currentChatSession, ciphertextMessage.getType());
-    }
-
     /**
      * Send text to the server.
      *
@@ -368,7 +346,7 @@ public class HomeModel {
             appendChatData(connectionData);
             if (currentChatSession.isEncrypted()) {
                 try {
-                    new SendThread(encryptTextData(text)).start();
+                    new SendThread(EncryptionHandler.encryptTextData(text, currentChatSession)).start();
                 } catch (UntrustedIdentityException e) {
                     e.printStackTrace();
                 }
