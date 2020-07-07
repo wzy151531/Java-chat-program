@@ -1,4 +1,4 @@
-# Java Project
+# Secure E2EE Chat Application
 
 This java project is about a client-server mode and **E2EE** chat program based on socket and **Signal Protocol**.
 
@@ -23,11 +23,11 @@ The whole project is divided into two parts: server and client. Both projects ar
 
 ## TODO List
 
-- [ ] Server stores unreceived message until the receiver is online.
-- [ ] Save history message at client local.
+- [ ] Server stores unreceived messages until the receiver is online.
+- [ ] Save history messages at client local.
 - [ ] Client appends pre keys to database.
-- [ ] Client update signed pre key in database.
-- [ ] Group chat.
+- [ ] Client updates signed pre key in database.
+- [ ] Encrypted group chat.
 - [ ] Store symmetric encryption key that encrypts the history messages in client OP-TEE.
 - [ ] History messages backup from old device to new device.
 
