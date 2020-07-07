@@ -462,14 +462,18 @@ public class JdbcUtil {
 
             byte[] preKey = new byte[33];
             int preKeysLength = preKeys.length;
-            System.arraycopy(preKeys, 0, preKey, 0, 33);
-            byte[] updatedPreKeys = new byte[preKeysLength - 33];
-            System.arraycopy(preKeys, 33, updatedPreKeys, 0, preKeysLength - 33);
-            String sql = "update key_bundle SET preKeys = ?, preKeysId = ? WHERE userId='" + userId + "'";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setBytes(1, updatedPreKeys);
-            ps.setInt(2, (preKeysId + 1) % 10);
-            ps.executeUpdate();
+            if (preKeysLength > 33) {
+                System.arraycopy(preKeys, 0, preKey, 0, 33);
+                byte[] updatedPreKeys = new byte[preKeysLength - 33];
+                System.arraycopy(preKeys, 33, updatedPreKeys, 0, preKeysLength - 33);
+                String sql = "update key_bundle SET preKeys = ?, preKeysId = ? WHERE userId='" + userId + "'";
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setBytes(1, updatedPreKeys);
+                ps.setInt(2, (preKeysId + 1) % 10);
+                ps.executeUpdate();
+            } else {
+                preKey = null;
+            }
 ////            System.out.println(new String(preKey));
             return new KeyBundle(registrationId, identityKey, preKeysId, preKey, signedPreKeyId, signedPreKey, signedPreKeySignature);
 

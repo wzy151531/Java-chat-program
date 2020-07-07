@@ -32,7 +32,7 @@ public class DataHandler {
                 encryptedClient.getSignedPreKeyStore(), encryptedClient.getIdentityKeyStore(),
                 new SignalProtocolAddress(receiverName, 1));
         PreKeyBundle preKeyBundle = new PreKeyBundle(keyBundle.getRegistrationId(), 1, keyBundle.getPreKeyId(),
-                Curve.decodePoint(keyBundle.getPreKey(), 0), keyBundle.getSignedPreKeyId(),
+                keyBundle.getPreKey() == null ? null : Curve.decodePoint(keyBundle.getPreKey(), 0), keyBundle.getSignedPreKeyId(),
                 Curve.decodePoint(keyBundle.getSignedPreKey(), 0), keyBundle.getSignedPreKeySignature(),
                 new IdentityKey(keyBundle.getIdentityKey(), 0));
         sessionBuilder.process(preKeyBundle);

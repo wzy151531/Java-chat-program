@@ -24,6 +24,7 @@ import socotra.protocol.Saver;
 import socotra.util.SendThread;
 import socotra.util.Util;
 
+import javax.management.remote.JMXConnectionNotification;
 import javax.sound.sampled.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -171,15 +172,17 @@ public class HomeModel {
                 certainChatData = FXCollections.observableArrayList(new ArrayList<>());
                 certainChatData.add(connectionData);
                 this.chatData.put(key, certainChatData);
-                this.appendChatSessionList(key);
+//                this.appendChatSessionList(key);
+                key.setHint(true);
+                this.chatSessionList.add(key);
             } else {
                 certainChatData.add(connectionData);
             }
             Client.getHomeController().scrollChatList();
             if (currentChatSession == null || !key.equals(currentChatSession)) {
-                System.out.println("need to set hint");
-                System.out.println(chatSessionList);
-                System.out.println(key);
+//                System.out.println("need to set hint");
+//                System.out.println(chatSessionList.size());
+//                System.out.println(key);
                 chatSessionList.forEach(n -> {
                     if (n.equals(key)) {
                         System.out.println("Set hint true");
@@ -342,17 +345,20 @@ public class HomeModel {
         } else if (this.currentChatSession == null) {
             Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Please choose a user to send message.", "Try again.").show();
         } else {
-            ConnectionData connectionData = new ConnectionData(text, Client.getClientThread().getUsername(), currentChatSession);
-            appendChatData(connectionData);
+            ConnectionData connectionData;
             if (currentChatSession.isEncrypted()) {
                 try {
-                    new SendThread(EncryptionHandler.encryptTextData(text, currentChatSession)).start();
+                    connectionData = EncryptionHandler.encryptTextData(text, currentChatSession);
+                    appendChatData(new ConnectionData(text, connectionData.getUuid(), connectionData.getUserSignature(), connectionData.getChatSession()));
                 } catch (UntrustedIdentityException e) {
                     e.printStackTrace();
+                    return;
                 }
             } else {
-                new SendThread(connectionData).start();
+                connectionData = new ConnectionData(text, Client.getClientThread().getUsername(), currentChatSession);
+                appendChatData(connectionData);
             }
+            new SendThread(connectionData).start();
         }
     }
 

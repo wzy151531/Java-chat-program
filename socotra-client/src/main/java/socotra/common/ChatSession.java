@@ -93,7 +93,7 @@ public class ChatSession implements Serializable {
         try {
             return this.toUsernames.equals(chatSession.toUsernames);
         } catch (NullPointerException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return false;
         }
     }

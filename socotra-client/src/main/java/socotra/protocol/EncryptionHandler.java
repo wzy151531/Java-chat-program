@@ -42,7 +42,7 @@ public abstract class EncryptionHandler {
             default:
                 throw new IllegalStateException("Bad encrypted text data.");
         }
-        return new ConnectionData(plainText, connectionData.getUserSignature(), connectionData.getChatSession());
+        return new ConnectionData(plainText, connectionData.getUuid(), connectionData.getUserSignature(), connectionData.getChatSession());
     }
 
     private static String extractTheOtherName(ChatSession chatSession) throws IllegalStateException {
