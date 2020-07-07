@@ -8,6 +8,7 @@ out/
 build/
 repos/
 jdbc.properties
+userData/
 
 
 # Ignore Gradle GUI config

@@ -95,24 +95,38 @@ public class TestProtocol {
         byte[] result2To1_1 = sessionCipher1To2.decrypt(new SignalMessage(message2To1_1.serialize()));
         System.out.println(new String(result2To1_1));
 
+        // TODO cannot decrypt the message that encrypted by self.
+//        byte[] temp = sessionCipher1To2.decrypt(new SignalMessage(message1To2_3.serialize()));
+//        System.out.println(new String(temp));
+
         // lack of the session, so need the message1To2_3 contains the preKey of user1.
         byte[] result1To2_3 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_3.serialize()));
         System.out.println(new String(result1To2_3));
 
+        // TODO tc2 update signed pre key and tc1 create a new sessionCipher with him.
+        tc2.updateSignedPreKey();
+        PreKeyBundle preKeyBundle2_1_2 = new PreKeyBundle(tc2.getRegistrationId(), 1, tc2.getPreKeys().get(1).getId(), tc2.getPreKeys().get(1).getKeyPair().getPublicKey(),
+                tc2.getSignedPreKey().getId(), tc2.getSignedPreKey().getKeyPair().getPublicKey(), tc2.getSignedPreKey().getSignature(),
+                identityKeyTemp);
+        sessionBuilder1To2.process(preKeyBundle2_1_2);
+
+
         // The order does not matter.
         CiphertextMessage message1To2_4 = sessionCipher1To2.encrypt("4".getBytes(StandardCharsets.UTF_8));
 
-        CiphertextMessage message1To2_5 = sessionCipher1To2.encrypt("5".getBytes(StandardCharsets.UTF_8));
+//        CiphertextMessage message1To2_5 = sessionCipher1To2.encrypt("5".getBytes(StandardCharsets.UTF_8));
+//
+//        byte[] result1To2_5 = sessionCipher2To1.decrypt(new SignalMessage(message1To2_5.serialize()));
+//        System.out.println(new String(result1To2_5));
 
-        byte[] result1To2_5 = sessionCipher2To1.decrypt(new SignalMessage(message1To2_5.serialize()));
-        System.out.println(new String(result1To2_5));
-
-        byte[] result1To2_4 = sessionCipher2To1.decrypt(new SignalMessage(message1To2_4.serialize()));
+        byte[] result1To2_4 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_4.serialize()));
         System.out.println(new String(result1To2_4));
+
 
         tc1.getSessionStore().deleteSession(signalProtocolAddress2);
         tc2.getSessionStore().deleteSession(signalProtocolAddress1);
-        PreKeyBundle preKeyBundle2_2 = new PreKeyBundle(tc2.getRegistrationId(), 1, tc2.getPreKeys().get(1).getId(), tc2.getPreKeys().get(1).getKeyPair().getPublicKey(),
+        // TODO the preKey can be null, and whilst the preKeyId can be random.
+        PreKeyBundle preKeyBundle2_2 = new PreKeyBundle(tc2.getRegistrationId(), 1, 0, null,
                 tc2.getSignedPreKey().getId(), tc2.getSignedPreKey().getKeyPair().getPublicKey(), tc2.getSignedPreKey().getSignature(),
                 tc2.getIdentityKeyPair().getPublicKey());
         sessionBuilder1To2.process(preKeyBundle2_2);

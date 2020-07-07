@@ -75,6 +75,16 @@ public class EncryptedClient {
         signedPreKeyStore.storeSignedPreKey(this.signedPreKey.getId(), this.signedPreKey);
     }
 
+    public void updateSignedPreKey() {
+        signedPreKeyStore.removeSignedPreKey(this.signedPreKey.getId());
+        try {
+            this.signedPreKey = KeyHelper.generateSignedPreKey(this.identityKeyPair, this.registrationId);
+            storeSignedPreKey();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        }
+    }
+
     public IdentityKeyPair getIdentityKeyPair() {
         return this.identityKeyPair;
     }
