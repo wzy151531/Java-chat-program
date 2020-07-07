@@ -18,8 +18,8 @@ The whole project is divided into two parts: server and client. Both projects ar
 * Search chat record at local.
 * Group chat.
 * ~~Clients' text chat data stored in database.~~
-* Single E2EE chat between two clients.
-* Save storages at client local.
+* Single E2EE chat between two clients(include text and audio data).
+* Save signal storages at client local.
 
 ## TODO List
 
