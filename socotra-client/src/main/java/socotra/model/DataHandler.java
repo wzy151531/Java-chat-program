@@ -84,16 +84,7 @@ public class DataHandler {
             case 1:
             case 2:
             case 7:
-                if (connectionData.getType() == 7) {
-                    try {
-                        Client.getHomeModel().appendChatData(EncryptionHandler.decryptTextData(connectionData));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    Client.getHomeModel().appendChatData(connectionData);
-                }
-                new SendThread(new ConnectionData(connectionData.getUuid(), Client.getClientThread().getUsername(), connectionData.getChatSession())).start();
+                handleChatMessage(connectionData);
                 break;
             // If connectionData is about chat history data.
 //            case 3:
@@ -122,6 +113,28 @@ public class DataHandler {
                 System.out.println("Unknown data.");
         }
         return true;
+    }
+
+    private void handleChatMessage(ConnectionData connectionData) {
+        if (connectionData.getType() == 7) {
+            try {
+                switch (connectionData.getDataType()) {
+                    case ConnectionData.ENCRYPTED_TEXT:
+                        Client.getHomeModel().appendChatData(EncryptionHandler.decryptTextData(connectionData));
+                        break;
+                    case ConnectionData.ENCRYPTED_AUDIO:
+                        Client.getHomeModel().appendChatData(EncryptionHandler.decryptAudioData(connectionData));
+                        break;
+                    default:
+                        throw new IllegalStateException("Bad data type.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            Client.getHomeModel().appendChatData(connectionData);
+        }
+        new SendThread(new ConnectionData(connectionData.getUuid(), Client.getClientThread().getUsername(), connectionData.getChatSession())).start();
     }
 
 }

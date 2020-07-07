@@ -12,6 +12,9 @@ import java.util.UUID;
 
 public class ConnectionData implements Serializable {
 
+
+    public static final int ENCRYPTED_TEXT = 1;
+    public static final int ENCRYPTED_AUDIO = 2;
     /**
      * Serial version uid.
      */
@@ -74,8 +77,9 @@ public class ConnectionData implements Serializable {
 
     private String receiverUsername;
     private KeyBundle keyBundle;
-    private byte[] cipherTextData;
+    private byte[] cipherData;
     private int cipherType;
+    private int dataType;
 
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
@@ -188,6 +192,14 @@ public class ConnectionData implements Serializable {
         this.chatSession = chatSession;
     }
 
+    public ConnectionData(byte[] audioData, UUID uuid, String userSignature, ChatSession chatSession) {
+        this.uuid = uuid;
+        this.type = 2;
+        this.audioData = audioData;
+        this.userSignature = userSignature;
+        this.chatSession = chatSession;
+    }
+
     /**
      * If connection data is about chatData, the connectino data's type is 3.
      *
@@ -219,13 +231,14 @@ public class ConnectionData implements Serializable {
         this.receiverUsername = receiverUsername;
     }
 
-    public ConnectionData(byte[] cipherTextData, String userSignature, ChatSession chatSession, int cipherType) {
+    public ConnectionData(byte[] cipherData, String userSignature, ChatSession chatSession, int cipherType, int dataType) {
         this.uuid = UUID.randomUUID();
         this.type = 7;
-        this.cipherTextData = cipherTextData;
+        this.cipherData = cipherData;
         this.userSignature = userSignature;
         this.chatSession = chatSession;
         this.cipherType = cipherType;
+        this.dataType = dataType;
     }
 
     public KeyBundle getKeyBundle() {
@@ -235,11 +248,11 @@ public class ConnectionData implements Serializable {
         return this.keyBundle;
     }
 
-    public byte[] getCipherTextData() {
+    public byte[] getCipherData() {
         if (type != 7) {
-            throw new IllegalStateException("Type isn't 7, cannot get cipherTextData");
+            throw new IllegalStateException("Type isn't 7, cannot get cipherData");
         }
-        return this.cipherTextData;
+        return this.cipherData;
     }
 
     public int getCipherType() {
@@ -247,6 +260,13 @@ public class ConnectionData implements Serializable {
             throw new IllegalStateException("Type isn't 7, cannot get cipherType");
         }
         return this.cipherType;
+    }
+
+    public int getDataType() {
+        if (type != 7) {
+            throw new IllegalStateException("Type isn't 7, cannot get dataType");
+        }
+        return this.dataType;
     }
 
     public String getReceiverUsername() {

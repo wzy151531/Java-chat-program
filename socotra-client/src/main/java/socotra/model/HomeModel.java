@@ -368,8 +368,19 @@ public class HomeModel {
     public void handleSendAudio() {
         try {
             byte[] audioData = byteArrayOutputStream.toByteArray();
-            ConnectionData connectionData = new ConnectionData(audioData, Client.getClientThread().getUsername(), currentChatSession);
-            appendChatData(connectionData);
+            ConnectionData connectionData;
+            if (currentChatSession.isEncrypted()) {
+                try {
+                    connectionData = EncryptionHandler.encryptAudioData(audioData, currentChatSession);
+                    appendChatData(new ConnectionData(audioData, connectionData.getUuid(), Client.getClientThread().getUsername(), currentChatSession));
+                } catch (UntrustedIdentityException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            } else {
+                connectionData = new ConnectionData(audioData, Client.getClientThread().getUsername(), currentChatSession);
+                appendChatData(connectionData);
+            }
             new SendThread(connectionData).start();
         } catch (Exception e) {
             e.printStackTrace();
