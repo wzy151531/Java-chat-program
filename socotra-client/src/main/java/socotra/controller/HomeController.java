@@ -1,5 +1,6 @@
 package socotra.controller;
 
+import com.vdurmont.emoji.EmojiManager;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -355,7 +356,8 @@ public class HomeController {
                 } else {
                     TreeSet<String> temp = new TreeSet<>(item.getToUsernames());
                     temp.remove(Client.getClientThread().getUsername());
-                    String chatName = Util.generateChatName(temp);
+                    String chatMembers = Util.generateChatName(temp);
+                    String chatName = item.isEncrypted() ? EmojiManager.getForAlias("lock").getUnicode() + chatMembers : chatMembers;
                     Button button = new Button(chatName);
                     button.setPrefSize(170.0, 15.0);
                     button.setFont(new Font(15));
