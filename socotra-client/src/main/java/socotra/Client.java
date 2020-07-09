@@ -298,10 +298,8 @@ public class Client extends Application {
     }
 
     public static void closeWaitingAlert() {
-        Platform.runLater(() -> {
-            waitingAlert.setAlertType(Alert.AlertType.INFORMATION);
-            waitingAlert.close();
-        });
+        waitingAlert.setAlertType(Alert.AlertType.INFORMATION);
+        waitingAlert.close();
     }
 
     /**

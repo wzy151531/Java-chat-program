@@ -151,8 +151,8 @@ public class ClientThread extends Thread {
     }
 
     private void handleIOException(IOException e) {
-        Client.closeWaitingAlert();
         Platform.runLater(() -> {
+            Client.closeWaitingAlert();
             Util.generateAlert(Alert.AlertType.ERROR, "Connection Error", "Invalidated Server.", "Try again.").show();
         });
         System.out.println("Socket communication broke.");
