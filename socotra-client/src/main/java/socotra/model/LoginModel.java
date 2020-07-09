@@ -16,20 +16,6 @@ import java.util.TreeSet;
 
 public class LoginModel {
 
-    /**
-     * The error type of the connection.
-     */
-    private int errorType = 0;
-
-    /**
-     * Setter for error type.
-     *
-     * @param errorType The error type needs to be set.
-     */
-    void setErrorType(int errorType) {
-        this.errorType = errorType;
-    }
-
     private HashMap<ChatSession, List<ConnectionData>> generateChatData(EncryptedClient encryptedClient) {
         HashMap<ChatSession, List<ConnectionData>> result = new HashMap<>();
         MySessionStore mySessionStore = encryptedClient.getSessionStore();
@@ -42,6 +28,14 @@ public class LoginModel {
         return result;
     }
 
+    void loadStores() {
+        Loader loader = new Loader(Client.getClientThread().getUsername());
+        loader.loadStores();
+        SetChatData setChatData = new SetChatData(generateChatData(Client.getEncryptedClient()));
+        Client.setSetChatData(setChatData);
+        setChatData.start();
+    }
+
     /**
      * Send login connectionData to inform server.
      *
@@ -50,25 +44,8 @@ public class LoginModel {
      * @param password   The password used to login.
      * @return The errorType after login.
      */
-    public int handleLogin(String serverName, String username, String password) {
+    public void handleLogin(String serverName, String username, String password) {
         Client.setClientThread(new ClientThread(Util.isEmpty(serverName) ? "localhost" : serverName, username, password, 1));
         Client.getClientThread().start();
-        synchronized (this) {
-            try {
-                this.wait();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        System.out.println(errorType);
-        if (errorType == 0) {
-            Loader loader = new Loader(username);
-            loader.loadStores();
-            SetChatData setChatData = new SetChatData(generateChatData(Client.getEncryptedClient()));
-            Client.setSetChatData(setChatData);
-            setChatData.start();
-        }
-        return errorType;
     }
-
 }

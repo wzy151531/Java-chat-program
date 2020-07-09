@@ -7,12 +7,12 @@ import javafx.scene.layout.Pane;
 import socotra.Client;
 import socotra.util.Util;
 
-class ControllerUtil {
+public class ControllerUtil {
 
     /**
      * Load home page once log in.
      */
-    void loadHomePage() {
+    public void loadHomePage() {
         // Load .fxml file
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/home.fxml"));
         Pane tempPane = null;

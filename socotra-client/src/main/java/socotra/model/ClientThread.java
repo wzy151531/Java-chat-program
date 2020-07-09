@@ -1,10 +1,14 @@
 package socotra.model;
 
+import javafx.animation.RotateTransition;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import org.whispersystems.libsignal.state.PreKeyRecord;
 import socotra.Client;
 import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
 import socotra.protocol.EncryptedClient;
+import socotra.util.Util;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.*;
@@ -128,7 +132,6 @@ public class ClientThread extends Thread {
     }
 
     private void processLogin() throws IOException {
-        loginModel.setErrorType(0);
         toServer.writeObject(new ConnectionData(-1, username, password));
     }
 
@@ -143,46 +146,27 @@ public class ClientThread extends Thread {
     }
 
     private void processSignUp() throws IOException {
-        signUpModel.setErrorType(0);
         EncryptedClient encryptedClient = Client.getEncryptedClient();
         toServer.writeObject(new ConnectionData(username, password, generateKeyBundle(encryptedClient)));
     }
 
     private void handleIOException(IOException e) {
-        switch (type) {
-            case 1:
-                loginModel.setErrorType(1);
-                break;
-            case 2:
-                signUpModel.setErrorType(1);
-                break;
-            default:
-                break;
-        }
-//        e.printStackTrace();
+        Client.closeWaitingAlert();
+        Platform.runLater(() -> {
+            Util.generateAlert(Alert.AlertType.ERROR, "Connection Error", "Invalidated Server.", "Try again.").show();
+        });
         System.out.println("Socket communication broke.");
     }
 
     private void handleFinally() {
         System.out.println("Finally handled.");
-        switch (type) {
-            case 1:
-                synchronized (loginModel) {
-                    loginModel.notify();
-                }
-                break;
-            case 2:
-                synchronized (signUpModel) {
-                    signUpModel.notify();
-                }
-                break;
-            default:
-                break;
-        }
         try {
             endConnection();
+            System.out.println("Invalid User.");
+        } catch (NullPointerException e) {
+            System.out.println("Invalid Server.");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("IOException.");
         }
     }
 

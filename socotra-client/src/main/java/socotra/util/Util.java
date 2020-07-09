@@ -37,15 +37,4 @@ public abstract class Util {
         return alert;
     }
 
-    /**
-     * Generate chat session name according to the toUsernames in chatSession.
-     *
-     * @param toUsernames toUsernames in chatSession.
-     * @return The String represent the chatSession.
-     */
-    public static String generateChatName(TreeSet<String> toUsernames) {
-        String result = toUsernames.toString();
-        return result.substring(1, result.length() - 1);
-    }
-
 }

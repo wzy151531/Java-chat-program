@@ -1,30 +1,26 @@
 package socotra;
 
+import javafx.animation.RotateTransition;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-import org.whispersystems.libsignal.SessionBuilder;
-import org.whispersystems.libsignal.SessionCipher;
-import org.whispersystems.libsignal.SignalProtocolAddress;
-import org.whispersystems.libsignal.protocol.CiphertextMessage;
-import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
-import org.whispersystems.libsignal.protocol.SignalMessage;
-import org.whispersystems.libsignal.state.*;
-import socotra.common.ConnectionData;
+import javafx.util.Duration;
 import socotra.controller.BoardController;
 import socotra.controller.HomeController;
 import socotra.controller.LoginController;
 import socotra.controller.SignUpController;
 import socotra.model.*;
 import socotra.protocol.*;
-import socotra.util.SendThread;
 import socotra.util.SetChatData;
 import socotra.util.SetOnlineUsers;
 import socotra.util.TestProtocol;
-
-import java.nio.charset.StandardCharsets;
+import socotra.util.Util;
 
 /**
  * This is the entry of the application.
@@ -82,6 +78,8 @@ public class Client extends Application {
      * Set chat data thread.
      */
     private static SetChatData setChatData;
+
+    private static Alert waitingAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Connecting To Server.", "Please Be Patient.");
 
     /**
      * Getter for loginController.
@@ -295,6 +293,17 @@ public class Client extends Application {
         stage.setScene(scene);
     }
 
+    public static void showWaitingAlert() {
+        waitingAlert.show();
+    }
+
+    public static void closeWaitingAlert() {
+        Platform.runLater(() -> {
+            waitingAlert.setAlertType(Alert.AlertType.INFORMATION);
+            waitingAlert.close();
+        });
+    }
+
     /**
      * Start to show the GUI.
      *
@@ -315,7 +324,16 @@ public class Client extends Application {
         primaryStage.show();
         stage = primaryStage;
 
-        TestProtocol.test();
+        TestProtocol.testGroup();
+
+//        Rectangle rectangle = new Rectangle(100, 100, Color.RED);
+//        RotateTransition rt = new RotateTransition();
+//        rt.setDuration(Duration.seconds(2));
+//        rt.setNode(rectangle);
+//        rt.setOnFinished(e -> {
+//            System.out.println("end rotate");
+//        });
+//        rt.play();
     }
 
 }

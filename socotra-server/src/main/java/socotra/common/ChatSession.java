@@ -59,6 +59,14 @@ public class ChatSession implements Serializable {
         this.toUsernames = toUsernames;
     }
 
+    public String generateChatName(String caller) {
+        TreeSet<String> copy = new TreeSet<>(this.toUsernames);
+        copy.remove(caller);
+        String temp = copy.toString();
+        String chatName = temp.substring(1, temp.length() - 1);
+        return this.isEncrypted() ? "🔒" + chatName : chatName;
+    }
+
     /**
      * Getter for hint.
      *
@@ -93,7 +101,7 @@ public class ChatSession implements Serializable {
         try {
             return this.toUsernames.equals(chatSession.toUsernames);
         } catch (NullPointerException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return false;
         }
     }

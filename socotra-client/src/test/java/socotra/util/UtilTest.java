@@ -41,17 +41,4 @@ public class UtilTest {
         assertFalse(actual);
     }
 
-    @Test
-    public void testGenerateChatName() {
-        TreeSet<String> toUsernames = generateTreeSet("admin");
-        String expected = "admin";
-        String actual = Util.generateChatName(toUsernames);
-        assertEquals(expected, actual);
-
-        toUsernames = generateTreeSet("admin", "admin1", "admin2");
-        expected = "admin, admin1, admin2";
-        actual = Util.generateChatName(toUsernames);
-        assertEquals(expected, actual);
-    }
-
 }

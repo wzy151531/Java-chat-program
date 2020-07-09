@@ -29,7 +29,6 @@ public class MySignedPreKeyStore implements SignedPreKeyStore {
     public SignedPreKeyRecord loadSignedPreKey(int signedPreKeyId) throws InvalidKeyIdException {
         try {
             if (!this.signedPreKeyMap.containsKey(signedPreKeyId)) {
-                System.out.println(this.signedPreKeyMap.keySet());
                 throw new InvalidKeyIdException("Unknown signedPreKey: " + signedPreKeyId);
             }
             return new SignedPreKeyRecord(this.signedPreKeyMap.get(signedPreKeyId).serialize());

@@ -1,67 +1,55 @@
 package socotra.util;
 
-import com.sun.scenario.effect.Identity;
 import org.whispersystems.libsignal.IdentityKey;
 import org.whispersystems.libsignal.SessionBuilder;
 import org.whispersystems.libsignal.SessionCipher;
 import org.whispersystems.libsignal.SignalProtocolAddress;
-import org.whispersystems.libsignal.ecc.Curve;
 import org.whispersystems.libsignal.ecc.ECPublicKey;
+import org.whispersystems.libsignal.groups.GroupCipher;
+import org.whispersystems.libsignal.groups.GroupSessionBuilder;
+import org.whispersystems.libsignal.groups.SenderKeyName;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
 import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
+import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage;
 import org.whispersystems.libsignal.protocol.SignalMessage;
 import org.whispersystems.libsignal.state.PreKeyBundle;
 import org.whispersystems.libsignal.state.PreKeyRecord;
-import socotra.common.ConnectionData;
 import socotra.protocol.EncryptedClient;
-import sun.misc.Signal;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TestProtocol {
-    public static byte[] identityKey;
-    public static byte[] preKey;
-    public static EncryptedClient tc1;
-    public static EncryptedClient tc2;
-    public static SignalProtocolAddress signalProtocolAddress1 = new SignalProtocolAddress("Wang", 1);
-    public static SignalProtocolAddress signalProtocolAddress2 = new SignalProtocolAddress("Yin", 1);
+    private static EncryptedClient tc1;
+    private static EncryptedClient tc2;
+    private static EncryptedClient tc3;
+    private static EncryptedClient tc4;
+    private static SignalProtocolAddress signalProtocolAddress1 = new SignalProtocolAddress("tc1", 1);
+    private static SignalProtocolAddress signalProtocolAddress2 = new SignalProtocolAddress("tc2", 1);
+    private static SignalProtocolAddress signalProtocolAddress3 = new SignalProtocolAddress("tc3", 1);
+    private static SignalProtocolAddress signalProtocolAddress4 = new SignalProtocolAddress("tc4", 1);
+    private static String groupId = "G42";
 
     static {
         try {
-            tc1 = new EncryptedClient(); // Wang
-            tc2 = new EncryptedClient(); // Yin
+            tc1 = new EncryptedClient(); // tc1
+            tc2 = new EncryptedClient(); // tc2
+            tc3 = new EncryptedClient(); // tc3
+            tc4 = new EncryptedClient(); // tc4
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
-    public static void init() {
-        List<PreKeyRecord> preKeys = tc2.getPreKeys();
-        List<byte[]> preKeysList = new ArrayList<>();
-        for (PreKeyRecord pk : preKeys) {
-            preKeysList.add(pk.getKeyPair().getPublicKey().serialize());
-        }
-//        new SendThread(new ConnectionData(tc2.getIdentityKeyPair().getPublicKey().serialize(), preKeysList, 2)).start();
-    }
-
-    public static void query() {
-        new SendThread(new ConnectionData("Yin", "admin")).start();
-    }
-
     public static void test() throws Exception {
-
-//        System.out.println("local: " + new String(tc2.getIdentityKeyPair().getPublicKey().serialize()));
 
         SessionBuilder sessionBuilder1To2 = new SessionBuilder(tc1.getSessionStore(), tc1.getPreKeyStore(), tc1.getSignedPreKeyStore(),
                 tc1.getIdentityKeyStore(), signalProtocolAddress2);
 
 //        ECPublicKey preKeyTemp = Curve.decodePoint(preKey, 0);
         ECPublicKey preKeyTemp = tc2.getPreKeys().get(0).getKeyPair().getPublicKey();
-        System.out.println(new String(preKeyTemp.serialize()));
         int preKeyIdTemp = tc2.getPreKeys().get(0).getId();
-        System.out.println(preKeyIdTemp);
 
 //        IdentityKey identityKeyTemp = new IdentityKey(identityKey, 0);
         IdentityKey identityKeyTemp = tc2.getIdentityKeyPair().getPublicKey();
@@ -81,11 +69,6 @@ public class TestProtocol {
         byte[] result1To2_1 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_1.serialize()));
         System.out.println(new String(result1To2_1));
 
-        // Cannot decrypt the message sent by self.
-//        System.out.println(tc1.getSessionStore().containsSession(signalProtocolAddress2)); // true.
-//        byte[] temp = sessionCipher1To2.decrypt(new PreKeySignalMessage(message1To2_1.serialize()));
-//        System.out.println(new String(temp));
-
         byte[] result1To2_2 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_2.serialize()));
         System.out.println(new String(result1To2_2));
 
@@ -95,11 +78,6 @@ public class TestProtocol {
         byte[] result2To1_1 = sessionCipher1To2.decrypt(new SignalMessage(message2To1_1.serialize()));
         System.out.println(new String(result2To1_1));
 
-        // TODO cannot decrypt the message that encrypted by self.
-//        byte[] temp = sessionCipher1To2.decrypt(new SignalMessage(message1To2_3.serialize()));
-//        System.out.println(new String(temp));
-
-        // lack of the session, so need the message1To2_3 contains the preKey of user1.
         byte[] result1To2_3 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_3.serialize()));
         System.out.println(new String(result1To2_3));
 
@@ -123,8 +101,6 @@ public class TestProtocol {
         System.out.println(new String(result1To2_4));
 
 
-        tc1.getSessionStore().deleteSession(signalProtocolAddress2);
-        tc2.getSessionStore().deleteSession(signalProtocolAddress1);
         // TODO the preKey can be null, and whilst the preKeyId can be random.
         PreKeyBundle preKeyBundle2_2 = new PreKeyBundle(tc2.getRegistrationId(), 1, 0, null,
                 tc2.getSignedPreKey().getId(), tc2.getSignedPreKey().getKeyPair().getPublicKey(), tc2.getSignedPreKey().getSignature(),
@@ -134,10 +110,28 @@ public class TestProtocol {
         byte[] result1To2_6 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_6.serialize()));
         System.out.println(new String(result1To2_6));
 
-//        tc2.getSessionStore().deleteSession(signalProtocolAddress1);
-//        CiphertextMessage message1To2_5 = sessionCipher1To2.encrypt("Hi 5".getBytes(StandardCharsets.UTF_8));
-//        byte[] result1To2_5 = sessionCipher2To1.decrypt(new SignalMessage(message1To2_5.serialize()));
-//        System.out.println(new String(result1To2_5));
+    }
 
+    public static void testGroup() throws Exception {
+        GroupSessionBuilder groupSessionBuilder_1 = new GroupSessionBuilder(tc1.getSenderKeyStore());
+        GroupSessionBuilder groupSessionBuilder_2 = new GroupSessionBuilder(tc2.getSenderKeyStore());
+        SenderKeyDistributionMessage senderKeyDistributionMessage_1 = groupSessionBuilder_1.create(new SenderKeyName(groupId, signalProtocolAddress1));
+        SenderKeyDistributionMessage senderKeyDistributionMessage_2 = groupSessionBuilder_2.create(new SenderKeyName(groupId, signalProtocolAddress2));
+        groupSessionBuilder_1.process(new SenderKeyName(groupId, signalProtocolAddress2), senderKeyDistributionMessage_2);
+        groupSessionBuilder_2.process(new SenderKeyName(groupId, signalProtocolAddress1), senderKeyDistributionMessage_1);
+
+        GroupCipher groupCipher_1_send = new GroupCipher(tc1.getSenderKeyStore(), new SenderKeyName(groupId, signalProtocolAddress1));
+        byte[] message1_1 = groupCipher_1_send.encrypt("Hello guys".getBytes(StandardCharsets.UTF_8));
+
+        GroupCipher groupCipher_2_rece_1 = new GroupCipher(tc2.getSenderKeyStore(), new SenderKeyName(groupId, signalProtocolAddress1));
+        byte[] result1_1 = groupCipher_2_rece_1.decrypt(message1_1);
+        System.out.println(new String(result1_1));
+
+        GroupCipher groupCipher_2_send = new GroupCipher(tc2.getSenderKeyStore(), new SenderKeyName(groupId, signalProtocolAddress2));
+        byte[] message2_1 = groupCipher_2_send.encrypt("Alright".getBytes(StandardCharsets.UTF_8));
+
+        GroupCipher groupCipher_1_rece_2 = new GroupCipher(tc1.getSenderKeyStore(), new SenderKeyName(groupId, signalProtocolAddress2));
+        byte[] result2_1 = groupCipher_1_rece_2.decrypt(message2_1);
+        System.out.println(new String(result2_1));
     }
 }

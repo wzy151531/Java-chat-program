@@ -19,6 +19,7 @@ public class EncryptedClient {
     private MyPreKeyStore preKeyStore;
     private MySignedPreKeyStore signedPreKeyStore;
     private MyIdentityKeyStore identityKeyStore;
+    private MySenderKeyStore senderKeyStore;
 
     public EncryptedClient() {
         Client.setEncryptedClient(this);
@@ -58,6 +59,7 @@ public class EncryptedClient {
         this.preKeyStore = new MyPreKeyStore();
         this.signedPreKeyStore = new MySignedPreKeyStore();
         this.identityKeyStore = new MyIdentityKeyStore(this.identityKeyPair, this.registrationId);
+        this.senderKeyStore = new MySenderKeyStore();
     }
 
     private void register() {
@@ -123,6 +125,10 @@ public class EncryptedClient {
 
     public MyIdentityKeyStore getIdentityKeyStore() {
         return this.identityKeyStore;
+    }
+
+    public MySenderKeyStore getSenderKeyStore() {
+        return this.senderKeyStore;
     }
 
 }

@@ -20,6 +20,10 @@ public class SignUpModel {
         this.errorType = errorType;
     }
 
+    void saveStores() {
+        Saver saver = new Saver(Client.getClientThread().getUsername(), Client.getEncryptedClient());
+        saver.saveStores();
+    }
 
     /**
      * Send login connectionData to inform server.
@@ -28,23 +32,10 @@ public class SignUpModel {
      * @param password The password used to login.
      * @return The errorType after login.
      */
-    public int handleSignUp(String username, String password) {
+    public void handleSignUp(String username, String password) {
         EncryptedClient encryptedClient = new EncryptedClient();
         Client.setClientThread(new ClientThread("localhost", username, password, 2));
         Client.getClientThread().start();
-        synchronized (this) {
-            try {
-                this.wait();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        // TODO store key_bundle.
-        if (errorType == 0) {
-            Saver saver = new Saver(username, encryptedClient);
-            saver.saveStores();
-        }
-        return errorType;
     }
 
 }

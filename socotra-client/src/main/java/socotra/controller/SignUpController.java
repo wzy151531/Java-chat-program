@@ -38,21 +38,8 @@ public class SignUpController {
             return;
         }
         Client.setSignUpModel(new SignUpModel());
-        int errorType = Client.getSignUpModel().handleSignUp(username, password);
-        switch (errorType) {
-            // If the server name is not correct.
-            case 1:
-                Util.generateAlert(Alert.AlertType.ERROR, "Connection Error", "Invalidated Server.", "Try again.").show();
-                break;
-            // If the user is invalidated.
-            case 2:
-                Util.generateAlert(Alert.AlertType.ERROR, "Validation Error", "User Already Exists.", "Try another username.").show();
-                break;
-            default:
-                ControllerUtil controllerUtil = new ControllerUtil();
-                controllerUtil.loadHomePage();
-                break;
-        }
+        Client.getSignUpModel().handleSignUp(username, password);
+        Client.showWaitingAlert();
     }
 
 }

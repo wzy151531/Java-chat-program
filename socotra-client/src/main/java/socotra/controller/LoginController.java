@@ -1,5 +1,6 @@
 package socotra.controller;
 
+import javafx.animation.RotateTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -61,24 +62,9 @@ public class LoginController {
             Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Validate Error.", "Please input the info.").show();
             return;
         }
-        loginButton.setText("login...");
         Client.setLoginModel(new LoginModel());
-        int errorType = Client.getLoginModel().handleLogin(serverName, username, password);
-        loginButton.setText("login");
-        switch (errorType) {
-            // If the server name is not correct.
-            case 1:
-                Util.generateAlert(Alert.AlertType.ERROR, "Connection Error", "Invalidated Server.", "Try again.").show();
-                break;
-            // If the user is invalidated.
-            case 2:
-                Util.generateAlert(Alert.AlertType.ERROR, "Validation Error", "Invalidated user.", "Try again.").show();
-                break;
-            default:
-                ControllerUtil controllerUtil = new ControllerUtil();
-                controllerUtil.loadHomePage();
-                break;
-        }
+        Client.getLoginModel().handleLogin(serverName, username, password);
+        Client.showWaitingAlert();
     }
 
     /**

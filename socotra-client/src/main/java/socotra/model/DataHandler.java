@@ -1,18 +1,20 @@
 package socotra.model;
 
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import org.whispersystems.libsignal.*;
 import org.whispersystems.libsignal.ecc.Curve;
-import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
-import org.whispersystems.libsignal.protocol.SignalMessage;
 import org.whispersystems.libsignal.state.PreKeyBundle;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
+import socotra.controller.ControllerUtil;
 import socotra.protocol.EncryptedClient;
 import socotra.protocol.EncryptionHandler;
 import socotra.util.SendThread;
 import socotra.util.SetOnlineUsers;
+import socotra.util.Util;
 
 import java.util.TreeSet;
 
@@ -20,11 +22,6 @@ public class DataHandler {
 
     private final LoginModel loginModel = Client.getLoginModel();
     private final SignUpModel signUpModel = Client.getSignUpModel();
-
-//    DataHandler(LoginModel loginModel, SignUpModel signUpModel) {
-//        this.loginModel = loginModel;
-//        this.signUpModel = signUpModel;
-//    }
 
     private void initSession(KeyBundle keyBundle, String receiverName) throws InvalidKeyException, UntrustedIdentityException {
         EncryptedClient encryptedClient = Client.getEncryptedClient();
@@ -43,11 +40,18 @@ public class DataHandler {
             // If connectionData is about the result of user's validation.
             case -1:
                 if (!connectionData.getValidated()) {
-                    loginModel.setErrorType(2);
+                    Platform.runLater(() -> {
+                        Client.closeWaitingAlert();
+                        Util.generateAlert(Alert.AlertType.ERROR, "Validation Error", "Invalidated user.", "Try again.").show();
+                    });
                     return false;
-                }
-                synchronized (loginModel) {
-                    loginModel.notify();
+                } else {
+                    Client.getLoginModel().loadStores();
+                    ControllerUtil controllerUtil = new ControllerUtil();
+                    Platform.runLater(() -> {
+                        Client.closeWaitingAlert();
+                        controllerUtil.loadHomePage();
+                    });
                 }
                 break;
             // If connectionData is about users online information.
@@ -73,11 +77,18 @@ public class DataHandler {
             // If connectionData is about sign up result.
             case -5:
                 if (!connectionData.getSignUpSuccess()) {
-                    signUpModel.setErrorType(2);
+                    Platform.runLater(() -> {
+                        Client.closeWaitingAlert();
+                        Util.generateAlert(Alert.AlertType.ERROR, "Validation Error", "User Already Exists.", "Try another username.").show();
+                    });
                     return false;
-                }
-                synchronized (signUpModel) {
-                    signUpModel.notify();
+                } else {
+                    Client.getSignUpModel().saveStores();
+                    ControllerUtil controllerUtil = new ControllerUtil();
+                    Platform.runLater(() -> {
+                        Client.closeWaitingAlert();
+                        controllerUtil.loadHomePage();
+                    });
                 }
                 break;
             // If connectionData is about normal chat messages.
@@ -104,10 +115,6 @@ public class DataHandler {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-//                        TestProtocol.identityKey = connectionData.getKeyBundle().getIdentityKey();
-//                        TestProtocol.preKey = connectionData.getKeyBundle().getPreKey();
-//                        TestProtocol.test();
                 break;
             default:
                 System.out.println("Unknown data.");
