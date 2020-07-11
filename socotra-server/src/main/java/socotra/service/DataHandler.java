@@ -112,10 +112,34 @@ class DataHandler {
                     e.printStackTrace();
                 }
                 break;
+            case 8:
+                processDistributeSenderKey(connectionData);
+                break;
+            case 9:
+                processQueryKeyBundles(connectionData);
+                break;
             default:
                 System.out.println("Unknown data.");
         }
         return true;
+    }
+
+    private void processDistributeSenderKey(ConnectionData connectionData) {
+        Util.privateSend(connectionData, connectionData.getReceiverUsername());
+    }
+
+    private void processQueryKeyBundles(ConnectionData connectionData) {
+        HashMap<String, KeyBundle> result = new HashMap<>();
+        TreeSet<String> receiversUsername = connectionData.getReceiversUsername();
+        receiversUsername.forEach(n -> {
+            try {
+                KeyBundle keyBundle = JdbcUtil.queryKeyBundle(n);
+                result.put(n, keyBundle);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+        Util.privateSend(new ConnectionData(result, connectionData.getChatSession()), connectionData.getUserSignature());
     }
 
 }

@@ -81,6 +81,10 @@ public class ConnectionData implements Serializable {
     private int cipherType;
     private int dataType;
 
+    private boolean needDistribute;
+    private TreeSet<String> receiversUsername;
+    private HashMap<String, KeyBundle> keyBundles;
+
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
      *
@@ -201,7 +205,7 @@ public class ConnectionData implements Serializable {
     }
 
     /**
-     * If connection data is about chatData, the connectino data's type is 3.
+     * If connection data is about chatData, the connection data's type is 3.
      *
      * @param chatData      The chat history data of user.
      * @param userSignature The user want to store the chatData.
@@ -241,6 +245,58 @@ public class ConnectionData implements Serializable {
         this.dataType = dataType;
     }
 
+    /**
+     * If the connection data is about senderKeyDistributionMessage for group chat, the connection data's type is 8.
+     *
+     * @param cipherData     The sender's senderKey.
+     * @param userSignature  The sender's username.
+     * @param chatSession    The group chat session.
+     * @param needDistribute If receiver's sender key needs to distribute to others in this group.
+     */
+    public ConnectionData(byte[] cipherData, String userSignature, ChatSession chatSession, boolean needDistribute, String receiverUsername, int cipherType) {
+        this.type = 8;
+        this.cipherData = cipherData;
+        this.userSignature = userSignature;
+        this.chatSession = chatSession;
+        this.needDistribute = needDistribute;
+        this.receiverUsername = receiverUsername;
+        this.cipherType = cipherType;
+    }
+
+    public ConnectionData(TreeSet<String> receiversUsername, ChatSession chatSession, String userSignature) {
+        this.type = 9;
+        this.receiversUsername = receiversUsername;
+        this.chatSession = chatSession;
+        this.userSignature = userSignature;
+    }
+
+    public ConnectionData(HashMap<String, KeyBundle> keyBundles, ChatSession chatSession) {
+        this.type = 10;
+        this.keyBundles = keyBundles;
+        this.chatSession = chatSession;
+    }
+
+    public HashMap<String, KeyBundle> getKeyBundles() {
+        if (type != 10) {
+            throw new IllegalStateException("Type isn't 10, cannot get keyBundles");
+        }
+        return this.keyBundles;
+    }
+
+    public TreeSet<String> getReceiversUsername() {
+        if (type != 9) {
+            throw new IllegalStateException("Type isn't 9, cannot get receiversUsername");
+        }
+        return this.receiversUsername;
+    }
+
+    public boolean getNeedDistribute() {
+        if (type != 8) {
+            throw new IllegalStateException("Type isn't 8, cannot get needDistribute");
+        }
+        return this.needDistribute;
+    }
+
     public KeyBundle getKeyBundle() {
         if (type != 4 && type != 6) {
             throw new IllegalStateException("Type isn't 4 or 6, cannot get keyBundle");
@@ -249,15 +305,15 @@ public class ConnectionData implements Serializable {
     }
 
     public byte[] getCipherData() {
-        if (type != 7) {
-            throw new IllegalStateException("Type isn't 7, cannot get cipherData");
+        if (type != 7 && type != 8) {
+            throw new IllegalStateException("Type isn't 7 or 8, cannot get cipherData");
         }
         return this.cipherData;
     }
 
     public int getCipherType() {
-        if (type != 7) {
-            throw new IllegalStateException("Type isn't 7, cannot get cipherType");
+        if (type != 7 && type != 8) {
+            throw new IllegalStateException("Type isn't 7 or 8, cannot get cipherType");
         }
         return this.cipherType;
     }
@@ -270,8 +326,8 @@ public class ConnectionData implements Serializable {
     }
 
     public String getReceiverUsername() {
-        if (type != 5 && type != 6) {
-            throw new IllegalStateException("Type isn't 5 or 6, cannot get receiverUsername");
+        if (type != 5 && type != 6 && type != 8) {
+            throw new IllegalStateException("Type isn't 5 or 6 or 8, cannot get receiverUsername");
         }
         return this.receiverUsername;
     }
@@ -418,8 +474,8 @@ public class ConnectionData implements Serializable {
      * @return The userSignature of the connection data.
      */
     public String getUserSignature() {
-        if (type != -2 && type != -4 && type != 1 && type != 2 && type != 3 && type != 5 && type != 7) {
-            throw new IllegalStateException("Type isn't -2 or -4 or 1 or 2 or 3 or 5 or 7, cannot get text data.");
+        if (type != -2 && type != -4 && type != 1 && type != 2 && type != 3 && type != 5 && type != 7 && type != 8 && type != 9) {
+            throw new IllegalStateException("Type isn't -2 or -4 or 1 or 2 or 3 or 5 or 7 or 8 or 9, cannot get text data.");
         }
         return userSignature;
     }
@@ -430,8 +486,8 @@ public class ConnectionData implements Serializable {
      * @return The chat session that connection data sent to.
      */
     public ChatSession getChatSession() {
-        if (type != 1 && type != 2 && type != -4 && type != 7) {
-            throw new IllegalStateException("Type isn't 1 or 2 or 4 or 7, cannot get chatSession");
+        if (type != 1 && type != 2 && type != -4 && type != 7 && type != 8 && type != 9 && type != 10) {
+            throw new IllegalStateException("Type isn't 1 or 2 or 4 or 7 or 8 or 9 or 10, cannot get chatSession");
         }
         return chatSession;
     }

@@ -16,24 +16,10 @@ import socotra.util.SendThread;
 import socotra.util.SetOnlineUsers;
 import socotra.util.Util;
 
+import java.util.HashMap;
 import java.util.TreeSet;
 
-public class DataHandler {
-
-    private final LoginModel loginModel = Client.getLoginModel();
-    private final SignUpModel signUpModel = Client.getSignUpModel();
-
-    private void initSession(KeyBundle keyBundle, String receiverName) throws InvalidKeyException, UntrustedIdentityException {
-        EncryptedClient encryptedClient = Client.getEncryptedClient();
-        SessionBuilder sessionBuilder = new SessionBuilder(encryptedClient.getSessionStore(), encryptedClient.getPreKeyStore(),
-                encryptedClient.getSignedPreKeyStore(), encryptedClient.getIdentityKeyStore(),
-                new SignalProtocolAddress(receiverName, 1));
-        PreKeyBundle preKeyBundle = new PreKeyBundle(keyBundle.getRegistrationId(), 1, keyBundle.getPreKeyId(),
-                keyBundle.getPreKey() == null ? null : Curve.decodePoint(keyBundle.getPreKey(), 0), keyBundle.getSignedPreKeyId(),
-                Curve.decodePoint(keyBundle.getSignedPreKey(), 0), keyBundle.getSignedPreKeySignature(),
-                new IdentityKey(keyBundle.getIdentityKey(), 0));
-        sessionBuilder.process(preKeyBundle);
-    }
+class DataHandler {
 
     boolean handle(ConnectionData connectionData) {
         switch (connectionData.getType()) {
@@ -105,21 +91,50 @@ public class DataHandler {
 //                break;
             // If connectionData is about receiver's key bundle.
             case 6:
-                TreeSet<String> clients = new TreeSet<>();
-                clients.add(connectionData.getReceiverUsername());
-                clients.add(Client.getClientThread().getUsername());
                 try {
-                    initSession(connectionData.getKeyBundle(), connectionData.getReceiverUsername());
-                    ChatSession chatSession = new ChatSession(clients, true, true);
-                    Client.getHomeModel().appendChatSessionList(chatSession);
+                    EncryptedClient encryptedClient = Client.getEncryptedClient();
+                    String receiverName = connectionData.getReceiverUsername();
+                    encryptedClient.initPairwiseChat(connectionData.getKeyBundle(), receiverName);
+                    encryptedClient.finishInitPairwiseChat(receiverName);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                break;
+            case 8:
+                processReceSenderKey(connectionData);
+                break;
+            case 10:
+                processReceKeyBundles(connectionData);
                 break;
             default:
                 System.out.println("Unknown data.");
         }
         return true;
+    }
+
+    private void processReceSenderKey(ConnectionData connectionData) {
+        try {
+            byte[] senderKey = EncryptionHandler.decryptSKDMData(connectionData);
+            EncryptedClient encryptedClient = Client.getEncryptedClient();
+            encryptedClient.processReceivedSenderKey(senderKey, connectionData.getChatSession(), connectionData.getNeedDistribute(), connectionData.getUserSignature());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void processReceKeyBundles(ConnectionData connectionData) {
+        EncryptedClient encryptedClient = Client.getEncryptedClient();
+        HashMap<String, KeyBundle> keyBundles = connectionData.getKeyBundles();
+        keyBundles.forEach((k, v) -> {
+            try {
+                encryptedClient.initPairwiseChat(v, k);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        String caller = Client.getClientThread().getUsername();
+        ChatSession chatSession = connectionData.getChatSession();
+        encryptedClient.distributeSenderKey(chatSession.getOthers(caller), caller, chatSession);
     }
 
     private void handleChatMessage(ConnectionData connectionData) {

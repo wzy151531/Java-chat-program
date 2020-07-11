@@ -10,6 +10,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
+import org.whispersystems.libsignal.NoSessionException;
 import org.whispersystems.libsignal.SessionCipher;
 import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.UntrustedIdentityException;
@@ -350,7 +351,7 @@ public class HomeModel {
                 try {
                     connectionData = EncryptionHandler.encryptTextData(text, currentChatSession);
                     appendChatData(new ConnectionData(text, connectionData.getUuid(), connectionData.getUserSignature(), connectionData.getChatSession()));
-                } catch (UntrustedIdentityException e) {
+                } catch (UntrustedIdentityException | NoSessionException e) {
                     e.printStackTrace();
                     return;
                 }
@@ -453,9 +454,6 @@ public class HomeModel {
         });
         ConnectionData connectionData1 = new ConnectionData(newChatData, Client.getClientThread().getUsername());
         new SendThread(connectionData1, true).start();
-
-//        ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUsername(), false);
-//        new SendThread(connectionData, true).start();
     }
 
     /**

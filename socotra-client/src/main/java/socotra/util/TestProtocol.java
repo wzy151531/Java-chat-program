@@ -33,10 +33,10 @@ public class TestProtocol {
 
     static {
         try {
-            tc1 = new EncryptedClient(); // tc1
-            tc2 = new EncryptedClient(); // tc2
-            tc3 = new EncryptedClient(); // tc3
-            tc4 = new EncryptedClient(); // tc4
+            tc1 = new EncryptedClient("tc1"); // tc1
+            tc2 = new EncryptedClient("tc2"); // tc2
+            tc3 = new EncryptedClient("tc3"); // tc3
+            tc4 = new EncryptedClient("tc4"); // tc4
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

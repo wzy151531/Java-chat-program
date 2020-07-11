@@ -15,7 +15,7 @@ public class ChatSessionTest {
 
     @BeforeAll
     public static void init() {
-        chatSession1 = new ChatSession(null, true);
+        chatSession1 = new ChatSession(null, true, true);
     }
 
     @Test
@@ -35,18 +35,18 @@ public class ChatSessionTest {
 
     @Test
     public void testEquals() {
-        chatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
-        chatSession2 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), false);
+        chatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true, true);
+        chatSession2 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), false, true);
         boolean actual = chatSession1.equals(chatSession2);
         assertTrue(actual);
 
-        chatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
-        chatSession2 = new ChatSession(UtilTest.generateTreeSet("admin1", "admin"), true);
+        chatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true, true);
+        chatSession2 = new ChatSession(UtilTest.generateTreeSet("admin1", "admin"), true, true);
         actual = chatSession1.equals(chatSession2);
         assertTrue(actual);
 
-        chatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
-        chatSession2 = new ChatSession(UtilTest.generateTreeSet("admin2", "admin"), true);
+        chatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true, true);
+        chatSession2 = new ChatSession(UtilTest.generateTreeSet("admin2", "admin"), true, true);
         actual = chatSession1.equals(chatSession2);
         assertFalse(actual);
     }

@@ -202,6 +202,7 @@ public class ClientThread extends Thread {
                 }
             }
         } catch (IOException e) {
+            e.printStackTrace();
             handleIOException(e);
         } catch (IllegalStateException e) {
             e.printStackTrace();

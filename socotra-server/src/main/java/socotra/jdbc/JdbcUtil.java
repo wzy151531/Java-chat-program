@@ -266,7 +266,8 @@ public class JdbcUtil {
         sessionNames.forEach(n -> {
             try {
                 TreeSet<String> sessionMembers = generateSessionMembers(n, username);
-                ChatSession chatSession = new ChatSession(sessionMembers, true);
+                // TODO: fix group chat.
+                ChatSession chatSession = new ChatSession(sessionMembers, true, true, ChatSession.PAIRWISE);
                 List<ConnectionData> certainChatData = queryCertainChatData(n, username, chatSession);
                 result.put(chatSession, certainChatData);
             } catch (Exception e) {

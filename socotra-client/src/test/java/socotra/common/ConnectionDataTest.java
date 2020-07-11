@@ -29,7 +29,7 @@ public class ConnectionDataTest {
     public static void init() {
         uuid = UUID.randomUUID();
         onlineUsers = UtilTest.generateTreeSet("admin", "admin1", "admin2");
-        chatSession = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
+        chatSession = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true, true);
         audioData = "audio".getBytes();
         chatData = generateMockChatData();
         typeNegativeOne = new ConnectionData(true);
@@ -45,11 +45,11 @@ public class ConnectionDataTest {
 
     public static HashMap<ChatSession, List<ConnectionData>> generateMockChatData() {
         HashMap<ChatSession, List<ConnectionData>> result = new HashMap<>();
-        ChatSession mockChatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
+        ChatSession mockChatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true, true);
         List<ConnectionData> mockList1 = new ArrayList<>();
         mockList1.add(new ConnectionData("test", "admin", mockChatSession1));
         mockList1.add(new ConnectionData("test1", "admin", mockChatSession1));
-        ChatSession mockChatSession2 = new ChatSession(UtilTest.generateTreeSet("admin", "admin2"), true);
+        ChatSession mockChatSession2 = new ChatSession(UtilTest.generateTreeSet("admin", "admin2"), true, true);
         List<ConnectionData> mockList2 = new ArrayList<>();
         mockList2.add(new ConnectionData("test2", "admin1", mockChatSession2));
         mockList2.add(new ConnectionData("test3", "admin1", mockChatSession2));

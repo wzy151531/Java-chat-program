@@ -1,16 +1,11 @@
 package socotra;
 
-import javafx.animation.RotateTransition;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import socotra.controller.BoardController;
 import socotra.controller.HomeController;
 import socotra.controller.LoginController;
@@ -80,6 +75,10 @@ public class Client extends Application {
     private static SetChatData setChatData;
 
     private static Alert waitingAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Connecting To Server.", "Please Be Patient.");
+
+    private static Alert initGroupChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Group Chat.", "Please Be Patient.");
+
+    private static Alert initPairwiseChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Pairwise Chat.", "Please Be Patient.");
 
     /**
      * Getter for loginController.
@@ -302,6 +301,24 @@ public class Client extends Application {
         waitingAlert.close();
     }
 
+    public static void showInitGroupChatAlert() {
+        initGroupChatAlert.show();
+    }
+
+    public static void closeInitGroupChatAlert() {
+        initGroupChatAlert.setAlertType(Alert.AlertType.INFORMATION);
+        initGroupChatAlert.close();
+    }
+
+    public static void showInitPairwiseChatAlert() {
+        initPairwiseChatAlert.show();
+    }
+
+    public static void closeInitPairwiseChatAlert() {
+        initPairwiseChatAlert.setAlertType(Alert.AlertType.INFORMATION);
+        initPairwiseChatAlert.close();
+    }
+
     /**
      * Start to show the GUI.
      *
@@ -323,15 +340,6 @@ public class Client extends Application {
         stage = primaryStage;
 
         TestProtocol.testGroup();
-
-//        Rectangle rectangle = new Rectangle(100, 100, Color.RED);
-//        RotateTransition rt = new RotateTransition();
-//        rt.setDuration(Duration.seconds(2));
-//        rt.setNode(rectangle);
-//        rt.setOnFinished(e -> {
-//            System.out.println("end rotate");
-//        });
-//        rt.play();
     }
 
 }

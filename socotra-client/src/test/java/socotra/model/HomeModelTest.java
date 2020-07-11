@@ -29,8 +29,8 @@ public class HomeModelTest {
 
     @BeforeAll
     public static void init() throws Exception {
-        mockChatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
-        mockChatSession2 = new ChatSession(UtilTest.generateTreeSet("admin", "admin2"), true);
+        mockChatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true, true);
+        mockChatSession2 = new ChatSession(UtilTest.generateTreeSet("admin", "admin2"), true, true);
         connectionData1 = new ConnectionData("test", "admin", mockChatSession1);
         connectionData2 = new ConnectionData("test1", "admin", mockChatSession1);
         connectionData3 = new ConnectionData("test2", "admin1", mockChatSession2);

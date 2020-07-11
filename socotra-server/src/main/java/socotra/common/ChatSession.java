@@ -9,6 +9,9 @@ import java.util.TreeSet;
 
 public class ChatSession implements Serializable {
 
+    public static final int PAIRWISE = 1;
+    public static final int GROUP = 2;
+
     /**
      * Serial version uid.
      */
@@ -24,21 +27,32 @@ public class ChatSession implements Serializable {
 
     private boolean encrypted;
 
+    private int sessionType;
+
     /**
      * Constructor for chatSession.
      *
      * @param toUsernames The users in chat session.
      * @param hint        The hint indicates whether the chat session receive new message.
      */
-    public ChatSession(TreeSet<String> toUsernames, boolean hint) {
-        this.toUsernames = toUsernames;
-        this.hint = hint;
-    }
 
-    public ChatSession(TreeSet<String> toUsernames, boolean hint, boolean encrypted) {
+    /**
+     * Constructor for chatSession.
+     *
+     * @param toUsernames The users in chat session.
+     * @param hint        The hint indicates whether the chat session receive new message.
+     * @param encrypted   Whether chat session is encrypted.
+     * @param sessionType The type of session.(group or pairwise)
+     */
+    public ChatSession(TreeSet<String> toUsernames, boolean hint, boolean encrypted, int sessionType) {
         this.toUsernames = toUsernames;
         this.hint = hint;
         this.encrypted = encrypted;
+        this.sessionType = sessionType;
+    }
+
+    public int getSessionType() {
+        return this.sessionType;
     }
 
     /**
@@ -65,6 +79,19 @@ public class ChatSession implements Serializable {
         String temp = copy.toString();
         String chatName = temp.substring(1, temp.length() - 1);
         return this.isEncrypted() ? "🔒" + chatName : chatName;
+    }
+
+    public String generateChatId() {
+        TreeSet<String> copy = new TreeSet<>(toUsernames);
+        String temp = copy.toString();
+        String result = temp.substring(1, temp.length() - 1);
+        return this.isEncrypted() ? "🔒" + result : result;
+    }
+
+    public TreeSet<String> getOthers(String caller) {
+        TreeSet<String> result = new TreeSet<>(this.toUsernames);
+        result.remove(caller);
+        return result;
     }
 
     /**

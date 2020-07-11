@@ -23,7 +23,8 @@ public class LoginModel {
             TreeSet<String> users = new TreeSet<>();
             users.add(k);
             users.add(Client.getClientThread().getUsername());
-            result.put(new ChatSession(users, true, true), new ArrayList<>());
+            // TODO: fix group chat.
+//            result.put(new ChatSession(users, true, true, ChatSession.PAIRWISE), new ArrayList<>());
         });
         return result;
     }

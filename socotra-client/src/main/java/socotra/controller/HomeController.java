@@ -400,10 +400,8 @@ public class HomeController {
                             clients.add(Client.getClientThread().getUsername());
                         }
                         if (!Client.getHomeModel().chatSessionExist(clients)) {
-//                            ChatSession chatSession = new ChatSession(clients, true);
-                            new SendThread(new ConnectionData(item, Client.getClientThread().getUsername())).start();
-
-//                            Client.getHomeModel().appendChatSessionList(chatSession);
+                            Client.showInitPairwiseChatAlert();
+                            Client.getEncryptedClient().requestKeyBundle(item);
                         }
                     });
                     Label clientName = new Label(item);
@@ -623,9 +621,10 @@ public class HomeController {
             Util.generateAlert(Alert.AlertType.WARNING, "Warning", "The group chat has already existed.", "Try again.").show();
             return;
         }
-        ChatSession chatSession = new ChatSession(newGroup, true);
-        Client.getHomeModel().appendChatSessionList(chatSession);
+        ChatSession chatSession = new ChatSession(newGroup, true, true, ChatSession.GROUP);
+        Client.getEncryptedClient().initGroupChat(chatSession);
         this.cancelAdding(event);
+        Client.showInitGroupChatAlert();
     }
 
 }

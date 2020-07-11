@@ -63,7 +63,7 @@ public class Loader {
         if (fileName.equals("identityKeyStore.csv")) {
             line = br.readLine();
             String[] firstLine = line.split(",");
-            encryptedClient = new EncryptedClient(hexStrToByteArray(firstLine[0]), Integer.parseInt(firstLine[1]));
+            encryptedClient = new EncryptedClient(hexStrToByteArray(firstLine[0]), Integer.parseInt(firstLine[1]), username);
         }
         while ((line = br.readLine()) != null) {
             String[] record = line.split(",");
