@@ -35,6 +35,7 @@ The whole project is divided into two parts: server and client. Both projects ar
 - [ ] Further encrypted group chat operations(add/leave memebers).
 - [ ] Store symmetric encryption key that encrypts the history messages in client OP-TEE.
 - [ ] History messages backup from old device to new device.
+- [ ] Update tests.
 
 ## Quick Start
 
@@ -90,50 +91,6 @@ For client project, it use `javafx11` to build the GUI, so once you use the grad
 ```bash
 java --module-path $PATHTOJAVAFXSDK11 --add-modules javafx.controls,javafx.fxml,javafx.base -jar $YOURCLIENT.jar
 ```
-
-## Contributing
-
-`NOTE: Please confirm that files under 'common' directory are same on both client and server project.`
-
-First clone the project, and in your local git repository, create a new branch named as your name, for example:
-
-```bash
-git branch $YOURBRANCH
-```
-
-and then checkout to that branch:
-
-```bash
-git checkout $YOURBRANCH
-```
-
-Now, to check if you are in the right branch, use the command:
-
-```bash
-git branch -a
-```
-
-and the '*' will be infront of the current branch.
-
-If you want to push your branch to the git repository, use the command:
-
-```bash
-git push origin $YOURBRANCH
-```
-
-Now you can do some change to your branch, once you have done your task, after testing the new function and commiting the change, first use command:
-
-```bash
-git checkout master
-```
-
-to checkout to the master branch, and then use the command to merge your branch to the master branch:
-
-```bash
-git merge $YOURBRANCH
-```
-
-Make sure before each commit, checkout your current branch first.
 
 ## License
 
