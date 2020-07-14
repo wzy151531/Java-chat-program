@@ -3,6 +3,7 @@ package socotra.model;
 import javafx.animation.RotateTransition;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import org.whispersystems.libsignal.state.PreKeyRecord;
 import socotra.Client;
 import socotra.common.ConnectionData;
@@ -16,6 +17,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
+import java.net.NoRouteToHostException;
+import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
@@ -153,9 +157,23 @@ public class ClientThread extends Thread {
     private void handleIOException(IOException e) {
         Platform.runLater(() -> {
             Client.closeWaitingAlert();
-            Util.generateAlert(Alert.AlertType.ERROR, "Connection Error", "Invalidated Server.", "Try again.").show();
+            Alert errorAlert = Util.generateAlert(Alert.AlertType.ERROR, "Connection Error", "Server shuts down.", "Try later.");
+            errorAlert.setResultConverter(dialogButton -> {
+                if (dialogButton == ButtonType.OK) {
+                    System.exit(0);
+                }
+                return null;
+            });
+            errorAlert.show();
         });
         System.out.println("Socket communication broke.");
+    }
+
+    private void handleNoHostException(IOException e) {
+        Platform.runLater(() -> {
+            Client.closeWaitingAlert();
+            Util.generateAlert(Alert.AlertType.ERROR, "Connection Error", e instanceof ConnectException ? "Server closed" : "Invalidated Server", e instanceof ConnectException ? "Try later." : "Try again.").show();
+        });
     }
 
     private void handleFinally() {
@@ -201,6 +219,8 @@ public class ClientThread extends Thread {
                     return;
                 }
             }
+        } catch (NoRouteToHostException | UnknownHostException | ConnectException e) {
+            handleNoHostException(e);
         } catch (IOException e) {
             e.printStackTrace();
             handleIOException(e);

@@ -175,7 +175,9 @@ public class HomeModel {
                 this.chatData.put(key, certainChatData);
 //                this.appendChatSessionList(key);
                 key.setHint(true);
-                this.chatSessionList.add(key);
+                if (!chatSessionList.contains(key)) {
+                    this.chatSessionList.add(key);
+                }
             } else {
                 certainChatData.add(connectionData);
             }
@@ -233,6 +235,7 @@ public class HomeModel {
      * @param chatSession New chat session.
      */
     public void appendChatSessionList(ChatSession chatSession) {
+        System.out.println("Append chatSession: " + chatSession.generateChatId());
         Platform.runLater(() -> {
             chatSession.setHint(true);
             this.chatSessionList.add(chatSession);

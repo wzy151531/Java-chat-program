@@ -72,7 +72,7 @@ class DataHandler {
                 return processLogout();
             // If connection data is about received hint.
             case -4:
-                Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
+                Util.privateSend(connectionData, connectionData.getReceiverUsername());
                 break;
             // If connection data is about normal chat message.
             case 1:
@@ -82,16 +82,10 @@ class DataHandler {
             case 2:
             case 7:
                 connectionData.setIsSent(true);
-                // If want to given received hint once server receive connectionData.
-                if (connectionData.getChatSession().getToUsernames().size() == 1) {
-                    Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
-                    Util.broadcast(connectionData, connectionData.getUserSignature());
-                } else {
-                    if (!Util.isAnyOnline(connectionData.getChatSession().getToUsernames())) {
-                        Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
-                    }
-                    Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
-                }
+//                if (!Util.isAnyOnline(connectionData.getChatSession().getToUsernames())) {
+//                    Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
+//                }
+                Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                 break;
             // If connection data is about store chat history.
             case 3:
@@ -112,11 +106,11 @@ class DataHandler {
                     e.printStackTrace();
                 }
                 break;
-            case 8:
-                processDistributeSenderKey(connectionData);
-                break;
             case 9:
                 processQueryKeyBundles(connectionData);
+                break;
+            case 11:
+                processDistributeSenderKey(connectionData);
                 break;
             default:
                 System.out.println("Unknown data.");
@@ -125,7 +119,10 @@ class DataHandler {
     }
 
     private void processDistributeSenderKey(ConnectionData connectionData) {
-        Util.privateSend(connectionData, connectionData.getReceiverUsername());
+        HashMap<String, ConnectionData> senderKeysData = connectionData.getSenderKeysData();
+        senderKeysData.forEach((k, v) -> {
+            Util.privateSend(v, k);
+        });
     }
 
     private void processQueryKeyBundles(ConnectionData connectionData) {
@@ -139,7 +136,7 @@ class DataHandler {
                 e.printStackTrace();
             }
         });
-        Util.privateSend(new ConnectionData(result, connectionData.getChatSession()), connectionData.getUserSignature());
+        Util.privateSend(new ConnectionData(result, connectionData.getChatSession(), connectionData.getNeedDistribute()), connectionData.getUserSignature());
     }
 
 }

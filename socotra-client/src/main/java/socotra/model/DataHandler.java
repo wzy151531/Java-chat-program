@@ -2,9 +2,6 @@ package socotra.model;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
-import org.whispersystems.libsignal.*;
-import org.whispersystems.libsignal.ecc.Curve;
-import org.whispersystems.libsignal.state.PreKeyBundle;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
@@ -17,7 +14,6 @@ import socotra.util.SetOnlineUsers;
 import socotra.util.Util;
 
 import java.util.HashMap;
-import java.util.TreeSet;
 
 class DataHandler {
 
@@ -134,7 +130,7 @@ class DataHandler {
         });
         String caller = Client.getClientThread().getUsername();
         ChatSession chatSession = connectionData.getChatSession();
-        encryptedClient.distributeSenderKey(chatSession.getOthers(caller), caller, chatSession);
+        encryptedClient.distributeSenderKey(chatSession.getOthers(caller), chatSession, connectionData.getNeedDistribute());
     }
 
     private void handleChatMessage(ConnectionData connectionData) {
@@ -156,7 +152,7 @@ class DataHandler {
         } else {
             Client.getHomeModel().appendChatData(connectionData);
         }
-        new SendThread(new ConnectionData(connectionData.getUuid(), Client.getClientThread().getUsername(), connectionData.getChatSession())).start();
+        new SendThread(new ConnectionData(connectionData.getUuid(), Client.getClientThread().getUsername(), connectionData.getChatSession(), connectionData.getUserSignature())).start();
     }
 
 }

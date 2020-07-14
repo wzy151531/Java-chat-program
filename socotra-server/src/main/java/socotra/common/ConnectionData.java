@@ -1,10 +1,7 @@
 package socotra.common;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * This file defines the format of connection data used for communication between server and clients.
@@ -84,6 +81,7 @@ public class ConnectionData implements Serializable {
     private boolean needDistribute;
     private TreeSet<String> receiversUsername;
     private HashMap<String, KeyBundle> keyBundles;
+    private HashMap<String, ConnectionData> senderKeysData;
 
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
@@ -119,15 +117,17 @@ public class ConnectionData implements Serializable {
     /**
      * If connection data is about received hint, the connection data's type is -4.
      *
-     * @param uuid          The received hint of connection data's uuid.
-     * @param userSignature The connection data sender's username.
-     * @param chatSession
+     * @param uuid             The received hint of connection data's uuid.
+     * @param userSignature    The connection data sender's username.
+     * @param chatSession      The chatSession this connection data belong.
+     * @param receiverUsername The receiver's username.
      */
-    public ConnectionData(UUID uuid, String userSignature, ChatSession chatSession) {
+    public ConnectionData(UUID uuid, String userSignature, ChatSession chatSession, String receiverUsername) {
         this.uuid = uuid;
         this.type = -4;
         this.userSignature = userSignature;
         this.chatSession = chatSession;
+        this.receiverUsername = receiverUsername;
     }
 
     public ConnectionData(int type, boolean signUpSuccess) {
@@ -253,6 +253,7 @@ public class ConnectionData implements Serializable {
      * @param chatSession    The group chat session.
      * @param needDistribute If receiver's sender key needs to distribute to others in this group.
      */
+    // TODO: integrate all senderKey package to one package.
     public ConnectionData(byte[] cipherData, String userSignature, ChatSession chatSession, boolean needDistribute, String receiverUsername, int cipherType) {
         this.type = 8;
         this.cipherData = cipherData;
@@ -263,17 +264,31 @@ public class ConnectionData implements Serializable {
         this.cipherType = cipherType;
     }
 
-    public ConnectionData(TreeSet<String> receiversUsername, ChatSession chatSession, String userSignature) {
+    public ConnectionData(TreeSet<String> receiversUsername, ChatSession chatSession, String userSignature, boolean needDistribute) {
         this.type = 9;
         this.receiversUsername = receiversUsername;
         this.chatSession = chatSession;
         this.userSignature = userSignature;
+        this.needDistribute = needDistribute;
     }
 
-    public ConnectionData(HashMap<String, KeyBundle> keyBundles, ChatSession chatSession) {
+    public ConnectionData(HashMap<String, KeyBundle> keyBundles, ChatSession chatSession, boolean needDistribute) {
         this.type = 10;
         this.keyBundles = keyBundles;
         this.chatSession = chatSession;
+        this.needDistribute = needDistribute;
+    }
+
+    public ConnectionData(HashMap<String, ConnectionData> senderKeysData) {
+        this.type = 11;
+        this.senderKeysData = senderKeysData;
+    }
+
+    public HashMap<String, ConnectionData> getSenderKeysData() {
+        if (type != 11) {
+            throw new IllegalStateException("Type isn't 11, cannot get senderKeysData");
+        }
+        return this.senderKeysData;
     }
 
     public HashMap<String, KeyBundle> getKeyBundles() {
@@ -291,8 +306,8 @@ public class ConnectionData implements Serializable {
     }
 
     public boolean getNeedDistribute() {
-        if (type != 8) {
-            throw new IllegalStateException("Type isn't 8, cannot get needDistribute");
+        if (type != 8 && type != 9 && type != 10) {
+            throw new IllegalStateException("Type isn't 8 or 9 or 10, cannot get needDistribute");
         }
         return this.needDistribute;
     }
@@ -326,7 +341,7 @@ public class ConnectionData implements Serializable {
     }
 
     public String getReceiverUsername() {
-        if (type != 5 && type != 6 && type != 8) {
+        if (type != -4 && type != 5 && type != 6 && type != 8) {
             throw new IllegalStateException("Type isn't 5 or 6 or 8, cannot get receiverUsername");
         }
         return this.receiverUsername;

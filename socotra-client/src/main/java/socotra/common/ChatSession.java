@@ -126,7 +126,9 @@ public class ChatSession implements Serializable {
     public boolean equals(Object o) {
         ChatSession chatSession = (ChatSession) o;
         try {
-            return this.toUsernames.equals(chatSession.toUsernames);
+            return this.toUsernames.equals(chatSession.toUsernames) &&
+                    this.encrypted == chatSession.isEncrypted() &&
+                    this.sessionType == chatSession.getSessionType();
         } catch (NullPointerException e) {
 //            e.printStackTrace();
             return false;

@@ -622,7 +622,7 @@ public class HomeController {
             return;
         }
         ChatSession chatSession = new ChatSession(newGroup, true, true, ChatSession.GROUP);
-        Client.getEncryptedClient().initGroupChat(chatSession);
+        Client.getEncryptedClient().initGroupChat(chatSession, true);
         this.cancelAdding(event);
         Client.showInitGroupChatAlert();
     }

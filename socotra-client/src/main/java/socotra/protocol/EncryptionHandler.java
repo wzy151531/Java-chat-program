@@ -2,7 +2,6 @@ package socotra.protocol;
 
 import org.whispersystems.libsignal.NoSessionException;
 import org.whispersystems.libsignal.SessionCipher;
-import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.UntrustedIdentityException;
 import org.whispersystems.libsignal.groups.GroupCipher;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
@@ -71,6 +70,7 @@ public abstract class EncryptionHandler {
     }
 
     private static byte[] decryptGroupData(ConnectionData connectionData) throws Exception {
+        System.out.println("decrypt group data");
         GroupCipher groupCipher = Client.getEncryptedClient().getGroupCipher(connectionData.getUserSignature(),
                 connectionData.getChatSession());
         return groupCipher.decrypt(connectionData.getCipherData());
@@ -79,6 +79,7 @@ public abstract class EncryptionHandler {
     public static ConnectionData decryptTextData(ConnectionData connectionData) throws Exception {
         String plainText = new String(connectionData.getChatSession().getSessionType() == ChatSession.PAIRWISE ?
                 decryptData(connectionData) : decryptGroupData(connectionData));
+        System.out.println("Get plainText: " + plainText);
         return new ConnectionData(plainText, connectionData.getUuid(), connectionData.getUserSignature(), connectionData.getChatSession());
     }
 

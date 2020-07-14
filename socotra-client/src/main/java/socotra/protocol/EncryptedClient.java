@@ -17,6 +17,7 @@ import socotra.util.SendThread;
 import sun.misc.Signal;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -180,35 +181,31 @@ public class EncryptedClient {
      *
      * @param chatSession The group chat session needs to be initialized.
      */
-    public void initGroupChat(ChatSession chatSession) {
+    public void initGroupChat(ChatSession chatSession, boolean needDistribute) {
         String caller = signalProtocolAddress.getName();
         TreeSet<String> others = chatSession.getOthers(caller);
         TreeSet<String> unknownOthers = getUnknownOthers(others);
         if (unknownOthers.isEmpty()) {
-            distributeSenderKey(others, caller, chatSession);
+            distributeSenderKey(others, chatSession, needDistribute);
         } else {
-            requestKeyBundles(unknownOthers, chatSession);
+            requestKeyBundles(unknownOthers, chatSession, needDistribute);
         }
     }
 
-    public void distributeSenderKey(TreeSet<String> others, String caller, ChatSession chatSession) {
+    public void distributeSenderKey(TreeSet<String> others, ChatSession chatSession, boolean needDistribute) {
         GroupSessionBuilder groupSessionBuilder = new GroupSessionBuilder(senderKeyStore);
         SenderKeyDistributionMessage SKDM = groupSessionBuilder.create(
                 new SenderKeyName(chatSession.generateChatId(),
                         signalProtocolAddress));
-//        others.forEach(n -> {
-//            try {
-//                new SendThread(EncryptionHandler.encryptSKDMData(SKDM.serialize(), chatSession, n, true)).start();
-//            } catch (UntrustedIdentityException e) {
-//                e.printStackTrace();
-//            }
-//        });
-        // TODO: integrate all sender key packages to one package.
-        try {
-            new SendThread(EncryptionHandler.encryptSKDMData(SKDM.serialize(), chatSession, others.first(), true)).start();
-        } catch (UntrustedIdentityException e) {
-            e.printStackTrace();
-        }
+        HashMap<String, ConnectionData> senderKeysData = new HashMap<>();
+        others.forEach(n -> {
+            try {
+                senderKeysData.put(n, EncryptionHandler.encryptSKDMData(SKDM.serialize(), chatSession, n, needDistribute));
+            } catch (UntrustedIdentityException e) {
+                e.printStackTrace();
+            }
+        });
+        new SendThread(new ConnectionData(senderKeysData)).start();
         finishInitGroupChat(chatSession);
     }
 
@@ -219,9 +216,7 @@ public class EncryptedClient {
             groupSessionBuilder.process(new SenderKeyName(chatSession.generateChatId(),
                     new SignalProtocolAddress(senderName, 1)), SKDM);
             if (needDistribute) {
-                String caller = signalProtocolAddress.getName();
-                // TODO: init unknown pairwise session.
-                distributeSenderKey(chatSession.getOthers(caller), caller, chatSession);
+                initGroupChat(chatSession, false);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -245,8 +240,8 @@ public class EncryptedClient {
         return result;
     }
 
-    private void requestKeyBundles(TreeSet<String> unknownOthers, ChatSession chatSession) {
-        new SendThread(new ConnectionData(unknownOthers, chatSession, signalProtocolAddress.getName())).start();
+    private void requestKeyBundles(TreeSet<String> unknownOthers, ChatSession chatSession, boolean needDistribute) {
+        new SendThread(new ConnectionData(unknownOthers, chatSession, signalProtocolAddress.getName(), needDistribute)).start();
     }
 
     SessionCipher getSessionCipher(String theOther) {

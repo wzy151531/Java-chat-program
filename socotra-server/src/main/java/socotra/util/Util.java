@@ -5,6 +5,7 @@ import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,11 +69,13 @@ public abstract class Util {
 
     /**
      * Send private connectionData to certain user.
+     * <p>
+     * Add synchronized to make this function invoked once at same time.
      *
      * @param connectionData The private connectionData.
      * @param toUsername     The certain user.
      */
-    public static void privateSend(ConnectionData connectionData, String toUsername) {
+    public synchronized static void privateSend(ConnectionData connectionData, String toUsername) {
         try {
             Server.getClients().get(toUsername).writeObject(connectionData);
         } catch (IOException e) {
@@ -86,19 +89,20 @@ public abstract class Util {
      * @param connectionData The connectionData needs to be sent.
      * @param toUsernames    The user names in the group.
      */
-    public static void groupSend(ConnectionData connectionData, TreeSet<String> toUsernames) {
+    public synchronized static void groupSend(ConnectionData connectionData, TreeSet<String> toUsernames) {
         ArrayList<String> clients = new ArrayList<>(toUsernames);
         clients.remove(connectionData.getUserSignature());
         for (String toUsername : clients) {
-            Server.getClients().forEach((k, v) -> {
+            HashMap<String, ObjectOutputStream> allClients = Server.getClients();
+            ObjectOutputStream oos = allClients.get(toUsername);
+            if (oos != null) {
                 try {
-                    if (k.equals(toUsername)) {
-                        v.writeObject(connectionData);
-                    }
+                    System.out.println("Group: send type: " + connectionData.getType() + " to: " + toUsername);
+                    oos.writeObject(connectionData);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            });
+            }
         }
     }
 

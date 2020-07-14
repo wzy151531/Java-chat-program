@@ -2,6 +2,10 @@
 
 This java project is about a client-server mode and **E2EE** chat program based on socket and **Signal Protocol**.
 
+### Version
+
+Current Client Version: `4.2.0`, Server Version: `4.1.0`
+
 ## Alias
 
 The whole project is divided into two parts: server and client. Both projects are built with `gradle6` and `jdk11`.
@@ -16,10 +20,11 @@ The whole project is divided into two parts: server and client. Both projects ar
 * Use TLS connection.
 * Show if the message is sent.
 * Search chat record at local.
-* Group chat.
+* ~~Group chat~~.
 * ~~Clients' text chat data stored in database.~~
 * Single E2EE chat between two clients(include text and audio data).
 * Save signal storages at client local.
+* Encrypted group chat prototype.
 
 ## TODO List
 
@@ -27,7 +32,7 @@ The whole project is divided into two parts: server and client. Both projects ar
 - [ ] Save history messages at client local.
 - [ ] Client appends pre keys to database.
 - [ ] Client updates signed pre key in database.
-- [ ] Encrypted group chat.
+- [ ] Further encrypted group chat operations(add/leave memebers).
 - [ ] Store symmetric encryption key that encrypts the history messages in client OP-TEE.
 - [ ] History messages backup from old device to new device.
 
