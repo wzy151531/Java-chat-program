@@ -29,12 +29,12 @@ The whole project is divided into two parts: server and client. Both projects ar
 ## TODO List
 
 - [ ] Server stores unreceived messages until the receiver is online.
-- [ ] Save history messages at client local.
-- [ ] Client appends pre keys to database.
-- [ ] Client updates signed pre key in database.
 - [ ] Further encrypted group chat operations(add/leave memebers).
+- [ ] Save history messages at client local.
 - [ ] Store symmetric encryption key that encrypts the history messages in client OP-TEE.
 - [ ] History messages backup from old device to new device.
+- [ ] Client appends pre keys to database.
+- [ ] Client updates signed pre key in database.
 - [ ] Update tests.
 
 ## Quick Start
