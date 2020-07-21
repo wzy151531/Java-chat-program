@@ -108,6 +108,15 @@ public class HomeModel {
         });
     }
 
+    public HashMap<ChatSession, ArrayList<ConnectionData>> getChatDataCopy() {
+        HashMap<ChatSession, ArrayList<ConnectionData>> result = new HashMap<>();
+        chatData.forEach((k, v) -> {
+            System.out.println("Copy chatSession: " + k.generateChatId());
+            result.put(k, new ArrayList<>(v));
+        });
+        return result;
+    }
+
     /**
      * Getter for currentChatSession.
      *
@@ -164,7 +173,7 @@ public class HomeModel {
      *
      * @param connectionData New connectionData.
      */
-    public void appendChatData(ConnectionData connectionData) {
+    void appendChatData(ConnectionData connectionData) {
         Platform.runLater(() -> {
             ChatSession key = connectionData.getChatSession();
 
@@ -183,9 +192,6 @@ public class HomeModel {
             }
             Client.getHomeController().scrollChatList();
             if (currentChatSession == null || !key.equals(currentChatSession)) {
-//                System.out.println("need to set hint");
-//                System.out.println(chatSessionList.size());
-//                System.out.println(key);
                 chatSessionList.forEach(n -> {
                     if (n.equals(key)) {
                         System.out.println("Set hint true");
@@ -195,6 +201,11 @@ public class HomeModel {
                 });
             }
         });
+    }
+
+    public void appendChatData(ChatSession chatSession) {
+        this.chatData.put(chatSession, FXCollections.observableArrayList(new ArrayList<>()));
+        this.chatSessionList.add(chatSession);
     }
 
     /**
@@ -235,7 +246,6 @@ public class HomeModel {
      * @param chatSession New chat session.
      */
     public void appendChatSessionList(ChatSession chatSession) {
-        System.out.println("Append chatSession: " + chatSession.generateChatId());
         Platform.runLater(() -> {
             chatSession.setHint(true);
             this.chatSessionList.add(chatSession);
@@ -451,16 +461,8 @@ public class HomeModel {
      * Send log out connectionData to server.
      */
     public void handleLogout() {
-        Saver saver = new Saver(Client.getClientThread().getUsername(), Client.getEncryptedClient());
-        saver.saveStores();
-
-        HashMap<ChatSession, List<ConnectionData>> newChatData = new HashMap<>();
-        chatData.forEach((k, v) -> {
-            List<ConnectionData> connectionDataList = new ArrayList<>(v);
-            newChatData.put(k, connectionDataList);
-        });
-        ConnectionData connectionData1 = new ConnectionData(newChatData, Client.getClientThread().getUsername());
-        new SendThread(connectionData1, true).start();
+        ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUsername(), false);
+        new SendThread(connectionData, true).start();
     }
 
     /**

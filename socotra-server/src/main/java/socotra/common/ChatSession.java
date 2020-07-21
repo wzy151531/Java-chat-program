@@ -88,6 +88,17 @@ public class ChatSession implements Serializable {
         return this.isEncrypted() ? "🔒" + result : result;
     }
 
+    public String generateChatIdCSV() {
+        TreeSet<String> copy = new TreeSet<>(toUsernames);
+        String temp = "";
+        for (String username : toUsernames) {
+            temp = temp + username + "|";
+        }
+        String result = temp.substring(0, temp.length() - 1);
+        result = result + "/" + sessionType;
+        return this.isEncrypted() ? "🔒" + result : result;
+    }
+
     public TreeSet<String> getOthers(String caller) {
         TreeSet<String> result = new TreeSet<>(this.toUsernames);
         result.remove(caller);

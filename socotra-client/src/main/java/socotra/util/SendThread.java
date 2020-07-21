@@ -5,6 +5,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import socotra.Client;
 import socotra.common.ConnectionData;
+import socotra.protocol.Saver;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -50,14 +51,16 @@ public class SendThread extends Thread {
     public void run() {
         try {
             ObjectOutputStream toServer = Client.getClientThread().getToServer();
-            toServer.writeObject(connectionData);
             if (logout) {
                 Platform.runLater(() -> {
                     Alert warningAlert = Util.generateAlert(Alert.AlertType.WARNING, "Log out", "Log out confirmation.", "Confirm to log out.");
                     warningAlert.setResultConverter(dialogButton -> {
                         if (dialogButton == ButtonType.OK) {
                             try {
-                                toServer.writeObject(new ConnectionData(connectionData.getUserSignature(), false));
+                                Saver saver = new Saver(Client.getClientThread().getUsername(), Client.getEncryptedClient());
+                                saver.saveStores();
+                                saver.saveChatData(Client.getHomeModel().getChatDataCopy());
+                                toServer.writeObject(connectionData);
                                 Client.getClientThread().endConnection();
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -70,6 +73,8 @@ public class SendThread extends Thread {
                     warningAlert.show();
                 });
 
+            } else {
+                toServer.writeObject(connectionData);
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,38 +1,17 @@
 package socotra.model;
 
 import socotra.Client;
-import socotra.common.ChatSession;
-import socotra.common.ConnectionData;
-import socotra.protocol.EncryptedClient;
 import socotra.protocol.Loader;
-import socotra.protocol.MySessionStore;
 import socotra.util.SetChatData;
 import socotra.util.Util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeSet;
-
 public class LoginModel {
 
-    private HashMap<ChatSession, List<ConnectionData>> generateChatData(EncryptedClient encryptedClient) {
-        HashMap<ChatSession, List<ConnectionData>> result = new HashMap<>();
-        MySessionStore mySessionStore = encryptedClient.getSessionStore();
-        mySessionStore.getFormattedSessionMap().forEach((k, v) -> {
-            TreeSet<String> users = new TreeSet<>();
-            users.add(k);
-            users.add(Client.getClientThread().getUsername());
-            // TODO: fix group chat.
-//            result.put(new ChatSession(users, true, true, ChatSession.PAIRWISE), new ArrayList<>());
-        });
-        return result;
-    }
-
-    void loadStores() {
+    void loadData() {
         Loader loader = new Loader(Client.getClientThread().getUsername());
         loader.loadStores();
-        SetChatData setChatData = new SetChatData(generateChatData(Client.getEncryptedClient()));
+
+        SetChatData setChatData = new SetChatData(loader.loadChatData());
         Client.setSetChatData(setChatData);
         setChatData.start();
     }

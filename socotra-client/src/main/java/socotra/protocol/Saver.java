@@ -1,9 +1,13 @@
 package socotra.protocol;
 
+import socotra.common.ChatSession;
+import socotra.common.ConnectionData;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Saver {
@@ -46,7 +50,7 @@ public class Saver {
         return new String(hexChars);
     }
 
-    private void writeFile(HashMap<String, byte[]> hashMap, String fileName) throws IOException {
+    private void writeStore(HashMap<String, byte[]> hashMap, String fileName) throws IOException {
         File file = new File(userDirPath + "/" + username, fileName);
         if (!file.exists()) {
             file.createNewFile();
@@ -65,20 +69,57 @@ public class Saver {
         bw.close();
     }
 
+    private void writeChatData(HashMap<ChatSession, ArrayList<ConnectionData>> chatData) throws IOException {
+        File file = new File(userDirPath + "/" + username, "chatData");
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+        chatData.forEach((k, v) -> {
+            if (v.size() == 0) {
+                try {
+                    bw.write("null," + k.generateChatIdCSV() + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                v.forEach(n -> {
+                    try {
+                        bw.write(n.getUuid() + "," + n.getType() + "," +
+                                (n.getType() == 1 ? n.getTextData() : byteArrayToHexStr(n.getAudioData())) + "," +
+                                n.getUserSignature() + "," + n.getChatSession().generateChatIdCSV() + "\n"
+                        );
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+        });
+        bw.close();
+    }
+
     private void saveIdentityKeyStore() throws IOException {
-        writeFile(encryptedClient.getIdentityKeyStore().getFormattedIdentityKeyMap(), "identityKeyStore.csv");
+        writeStore(encryptedClient.getIdentityKeyStore().getFormattedIdentityKeyMap(), "identityKeyStore.csv");
     }
 
     private void saveSignedPreKeyStore() throws IOException {
-        writeFile(encryptedClient.getSignedPreKeyStore().getFormattedSignedPreKeyMap(), "signedPreKeyStore.csv");
+        writeStore(encryptedClient.getSignedPreKeyStore().getFormattedSignedPreKeyMap(), "signedPreKeyStore.csv");
     }
 
     private void savePreKeyStore() throws IOException {
-        writeFile(encryptedClient.getPreKeyStore().getFormattedPreKeyMap(), "preKeyStore.csv");
+        writeStore(encryptedClient.getPreKeyStore().getFormattedPreKeyMap(), "preKeyStore.csv");
     }
 
     private void saveSessionStore() throws IOException {
-        writeFile(encryptedClient.getSessionStore().getFormattedSessionMap(), "sessionStore.csv");
+        writeStore(encryptedClient.getSessionStore().getFormattedSessionMap(), "sessionStore.csv");
+    }
+
+    public void saveChatData(HashMap<ChatSession, ArrayList<ConnectionData>> chatData) {
+        try {
+            writeChatData(chatData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

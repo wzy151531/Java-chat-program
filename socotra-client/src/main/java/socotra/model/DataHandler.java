@@ -29,7 +29,7 @@ class DataHandler {
                     });
                     return false;
                 } else {
-                    Client.getLoginModel().loadStores();
+                    Client.getLoginModel().loadData();
                     ControllerUtil controllerUtil = new ControllerUtil();
                     Platform.runLater(() -> {
                         Client.closeWaitingAlert();

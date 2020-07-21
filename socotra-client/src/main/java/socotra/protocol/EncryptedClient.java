@@ -224,8 +224,8 @@ public class EncryptedClient {
     }
 
     private void finishInitGroupChat(ChatSession chatSession) {
-        Client.getHomeModel().appendChatSessionList(chatSession);
         Platform.runLater(() -> {
+            Client.getHomeModel().appendChatData(chatSession);
             Client.closeInitGroupChatAlert();
         });
     }

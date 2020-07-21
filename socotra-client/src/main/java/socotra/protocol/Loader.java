@@ -7,9 +7,15 @@ import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.state.PreKeyRecord;
 import org.whispersystems.libsignal.state.SessionRecord;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
+import socotra.common.ChatSession;
+import socotra.common.ConnectionData;
 import socotra.util.Util;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 public class Loader {
 
@@ -56,7 +62,7 @@ public class Loader {
         return byteArray;
     }
 
-    private void readFile(String fileName) throws IOException, IllegalStateException, InvalidKeyException {
+    private void readStore(String fileName) throws IOException, IllegalStateException, InvalidKeyException {
         File file = new File(userDirPath + "/" + username, fileName);
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line;
@@ -90,20 +96,61 @@ public class Loader {
         }
     }
 
+    private HashMap<ChatSession, List<ConnectionData>> readChatData() throws IOException {
+        File file = new File(userDirPath + "/" + username, "chatData");
+        if (!file.exists()) {
+            return new HashMap<>();
+        }
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line;
+        HashMap<ChatSession, List<ConnectionData>> result = new HashMap<>();
+        while ((line = br.readLine()) != null) {
+            String[] records = line.split(",");
+            if (records[0].equals("null")) {
+                result.put(new ChatSession(records[1]), new ArrayList<>());
+            } else {
+                ChatSession chatSession = new ChatSession(records[4]);
+                UUID uuid = UUID.fromString(records[0]);
+                int type = Integer.parseInt(records[1]);
+                String data = records[2];
+                String userSignature = records[3];
+                List<ConnectionData> temp = result.getOrDefault(chatSession, new ArrayList<>());
+                if (type == 1) {
+                    temp.add(new ConnectionData(data, uuid, userSignature, chatSession));
+                } else if (type == 2) {
+                    temp.add(new ConnectionData(hexStrToByteArray(data), uuid, userSignature, chatSession));
+                } else {
+                    throw new IllegalStateException("Bad connectionData type.");
+                }
+                result.put(chatSession, temp);
+            }
+        }
+        return result;
+    }
+
     private void loadIdentityKeyStore() throws IOException, IllegalStateException, InvalidKeyException {
-        readFile("identityKeyStore.csv");
+        readStore("identityKeyStore.csv");
     }
 
     private void loadSignedPreKeyStore() throws IOException, IllegalStateException, InvalidKeyException {
-        readFile("signedPreKeyStore.csv");
+        readStore("signedPreKeyStore.csv");
     }
 
     private void loadPreKeyStore() throws IOException, IllegalStateException, InvalidKeyException {
-        readFile("preKeyStore.csv");
+        readStore("preKeyStore.csv");
     }
 
     private void loadSessionStore() throws IOException, IllegalStateException, InvalidKeyException {
-        readFile("sessionStore.csv");
+        readStore("sessionStore.csv");
+    }
+
+    public HashMap<ChatSession, List<ConnectionData>> loadChatData() {
+        try {
+            return readChatData();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new HashMap<>();
+        }
     }
 
 }
