@@ -15,6 +15,14 @@ public class MySenderKeyStore implements SenderKeyStore {
         this.senderKeyMap = new HashMap<>();
     }
 
+    HashMap<String, byte[]> getFormattedSenderKeyMap() {
+        HashMap<String, byte[]> result = new HashMap<>();
+        senderKeyMap.forEach((k, v) -> {
+            result.put(k.serialize(), v.serialize());
+        });
+        return result;
+    }
+
     @Override
     public void storeSenderKey(SenderKeyName senderKeyName, SenderKeyRecord record) {
         this.senderKeyMap.put(senderKeyName, record);

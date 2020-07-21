@@ -195,7 +195,7 @@ public class EncryptedClient {
     public void distributeSenderKey(TreeSet<String> others, ChatSession chatSession, boolean needDistribute) {
         GroupSessionBuilder groupSessionBuilder = new GroupSessionBuilder(senderKeyStore);
         SenderKeyDistributionMessage SKDM = groupSessionBuilder.create(
-                new SenderKeyName(chatSession.generateChatId(),
+                new SenderKeyName(chatSession.generateChatIdCSV(),
                         signalProtocolAddress));
         HashMap<String, ConnectionData> senderKeysData = new HashMap<>();
         others.forEach(n -> {
@@ -213,7 +213,7 @@ public class EncryptedClient {
         try {
             SenderKeyDistributionMessage SKDM = new SenderKeyDistributionMessage(senderKey);
             GroupSessionBuilder groupSessionBuilder = new GroupSessionBuilder(senderKeyStore);
-            groupSessionBuilder.process(new SenderKeyName(chatSession.generateChatId(),
+            groupSessionBuilder.process(new SenderKeyName(chatSession.generateChatIdCSV(),
                     new SignalProtocolAddress(senderName, 1)), SKDM);
             if (needDistribute) {
                 initGroupChat(chatSession, false);
@@ -251,7 +251,7 @@ public class EncryptedClient {
     }
 
     GroupCipher getGroupCipher(String senderName, ChatSession chatSession) {
-        String groupId = chatSession.generateChatId();
+        String groupId = chatSession.generateChatIdCSV();
         SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(senderName, 1);
         return new GroupCipher(senderKeyStore, new SenderKeyName(groupId, signalProtocolAddress));
     }

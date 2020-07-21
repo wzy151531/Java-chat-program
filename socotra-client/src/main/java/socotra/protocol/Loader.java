@@ -4,6 +4,8 @@ import javafx.scene.control.Alert;
 import org.whispersystems.libsignal.IdentityKey;
 import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.SignalProtocolAddress;
+import org.whispersystems.libsignal.groups.SenderKeyName;
+import org.whispersystems.libsignal.groups.state.SenderKeyRecord;
 import org.whispersystems.libsignal.state.PreKeyRecord;
 import org.whispersystems.libsignal.state.SessionRecord;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
@@ -37,6 +39,7 @@ public class Loader {
             loadSignedPreKeyStore();
             loadPreKeyStore();
             loadSessionStore();
+            loadSenderKeyStore();
         } catch (FileNotFoundException e) {
             Util.generateAlert(Alert.AlertType.ERROR, "Error", "File not found.", "User identityKeyStore.csv not found.").show();
         } catch (InvalidKeyException e) {
@@ -90,6 +93,13 @@ public class Loader {
                     MySessionStore mySessionStore = encryptedClient.getSessionStore();
                     mySessionStore.storeSession(new SignalProtocolAddress(record[0], 1), new SessionRecord(hexStrToByteArray(record[1])));
                     break;
+                case "senderKeyStore.csv":
+                    MySenderKeyStore mySenderKeyStore = encryptedClient.getSenderKeyStore();
+                    String senderKeyNamePart = record[0];
+                    String[] parts = senderKeyNamePart.split("::");
+                    mySenderKeyStore.storeSenderKey(new SenderKeyName(parts[0], new SignalProtocolAddress(parts[1], Integer.parseInt(parts[2]))),
+                            new SenderKeyRecord(hexStrToByteArray(record[1])));
+                    break;
                 default:
                     throw new IllegalStateException("Bad file name.");
             }
@@ -142,6 +152,10 @@ public class Loader {
 
     private void loadSessionStore() throws IOException, IllegalStateException, InvalidKeyException {
         readStore("sessionStore.csv");
+    }
+
+    private void loadSenderKeyStore() throws IOException, IllegalStateException, InvalidKeyException {
+        readStore("senderKeyStore.csv");
     }
 
     public HashMap<ChatSession, List<ConnectionData>> loadChatData() {

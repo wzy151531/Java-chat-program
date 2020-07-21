@@ -51,6 +51,21 @@ public class ChatSession implements Serializable {
         this.sessionType = sessionType;
     }
 
+    public ChatSession(String chatIdCSV) {
+        String[] parts = chatIdCSV.split("/");
+        if (parts.length != 3 && parts.length != 2) {
+            throw new IllegalArgumentException("Bad chatIdCSV.");
+        }
+        this.sessionType = Integer.parseInt(parts[parts.length - 1]);
+        String[] users = parts[parts.length - 2].split("\\|");
+        this.toUsernames = new TreeSet<>();
+        for (String username : users) {
+            this.toUsernames.add(username);
+        }
+        this.hint = false;
+        this.encrypted = parts.length == 3;
+    }
+
     public int getSessionType() {
         return this.sessionType;
     }
@@ -81,22 +96,14 @@ public class ChatSession implements Serializable {
         return this.isEncrypted() ? "🔒" + chatName : chatName;
     }
 
-    public String generateChatId() {
-        TreeSet<String> copy = new TreeSet<>(toUsernames);
-        String temp = copy.toString();
-        String result = temp.substring(1, temp.length() - 1);
-        return this.isEncrypted() ? "🔒" + result : result;
-    }
-
     public String generateChatIdCSV() {
-        TreeSet<String> copy = new TreeSet<>(toUsernames);
         String temp = "";
         for (String username : toUsernames) {
             temp = temp + username + "|";
         }
         String result = temp.substring(0, temp.length() - 1);
         result = result + "/" + sessionType;
-        return this.isEncrypted() ? "🔒" + result : result;
+        return this.isEncrypted() ? "🔒/" + result : result;
     }
 
     public TreeSet<String> getOthers(String caller) {

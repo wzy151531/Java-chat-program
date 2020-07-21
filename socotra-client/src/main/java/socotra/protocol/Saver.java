@@ -31,6 +31,7 @@ public class Saver {
             saveSignedPreKeyStore();
             savePreKeyStore();
             saveSessionStore();
+            saveSenderKeyStore();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,6 +113,10 @@ public class Saver {
 
     private void saveSessionStore() throws IOException {
         writeStore(encryptedClient.getSessionStore().getFormattedSessionMap(), "sessionStore.csv");
+    }
+
+    private void saveSenderKeyStore() throws IOException {
+        writeStore(encryptedClient.getSenderKeyStore().getFormattedSenderKeyMap(), "senderKeyStore.csv");
     }
 
     public void saveChatData(HashMap<ChatSession, ArrayList<ConnectionData>> chatData) {

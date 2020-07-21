@@ -111,7 +111,6 @@ public class HomeModel {
     public HashMap<ChatSession, ArrayList<ConnectionData>> getChatDataCopy() {
         HashMap<ChatSession, ArrayList<ConnectionData>> result = new HashMap<>();
         chatData.forEach((k, v) -> {
-            System.out.println("Copy chatSession: " + k.generateChatId());
             result.put(k, new ArrayList<>(v));
         });
         return result;
@@ -205,7 +204,9 @@ public class HomeModel {
 
     public void appendChatData(ChatSession chatSession) {
         this.chatData.put(chatSession, FXCollections.observableArrayList(new ArrayList<>()));
-        this.chatSessionList.add(chatSession);
+        if (!chatSessionList.contains(chatSession)) {
+            this.chatSessionList.add(chatSession);
+        }
     }
 
     /**
@@ -247,8 +248,10 @@ public class HomeModel {
      */
     public void appendChatSessionList(ChatSession chatSession) {
         Platform.runLater(() -> {
-            chatSession.setHint(true);
-            this.chatSessionList.add(chatSession);
+            if (!chatSessionList.contains(chatSession)) {
+                chatSession.setHint(true);
+                this.chatSessionList.add(chatSession);
+            }
         });
     }
 
