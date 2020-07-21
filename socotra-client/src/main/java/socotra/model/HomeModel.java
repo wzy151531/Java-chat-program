@@ -253,6 +253,10 @@ public class HomeModel {
         });
     }
 
+    public boolean clientsContains(String clientName) {
+        return this.clientsList.contains(clientName);
+    }
+
     /**
      * Append new client to clients list.
      *

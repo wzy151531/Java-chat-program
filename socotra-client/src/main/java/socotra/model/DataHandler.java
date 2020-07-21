@@ -13,6 +13,7 @@ import socotra.util.SendThread;
 import socotra.util.SetOnlineUsers;
 import socotra.util.Util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 class DataHandler {
@@ -33,17 +34,20 @@ class DataHandler {
                     Platform.runLater(() -> {
                         Client.closeWaitingAlert();
                         controllerUtil.loadHomePage();
+                        Client.showInitClientAlert();
                     });
                 }
                 break;
             // If connectionData is about users online information.
             case -2:
                 System.out.println(connectionData.getUserSignature() + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
-                if (connectionData.getIsOnline()) {
-                    Client.getHomeModel().appendClientsList(connectionData.getUserSignature());
-                } else {
-                    Client.getHomeModel().removeClientsList(connectionData.getUserSignature());
+                String clientName = connectionData.getUserSignature();
+                if (connectionData.getIsOnline() && !Client.getHomeModel().clientsContains(clientName)) {
+                    Client.getHomeModel().appendClientsList(clientName);
                 }
+//                } else if (!connectionData.getIsOnline() && Client.getHomeModel().clientsContains(clientName)) {
+//                    Client.getHomeModel().removeClientsList(clientName);
+//                }
                 break;
             // If connectionData is about set online users.
             case -3:
@@ -102,10 +106,46 @@ class DataHandler {
             case 10:
                 processReceKeyBundles(connectionData);
                 break;
+            case 12:
+                processDepositData(connectionData);
+                break;
             default:
                 System.out.println("Unknown data.");
         }
         return true;
+    }
+
+    private void processDepositData(ConnectionData connectionData) {
+        Platform.runLater(() -> {
+            processPairwiseData(connectionData.getDepositPairwiseData());
+            processSenderKeyData(connectionData.getDepositSenderKeyData());
+            processGroupData(connectionData.getDepositGroupData());
+            Client.closeInitClientAlert();
+        });
+    }
+
+    private void processPairwiseData(ArrayList<ConnectionData> pairwiseData) {
+        System.out.println("process pairwise data.");
+        if (pairwiseData == null) return;
+        pairwiseData.forEach(n -> {
+            handleChatMessage(n);
+        });
+    }
+
+    private void processSenderKeyData(ArrayList<ConnectionData> senderKeyData) {
+        System.out.println("process senderKey data.");
+        if (senderKeyData == null) return;
+        senderKeyData.forEach(n -> {
+            processReceSenderKey(n);
+        });
+    }
+
+    private void processGroupData(ArrayList<ConnectionData> groupData) {
+        System.out.println("process group data.");
+        if (groupData == null) return;
+        groupData.forEach(n -> {
+            handleChatMessage(n);
+        });
     }
 
     private void processReceSenderKey(ConnectionData connectionData) {

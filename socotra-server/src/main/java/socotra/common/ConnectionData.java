@@ -83,6 +83,11 @@ public class ConnectionData implements Serializable {
     private HashMap<String, KeyBundle> keyBundles;
     private HashMap<String, ConnectionData> senderKeysData;
 
+    private ArrayList<ConnectionData> depositPairwiseData;
+    private ArrayList<ConnectionData> depositSenderKeyData;
+    private ArrayList<ConnectionData> depositGroupData;
+
+
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
      *
@@ -253,7 +258,6 @@ public class ConnectionData implements Serializable {
      * @param chatSession    The group chat session.
      * @param needDistribute If receiver's sender key needs to distribute to others in this group.
      */
-    // TODO: integrate all senderKey package to one package.
     public ConnectionData(byte[] cipherData, String userSignature, ChatSession chatSession, boolean needDistribute, String receiverUsername, int cipherType) {
         this.type = 8;
         this.cipherData = cipherData;
@@ -264,6 +268,15 @@ public class ConnectionData implements Serializable {
         this.cipherType = cipherType;
     }
 
+    /**
+     * The connection data is about requesting key bundles of users.
+     *
+     * @param receiversUsername The username of receivers.
+     * @param chatSession       The chat session related.
+     * @param userSignature     The sender's username.
+     * @param needDistribute    If receiver's sender key needs to distribute.(Not only the initiator needs to request
+     *                          others' key bundle)
+     */
     public ConnectionData(TreeSet<String> receiversUsername, ChatSession chatSession, String userSignature, boolean needDistribute) {
         this.type = 9;
         this.receiversUsername = receiversUsername;
@@ -272,6 +285,14 @@ public class ConnectionData implements Serializable {
         this.needDistribute = needDistribute;
     }
 
+    /**
+     * The connection data is about response of key bundles.
+     *
+     * @param keyBundles     The requesting users' key bundles.
+     * @param chatSession    The chat session related.
+     * @param needDistribute If receiver's sender key needs to distribute.(Not only the initiator needs to  request
+     *                       others' key bundle)
+     */
     public ConnectionData(HashMap<String, KeyBundle> keyBundles, ChatSession chatSession, boolean needDistribute) {
         this.type = 10;
         this.keyBundles = keyBundles;
@@ -279,9 +300,49 @@ public class ConnectionData implements Serializable {
         this.needDistribute = needDistribute;
     }
 
+    /**
+     * The connection data is about sender key distribution to different pairwise receivers.
+     *
+     * @param senderKeysData The sender keys data.
+     */
     public ConnectionData(HashMap<String, ConnectionData> senderKeysData) {
+        senderKeysData.forEach((k, v) -> {
+            if (v.getType() != 8) {
+                throw new IllegalStateException("Type isn't 8, connection data is not about sender keys.");
+            }
+        });
         this.type = 11;
         this.senderKeysData = senderKeysData;
+    }
+
+    public ConnectionData(ArrayList<ConnectionData> depositPairwiseData,
+                          ArrayList<ConnectionData> depositSenderKeyData,
+                          ArrayList<ConnectionData> depositGroupData) {
+        this.type = 12;
+        this.depositPairwiseData = depositPairwiseData;
+        this.depositSenderKeyData = depositSenderKeyData;
+        this.depositGroupData = depositGroupData;
+    }
+
+    public ArrayList<ConnectionData> getDepositPairwiseData() {
+        if (type != 12) {
+            throw new IllegalStateException("Type isn't 12, cannot get depositPairwiseData");
+        }
+        return this.depositPairwiseData;
+    }
+
+    public ArrayList<ConnectionData> getDepositSenderKeyData() {
+        if (type != 12) {
+            throw new IllegalStateException("Type isn't 12, cannot get depositSenderKeyData");
+        }
+        return this.depositSenderKeyData;
+    }
+
+    public ArrayList<ConnectionData> getDepositGroupData() {
+        if (type != 12) {
+            throw new IllegalStateException("Type isn't 12, cannot get depositGroupData");
+        }
+        return this.depositGroupData;
     }
 
     public HashMap<String, ConnectionData> getSenderKeysData() {

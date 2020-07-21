@@ -76,6 +76,8 @@ public class Client extends Application {
 
     private static Alert waitingAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Connecting To Server.", "Please Be Patient.");
 
+    private static Alert initClientAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Client.", "Please Be Patient.");
+
     private static Alert initGroupChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Group Chat.", "Please Be Patient.");
 
     private static Alert initPairwiseChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Pairwise Chat.", "Please Be Patient.");
@@ -317,6 +319,15 @@ public class Client extends Application {
     public static void closeInitPairwiseChatAlert() {
         initPairwiseChatAlert.setAlertType(Alert.AlertType.INFORMATION);
         initPairwiseChatAlert.close();
+    }
+
+    public static void showInitClientAlert() {
+        initClientAlert.show();
+    }
+
+    public static void closeInitClientAlert() {
+        initClientAlert.setAlertType(Alert.AlertType.INFORMATION);
+        initClientAlert.close();
     }
 
     /**

@@ -7,7 +7,9 @@ import socotra.common.KeyBundle;
 import socotra.jdbc.JdbcUtil;
 import socotra.util.Util;
 
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -23,12 +25,10 @@ class DataHandler {
     private void processOnline() {
         serverThread.appendClient();
         System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
-
         HashMap<ChatSession, List<ConnectionData>> chatData = JdbcUtil.getCertainChatData(serverThread.getUsername());
         if (chatData != null) {
             Util.privateSend(new ConnectionData(chatData, "server"), serverThread.getUsername());
         }
-
         TreeSet<String> allClientsName = new TreeSet<>(Server.getClients().keySet());
         allClientsName.remove(serverThread.getUsername());
         // Inform the new client current online users and inform other clients that the new client is online.
@@ -45,11 +45,23 @@ class DataHandler {
             } else {
                 serverThread.inform(new ConnectionData(true));
                 processOnline();
+                processDepositData(username);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return true;
+    }
+
+    private void processDepositData(String username) {
+        ArrayList<ConnectionData> pairwiseData = Server.loadPairwiseData(username);
+        ArrayList<ConnectionData> senderKeyData = Server.loadSenderKeyData(username);
+        ArrayList<ConnectionData> groupData = Server.loadGroupData(username);
+        try {
+            serverThread.inform(new ConnectionData(pairwiseData, senderKeyData, groupData));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean processLogout() {
@@ -82,9 +94,6 @@ class DataHandler {
             case 2:
             case 7:
                 connectionData.setIsSent(true);
-//                if (!Util.isAnyOnline(connectionData.getChatSession().getToUsernames())) {
-//                    Util.privateSend(new ConnectionData(connectionData.getUuid(), "server", connectionData.getChatSession()), connectionData.getUserSignature());
-//                }
                 Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
                 break;
             // If connection data is about store chat history.
@@ -121,7 +130,11 @@ class DataHandler {
     private void processDistributeSenderKey(ConnectionData connectionData) {
         HashMap<String, ConnectionData> senderKeysData = connectionData.getSenderKeysData();
         senderKeysData.forEach((k, v) -> {
-            Util.privateSend(v, k);
+            if (Server.getClients().containsKey(k)) {
+                Util.privateSend(v, k);
+            } else {
+                Server.storeSenderKeyData(k, v);
+            }
         });
     }
 

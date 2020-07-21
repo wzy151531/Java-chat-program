@@ -97,10 +97,21 @@ public abstract class Util {
             ObjectOutputStream oos = allClients.get(toUsername);
             if (oos != null) {
                 try {
-                    System.out.println("Group: send type: " + connectionData.getType() + " to: " + toUsername);
                     oos.writeObject(connectionData);
                 } catch (IOException e) {
                     e.printStackTrace();
+                }
+            } else {
+                ChatSession chatSession = connectionData.getChatSession();
+                switch (chatSession.getSessionType()) {
+                    case ChatSession.PAIRWISE:
+                        Server.storePairwiseData(toUsername, connectionData);
+                        break;
+                    case ChatSession.GROUP:
+                        Server.storeGroupData(toUsername, connectionData);
+                        break;
+                    default:
+                        throw new IllegalStateException("Bad chatSession type.");
                 }
             }
         }

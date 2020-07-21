@@ -1,5 +1,7 @@
 package socotra;
 
+import socotra.common.ChatSession;
+import socotra.common.ConnectionData;
 import socotra.jdbc.JdbcUtil;
 import socotra.service.ServerThread;
 
@@ -8,8 +10,11 @@ import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Array;
 import java.security.KeyStore;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 /**
  * This file is entry of server, used to accept clients.
@@ -25,6 +30,10 @@ public class Server {
      * SSL server socket.
      */
     private static SSLServerSocket serverSocket;
+
+    private static HashMap<String, ArrayList<ConnectionData>> depositPairwiseData = new HashMap<>();
+    private static HashMap<String, ArrayList<ConnectionData>> depositSenderKeyData = new HashMap<>();
+    private static HashMap<String, ArrayList<ConnectionData>> depositGroupData = new HashMap<>();
 
     /**
      * Initialize TLS before creating the SSL server socket.
@@ -138,6 +147,50 @@ public class Server {
      */
     public synchronized static void removeClient(String username) {
         Server.clients.remove(username);
+    }
+
+    public synchronized static void storePairwiseData(String receiverName, ConnectionData pairwiseData) {
+        System.out.println("Store pairwise data.");
+        ChatSession chatSession = pairwiseData.getChatSession();
+        if (pairwiseData.getType() != 7 && chatSession.getSessionType() != ChatSession.PAIRWISE) {
+            throw new IllegalStateException("Bad pairwiseData.");
+        }
+        ArrayList<ConnectionData> des = Server.depositPairwiseData.getOrDefault(receiverName, new ArrayList<>());
+        des.add(pairwiseData);
+        Server.depositPairwiseData.put(receiverName, des);
+    }
+
+    public synchronized static void storeSenderKeyData(String receiverName, ConnectionData senderKeyData) {
+        System.out.println("Store senderKey data.");
+        if (senderKeyData.getType() != 8) {
+            throw new IllegalStateException("Bad senderKeyData.");
+        }
+        ArrayList<ConnectionData> des = Server.depositSenderKeyData.getOrDefault(receiverName, new ArrayList<>());
+        des.add(senderKeyData);
+        Server.depositSenderKeyData.put(receiverName, des);
+    }
+
+    public synchronized static void storeGroupData(String receiverName, ConnectionData groupData) {
+        System.out.println("Store group data.");
+        ChatSession chatSession = groupData.getChatSession();
+        if (groupData.getType() != 7 && chatSession.getSessionType() != ChatSession.GROUP) {
+            throw new IllegalStateException("Bad groupData.");
+        }
+        ArrayList<ConnectionData> des = Server.depositGroupData.getOrDefault(receiverName, new ArrayList<>());
+        des.add(groupData);
+        Server.depositGroupData.put(receiverName, des);
+    }
+
+    public synchronized static ArrayList<ConnectionData> loadPairwiseData(String username) {
+        return Server.depositPairwiseData.get(username);
+    }
+
+    public synchronized static ArrayList<ConnectionData> loadSenderKeyData(String username) {
+        return Server.depositSenderKeyData.get(username);
+    }
+
+    public synchronized static ArrayList<ConnectionData> loadGroupData(String username) {
+        return Server.depositGroupData.get(username);
     }
 
 }
