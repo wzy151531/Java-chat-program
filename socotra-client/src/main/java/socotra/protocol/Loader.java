@@ -23,6 +23,7 @@ public class Loader {
 
     private final String userDirPath = "src/main/resources/userData";
     private final String username;
+    private final FileEncrypter fileEncrypter;
     private EncryptedClient encryptedClient;
 
     public Loader(String username) {
@@ -31,6 +32,7 @@ public class Loader {
         if (!userDir.exists()) {
             userDir.mkdir();
         }
+        this.fileEncrypter = new FileEncrypter(username);
     }
 
     public void loadStores() {
@@ -66,6 +68,11 @@ public class Loader {
     }
 
     private void readStore(String fileName) throws IOException, IllegalStateException, InvalidKeyException {
+        try {
+            fileEncrypter.decrypt(fileName, fileName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         File file = new File(userDirPath + "/" + username, fileName);
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line;
@@ -107,6 +114,11 @@ public class Loader {
     }
 
     private HashMap<ChatSession, List<ConnectionData>> readChatData() throws IOException {
+        try {
+            fileEncrypter.decrypt("chatData", "chatData");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         File file = new File(userDirPath + "/" + username, "chatData");
         if (!file.exists()) {
             return new HashMap<>();

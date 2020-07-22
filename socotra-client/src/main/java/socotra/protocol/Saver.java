@@ -15,6 +15,7 @@ public class Saver {
     private final String userDirPath = "src/main/resources/userData";
     private final String username;
     private final EncryptedClient encryptedClient;
+    private final FileEncrypter fileEncrypter;
 
     public Saver(String username, EncryptedClient encryptedClient) {
         this.username = username;
@@ -23,6 +24,7 @@ public class Saver {
         if (!userDir.exists()) {
             userDir.mkdir();
         }
+        this.fileEncrypter = new FileEncrypter(username);
     }
 
     public void saveStores() {
@@ -68,6 +70,11 @@ public class Saver {
             }
         });
         bw.close();
+        try {
+            fileEncrypter.encrypt(fileName, fileName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void writeChatData(HashMap<ChatSession, ArrayList<ConnectionData>> chatData) throws IOException {
@@ -97,6 +104,11 @@ public class Saver {
             }
         });
         bw.close();
+        try {
+            fileEncrypter.encrypt("chatData", "chatData");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void saveIdentityKeyStore() throws IOException {

@@ -13,12 +13,10 @@ import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage;
 import org.whispersystems.libsignal.protocol.SignalMessage;
 import org.whispersystems.libsignal.state.PreKeyBundle;
-import org.whispersystems.libsignal.state.PreKeyRecord;
 import socotra.protocol.EncryptedClient;
+import socotra.protocol.FileEncrypter;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TestProtocol {
     private static EncryptedClient tc1;
@@ -133,5 +131,15 @@ public class TestProtocol {
         GroupCipher groupCipher_1_rece_2 = new GroupCipher(tc1.getSenderKeyStore(), new SenderKeyName(groupId, signalProtocolAddress2));
         byte[] result2_1 = groupCipher_1_rece_2.decrypt(message2_1);
         System.out.println(new String(result2_1));
+    }
+
+    public static void testAES() {
+        try {
+            FileEncrypter fileEncrypter = new FileEncrypter("1");
+            fileEncrypter.encrypt("identityKeyStore.csv", "identityKeyStore.csv");
+            fileEncrypter.decrypt("identityKeyStore.csv", "identityKeyStore.csv");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
