@@ -5,6 +5,8 @@ import org.whispersystems.libsignal.SessionBuilder;
 import org.whispersystems.libsignal.SessionCipher;
 import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.ecc.ECPublicKey;
+import org.whispersystems.libsignal.fingerprint.Fingerprint;
+import org.whispersystems.libsignal.fingerprint.NumericFingerprintGenerator;
 import org.whispersystems.libsignal.groups.GroupCipher;
 import org.whispersystems.libsignal.groups.GroupSessionBuilder;
 import org.whispersystems.libsignal.groups.SenderKeyName;
@@ -51,62 +53,54 @@ public class TestProtocol {
 
 //        IdentityKey identityKeyTemp = new IdentityKey(identityKey, 0);
         IdentityKey identityKeyTemp = tc2.getIdentityKeyPair().getPublicKey();
+        int signedPreKeyId = tc2.getSignedPreKey().getId();
+        ECPublicKey signedPreKeyPub = tc2.getSignedPreKey().getKeyPair().getPublicKey();
+        byte[] signedPreKeySig = tc2.getSignedPreKey().getSignature();
 
         PreKeyBundle preKeyBundle2_1 = new PreKeyBundle(tc2.getRegistrationId(), 1, preKeyIdTemp, preKeyTemp,
-                tc2.getSignedPreKey().getId(), tc2.getSignedPreKey().getKeyPair().getPublicKey(), tc2.getSignedPreKey().getSignature(),
+                signedPreKeyId, signedPreKeyPub, signedPreKeySig,
                 identityKeyTemp);
         sessionBuilder1To2.process(preKeyBundle2_1);
 
-        SessionCipher sessionCipher1To2 = new SessionCipher(tc1.getSessionStore(), tc1.getPreKeyStore(), tc1.getSignedPreKeyStore(), tc1.getIdentityKeyStore(), signalProtocolAddress2);
-
-        CiphertextMessage message1To2_1 = sessionCipher1To2.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8));
-        CiphertextMessage message1To2_2 = sessionCipher1To2.encrypt("Perfect".getBytes(StandardCharsets.UTF_8));
-
+        SessionCipher sessionCipher1To2 = new SessionCipher(tc1.getSessionStore(), tc1.getPreKeyStore(), tc1.getSignedPreKeyStore(),
+                tc1.getIdentityKeyStore(), signalProtocolAddress2);
         SessionCipher sessionCipher2To1 = new SessionCipher(tc2.getSessionStore(), tc2.getPreKeyStore(), tc2.getSignedPreKeyStore(),
                 tc2.getIdentityKeyStore(), signalProtocolAddress1);
+
+        CiphertextMessage message1To2_1 = sessionCipher1To2.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8));
+
         byte[] result1To2_1 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_1.serialize()));
         System.out.println(new String(result1To2_1));
 
-        byte[] result1To2_2 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_2.serialize()));
-        System.out.println(new String(result1To2_2));
-
-        CiphertextMessage message2To1_1 = sessionCipher2To1.encrypt("Yes".getBytes(StandardCharsets.UTF_8));
-        CiphertextMessage message1To2_3 = sessionCipher1To2.encrypt("Great".getBytes(StandardCharsets.UTF_8));
+        CiphertextMessage message2To1_1 = sessionCipher2To1.encrypt("Hello world back.".getBytes(StandardCharsets.UTF_8));
 
         byte[] result2To1_1 = sessionCipher1To2.decrypt(new SignalMessage(message2To1_1.serialize()));
         System.out.println(new String(result2To1_1));
 
-        byte[] result1To2_3 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_3.serialize()));
-        System.out.println(new String(result1To2_3));
-
         // TODO tc2 update signed pre key and tc1 create a new sessionCipher with him.
-        tc2.updateSignedPreKey();
-        PreKeyBundle preKeyBundle2_1_2 = new PreKeyBundle(tc2.getRegistrationId(), 1, tc2.getPreKeys().get(1).getId(), tc2.getPreKeys().get(1).getKeyPair().getPublicKey(),
-                tc2.getSignedPreKey().getId(), tc2.getSignedPreKey().getKeyPair().getPublicKey(), tc2.getSignedPreKey().getSignature(),
-                identityKeyTemp);
-        sessionBuilder1To2.process(preKeyBundle2_1_2);
+        tc1.updateIdentityKey();
+//        int signedPreKeyId_new = tc2.getSignedPreKey().getId();
+//        ECPublicKey signedPreKeyPub_new = tc2.getSignedPreKey().getKeyPair().getPublicKey();
+//        byte[] signedPreKeySig_new = tc2.getSignedPreKey().getSignature();
+//        PreKeyBundle preKeyBundle2_1_2 = new PreKeyBundle(tc2.getRegistrationId(), 1, tc2.getPreKeys().get(1).getId(), tc2.getPreKeys().get(1).getKeyPair().getPublicKey(),
+//                signedPreKeyId, signedPreKeyPub, signedPreKeySig,
+//                identityKeyTemp);
+//        sessionBuilder1To2.process(preKeyBundle2_1_2);
 
+        CiphertextMessage message1To2_2 = sessionCipher1To2.encrypt("Updated".getBytes(StandardCharsets.UTF_8));
 
-        // The order does not matter.
-        CiphertextMessage message1To2_4 = sessionCipher1To2.encrypt("4".getBytes(StandardCharsets.UTF_8));
-
-//        CiphertextMessage message1To2_5 = sessionCipher1To2.encrypt("5".getBytes(StandardCharsets.UTF_8));
-//
-//        byte[] result1To2_5 = sessionCipher2To1.decrypt(new SignalMessage(message1To2_5.serialize()));
-//        System.out.println(new String(result1To2_5));
-
-        byte[] result1To2_4 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_4.serialize()));
-        System.out.println(new String(result1To2_4));
+        byte[] result1To2_2 = sessionCipher2To1.decrypt(new SignalMessage(message1To2_2.serialize()));
+        System.out.println(new String(result1To2_2));
 
 
         // TODO the preKey can be null, and whilst the preKeyId can be random.
-        PreKeyBundle preKeyBundle2_2 = new PreKeyBundle(tc2.getRegistrationId(), 1, 0, null,
-                tc2.getSignedPreKey().getId(), tc2.getSignedPreKey().getKeyPair().getPublicKey(), tc2.getSignedPreKey().getSignature(),
-                tc2.getIdentityKeyPair().getPublicKey());
-        sessionBuilder1To2.process(preKeyBundle2_2);
-        CiphertextMessage message1To2_6 = sessionCipher1To2.encrypt("Hi again".getBytes(StandardCharsets.UTF_8));
-        byte[] result1To2_6 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_6.serialize()));
-        System.out.println(new String(result1To2_6));
+//        PreKeyBundle preKeyBundle2_2 = new PreKeyBundle(tc2.getRegistrationId(), 1, 0, null,
+//                tc2.getSignedPreKey().getId(), tc2.getSignedPreKey().getKeyPair().getPublicKey(), tc2.getSignedPreKey().getSignature(),
+//                tc2.getIdentityKeyPair().getPublicKey());
+//        sessionBuilder1To2.process(preKeyBundle2_2);
+//        CiphertextMessage message1To2_6 = sessionCipher1To2.encrypt("Hi again".getBytes(StandardCharsets.UTF_8));
+//        byte[] result1To2_6 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_6.serialize()));
+//        System.out.println(new String(result1To2_6));
 
     }
 
@@ -142,4 +136,16 @@ public class TestProtocol {
             e.printStackTrace();
         }
     }
+
+    public static void testFingerprint() throws Exception {
+        test();
+        NumericFingerprintGenerator nfg = new NumericFingerprintGenerator(5200);
+        Fingerprint fp1_2 = nfg.createFor(1, tc1.getIdentifier(), tc1.getIdentityKeyPair().getPublicKey(), tc2.getIdentifier(), tc1.getIdentityKeyStore().getIdentity(signalProtocolAddress2));
+        Fingerprint fp2_1 = nfg.createFor(1, tc2.getIdentifier(), tc2.getIdentityKeyPair().getPublicKey(), tc1.getIdentifier(), tc2.getIdentityKeyStore().getIdentity(signalProtocolAddress1));
+        Fingerprint fp1_3 = nfg.createFor(1, tc1.getIdentifier(), tc1.getIdentityKeyPair().getPublicKey(), tc3.getIdentifier(), tc3.getIdentityKeyPair().getPublicKey());
+        System.out.println(fp1_2.getDisplayableFingerprint().getDisplayText());
+        System.out.println(fp2_1.getDisplayableFingerprint().getDisplayText());
+        System.out.println(fp1_3.getDisplayableFingerprint().getDisplayText());
+    }
+
 }

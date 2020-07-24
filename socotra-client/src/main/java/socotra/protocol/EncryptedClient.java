@@ -16,6 +16,7 @@ import socotra.common.KeyBundle;
 import socotra.util.SendThread;
 import sun.misc.Signal;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +56,14 @@ public class EncryptedClient {
             e.printStackTrace();
         }
         init();
+    }
+
+    public SignalProtocolAddress getSignalProtocolAddress() {
+        return signalProtocolAddress;
+    }
+
+    public byte[] getIdentifier() {
+        return signalProtocolAddress.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     private void load(byte[] serializedIdentityKeyPair, int registrationId) throws InvalidKeyException {
@@ -100,6 +109,12 @@ public class EncryptedClient {
         } catch (InvalidKeyException e) {
             e.printStackTrace();
         }
+    }
+
+    public void updateIdentityKey() {
+        this.identityKeyPair = KeyHelper.generateIdentityKeyPair();
+        this.registrationId = KeyHelper.generateRegistrationId(false);
+        this.identityKeyStore = new MyIdentityKeyStore(this.identityKeyPair, registrationId, this.identityKeyStore.getIdentityKeyMap());
     }
 
     public IdentityKeyPair getIdentityKeyPair() {

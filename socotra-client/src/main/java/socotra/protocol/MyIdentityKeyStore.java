@@ -20,12 +20,22 @@ public class MyIdentityKeyStore implements IdentityKeyStore, Serializable {
         this.identityKeyMap = new HashMap<>();
     }
 
+    MyIdentityKeyStore(IdentityKeyPair identityKeyPair, int localRegistrationId, HashMap<SignalProtocolAddress, IdentityKey> identityKeyMap) {
+        this.identityKeyPair = identityKeyPair;
+        this.localRegistrationId = localRegistrationId;
+        this.identityKeyMap = identityKeyMap;
+    }
+
     HashMap<String, byte[]> getFormattedIdentityKeyMap() {
         HashMap<String, byte[]> result = new HashMap<>();
         identityKeyMap.forEach((k, v) -> {
             result.put(k.getName(), v.serialize());
         });
         return result;
+    }
+
+    public HashMap<SignalProtocolAddress, IdentityKey> getIdentityKeyMap() {
+        return new HashMap<>(identityKeyMap);
     }
 
     @Override
