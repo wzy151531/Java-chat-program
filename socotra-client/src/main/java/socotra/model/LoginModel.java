@@ -7,10 +7,15 @@ import socotra.util.Util;
 
 public class LoginModel {
 
-    void loadData() {
-        Loader loader = new Loader(Client.getClientThread().getUsername());
-        loader.loadStores();
+    private Loader loader;
 
+    void loadStores() {
+        Loader loader = new Loader(Client.getClientThread().getUsername());
+        this.loader = loader;
+        loader.loadStores();
+    }
+
+    void loadChatData() {
         SetChatData setChatData = new SetChatData(loader.loadChatData());
         Client.setSetChatData(setChatData);
         setChatData.start();

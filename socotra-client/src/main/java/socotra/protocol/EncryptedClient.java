@@ -13,6 +13,7 @@ import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
+import socotra.model.DataHandler;
 import socotra.util.SendThread;
 import sun.misc.Signal;
 
@@ -196,18 +197,18 @@ public class EncryptedClient {
      *
      * @param chatSession The group chat session needs to be initialized.
      */
-    public void initGroupChat(ChatSession chatSession, boolean needDistribute) {
+    public void initGroupChat(ChatSession chatSession, boolean needDistribute, boolean init) {
         String caller = signalProtocolAddress.getName();
         TreeSet<String> others = chatSession.getOthers(caller);
         TreeSet<String> unknownOthers = getUnknownOthers(others);
         if (unknownOthers.isEmpty()) {
-            distributeSenderKey(others, chatSession, needDistribute);
+            distributeSenderKey(others, chatSession, needDistribute, init);
         } else {
-            requestKeyBundles(unknownOthers, chatSession, needDistribute);
+            requestKeyBundles(unknownOthers, chatSession, needDistribute, init);
         }
     }
 
-    public void distributeSenderKey(TreeSet<String> others, ChatSession chatSession, boolean needDistribute) {
+    public void distributeSenderKey(TreeSet<String> others, ChatSession chatSession, boolean needDistribute, boolean init) {
         GroupSessionBuilder groupSessionBuilder = new GroupSessionBuilder(senderKeyStore);
         SenderKeyDistributionMessage SKDM = groupSessionBuilder.create(
                 new SenderKeyName(chatSession.generateChatIdCSV(),
@@ -221,27 +222,39 @@ public class EncryptedClient {
             }
         });
         new SendThread(new ConnectionData(senderKeysData)).start();
-        finishInitGroupChat(chatSession);
+        finishInitGroupChat(chatSession, init);
     }
 
-    public void processReceivedSenderKey(byte[] senderKey, ChatSession chatSession, boolean needDistribute, String senderName) {
+    public void processReceivedSenderKey(byte[] senderKey, ChatSession chatSession, boolean needDistribute, String senderName, boolean init) {
         try {
             SenderKeyDistributionMessage SKDM = new SenderKeyDistributionMessage(senderKey);
             GroupSessionBuilder groupSessionBuilder = new GroupSessionBuilder(senderKeyStore);
             groupSessionBuilder.process(new SenderKeyName(chatSession.generateChatIdCSV(),
                     new SignalProtocolAddress(senderName, 1)), SKDM);
+            DataHandler dataHandler = Client.getDataHandler();
             if (needDistribute) {
-                initGroupChat(chatSession, false);
+                initGroupChat(chatSession, false, init);
+            } else if (init && !dataHandler.isGroupDataNull()) {
+                Platform.runLater(() -> {
+                    dataHandler.processGroupData();
+                    Client.closeInitClientAlert();
+                });
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void finishInitGroupChat(ChatSession chatSession) {
+    private void finishInitGroupChat(ChatSession chatSession, boolean init) {
         Platform.runLater(() -> {
-            Client.getHomeModel().appendChatData(chatSession);
-            Client.closeInitGroupChatAlert();
+            if (init) {
+                DataHandler dataHandler = Client.getDataHandler();
+                dataHandler.processGroupData();
+                Client.closeInitClientAlert();
+            } else {
+                Client.getHomeModel().appendChatData(chatSession);
+                Client.closeInitGroupChatAlert();
+            }
         });
     }
 
@@ -255,8 +268,8 @@ public class EncryptedClient {
         return result;
     }
 
-    private void requestKeyBundles(TreeSet<String> unknownOthers, ChatSession chatSession, boolean needDistribute) {
-        new SendThread(new ConnectionData(unknownOthers, chatSession, signalProtocolAddress.getName(), needDistribute)).start();
+    private void requestKeyBundles(TreeSet<String> unknownOthers, ChatSession chatSession, boolean needDistribute, boolean init) {
+        new SendThread(new ConnectionData(unknownOthers, chatSession, signalProtocolAddress.getName(), needDistribute, init)).start();
     }
 
     SessionCipher getSessionCipher(String theOther) {

@@ -16,7 +16,13 @@ import socotra.util.Util;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-class DataHandler {
+public class DataHandler {
+
+    private ArrayList<ConnectionData> groupData;
+
+    DataHandler() {
+        Client.setDataHandler(this);
+    }
 
     boolean handle(ConnectionData connectionData) {
         switch (connectionData.getType()) {
@@ -29,12 +35,13 @@ class DataHandler {
                     });
                     return false;
                 } else {
-                    Client.getLoginModel().loadData();
+                    Client.getLoginModel().loadStores();
                     ControllerUtil controllerUtil = new ControllerUtil();
                     Platform.runLater(() -> {
                         Client.closeWaitingAlert();
                         controllerUtil.loadHomePage();
                         Client.showInitClientAlert();
+                        Client.getLoginModel().loadChatData();
                     });
                 }
                 break;
@@ -101,7 +108,7 @@ class DataHandler {
                 }
                 break;
             case 8:
-                processReceSenderKey(connectionData);
+                processReceSenderKey(connectionData, false);
                 break;
             case 10:
                 processReceKeyBundles(connectionData);
@@ -116,12 +123,9 @@ class DataHandler {
     }
 
     private void processDepositData(ConnectionData connectionData) {
-        Platform.runLater(() -> {
-            processPairwiseData(connectionData.getDepositPairwiseData());
-            processSenderKeyData(connectionData.getDepositSenderKeyData());
-            processGroupData(connectionData.getDepositGroupData());
-            Client.closeInitClientAlert();
-        });
+        this.groupData = connectionData.getDepositGroupData();
+        processPairwiseData(connectionData.getDepositPairwiseData());
+        processSenderKeyData(connectionData.getDepositSenderKeyData());
     }
 
     private void processPairwiseData(ArrayList<ConnectionData> pairwiseData) {
@@ -134,25 +138,35 @@ class DataHandler {
 
     private void processSenderKeyData(ArrayList<ConnectionData> senderKeyData) {
         System.out.println("process senderKey data.");
-        if (senderKeyData == null) return;
+        if (senderKeyData == null) {
+            processGroupData();
+            return;
+        }
+        ;
+        System.out.println("SenderKey isn't null");
         senderKeyData.forEach(n -> {
-            processReceSenderKey(n);
+            processReceSenderKey(n, true);
         });
     }
 
-    private void processGroupData(ArrayList<ConnectionData> groupData) {
+    public void processGroupData() {
         System.out.println("process group data.");
         if (groupData == null) return;
         groupData.forEach(n -> {
             handleChatMessage(n);
         });
+        groupData = null;
     }
 
-    private void processReceSenderKey(ConnectionData connectionData) {
+    public boolean isGroupDataNull() {
+        return groupData == null;
+    }
+
+    private void processReceSenderKey(ConnectionData connectionData, boolean init) {
         try {
             byte[] senderKey = EncryptionHandler.decryptSKDMData(connectionData);
             EncryptedClient encryptedClient = Client.getEncryptedClient();
-            encryptedClient.processReceivedSenderKey(senderKey, connectionData.getChatSession(), connectionData.getNeedDistribute(), connectionData.getUserSignature());
+            encryptedClient.processReceivedSenderKey(senderKey, connectionData.getChatSession(), connectionData.getNeedDistribute(), connectionData.getUserSignature(), init);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -170,7 +184,7 @@ class DataHandler {
         });
         String caller = Client.getClientThread().getUsername();
         ChatSession chatSession = connectionData.getChatSession();
-        encryptedClient.distributeSenderKey(chatSession.getOthers(caller), chatSession, connectionData.getNeedDistribute());
+        encryptedClient.distributeSenderKey(chatSession.getOthers(caller), chatSession, connectionData.getNeedDistribute(), connectionData.isInit());
     }
 
     private void handleChatMessage(ConnectionData connectionData) {

@@ -202,6 +202,14 @@ public class ClientThread extends Thread {
         }
     }
 
+    public synchronized void sendData(ConnectionData connectionData) {
+        try {
+            toServer.writeObject(connectionData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * The thread's job.
      */

@@ -86,6 +86,7 @@ public class ConnectionData implements Serializable {
     private ArrayList<ConnectionData> depositPairwiseData;
     private ArrayList<ConnectionData> depositSenderKeyData;
     private ArrayList<ConnectionData> depositGroupData;
+    private boolean init;
 
 
     /**
@@ -277,12 +278,13 @@ public class ConnectionData implements Serializable {
      * @param needDistribute    If receiver's sender key needs to distribute.(Not only the initiator needs to request
      *                          others' key bundle)
      */
-    public ConnectionData(TreeSet<String> receiversUsername, ChatSession chatSession, String userSignature, boolean needDistribute) {
+    public ConnectionData(TreeSet<String> receiversUsername, ChatSession chatSession, String userSignature, boolean needDistribute, boolean init) {
         this.type = 9;
         this.receiversUsername = receiversUsername;
         this.chatSession = chatSession;
         this.userSignature = userSignature;
         this.needDistribute = needDistribute;
+        this.init = init;
     }
 
     /**
@@ -293,11 +295,12 @@ public class ConnectionData implements Serializable {
      * @param needDistribute If receiver's sender key needs to distribute.(Not only the initiator needs to  request
      *                       others' key bundle)
      */
-    public ConnectionData(HashMap<String, KeyBundle> keyBundles, ChatSession chatSession, boolean needDistribute) {
+    public ConnectionData(HashMap<String, KeyBundle> keyBundles, ChatSession chatSession, boolean needDistribute, boolean init) {
         this.type = 10;
         this.keyBundles = keyBundles;
         this.chatSession = chatSession;
         this.needDistribute = needDistribute;
+        this.init = init;
     }
 
     /**
@@ -315,6 +318,13 @@ public class ConnectionData implements Serializable {
         this.senderKeysData = senderKeysData;
     }
 
+    /**
+     * The connection data is about deposit data.
+     *
+     * @param depositPairwiseData  Deposit pairwise data.
+     * @param depositSenderKeyData Deposit senderKey data.
+     * @param depositGroupData     Deposit group data.
+     */
     public ConnectionData(ArrayList<ConnectionData> depositPairwiseData,
                           ArrayList<ConnectionData> depositSenderKeyData,
                           ArrayList<ConnectionData> depositGroupData) {
@@ -322,6 +332,13 @@ public class ConnectionData implements Serializable {
         this.depositPairwiseData = depositPairwiseData;
         this.depositSenderKeyData = depositSenderKeyData;
         this.depositGroupData = depositGroupData;
+    }
+
+    public boolean isInit() {
+        if (type != 9 && type != 10) {
+            throw new IllegalStateException("Type isn't 9 or 10, cannot get init");
+        }
+        return this.init;
     }
 
     public ArrayList<ConnectionData> getDepositPairwiseData() {

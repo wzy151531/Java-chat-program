@@ -77,7 +77,10 @@ public abstract class Util {
      */
     public synchronized static void privateSend(ConnectionData connectionData, String toUsername) {
         try {
-            Server.getClients().get(toUsername).writeObject(connectionData);
+            ObjectOutputStream oos = Server.getClients().get(toUsername);
+            if (oos != null) {
+                oos.writeObject(connectionData);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,5 +1,6 @@
 package socotra.util;
 
+import javafx.application.Platform;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;

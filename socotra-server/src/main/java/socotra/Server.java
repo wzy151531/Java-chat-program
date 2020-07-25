@@ -10,11 +10,9 @@ import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.Array;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.TreeSet;
 
 /**
  * This file is entry of server, used to accept clients.
@@ -182,15 +180,21 @@ public class Server {
     }
 
     public synchronized static ArrayList<ConnectionData> loadPairwiseData(String username) {
-        return Server.depositPairwiseData.get(username);
+        ArrayList<ConnectionData> result = Server.depositPairwiseData.get(username);
+        Server.depositPairwiseData.remove(username);
+        return result;
     }
 
     public synchronized static ArrayList<ConnectionData> loadSenderKeyData(String username) {
-        return Server.depositSenderKeyData.get(username);
+        ArrayList<ConnectionData> result = Server.depositSenderKeyData.get(username);
+        Server.depositSenderKeyData.remove(username);
+        return result;
     }
 
     public synchronized static ArrayList<ConnectionData> loadGroupData(String username) {
-        return Server.depositGroupData.get(username);
+        ArrayList<ConnectionData> result = Server.depositGroupData.get(username);
+        Server.depositGroupData.remove(username);
+        return result;
     }
 
 }

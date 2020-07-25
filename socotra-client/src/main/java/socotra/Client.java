@@ -82,6 +82,8 @@ public class Client extends Application {
 
     private static Alert initPairwiseChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Pairwise Chat.", "Please Be Patient.");
 
+    private static DataHandler dataHandler;
+
     /**
      * Getter for loginController.
      *
@@ -328,6 +330,14 @@ public class Client extends Application {
     public static void closeInitClientAlert() {
         initClientAlert.setAlertType(Alert.AlertType.INFORMATION);
         initClientAlert.close();
+    }
+
+    public static DataHandler getDataHandler() {
+        return Client.dataHandler;
+    }
+
+    public static void setDataHandler(DataHandler dataHandler) {
+        Client.dataHandler = dataHandler;
     }
 
     /**

@@ -5,6 +5,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import socotra.Client;
 import socotra.common.ConnectionData;
+import socotra.model.ClientThread;
 import socotra.protocol.Saver;
 
 import java.io.IOException;
@@ -49,35 +50,33 @@ public class SendThread extends Thread {
      * Start sending messages. If client wants to logout, exit the program.
      */
     public void run() {
-        try {
-            ObjectOutputStream toServer = Client.getClientThread().getToServer();
-            if (logout) {
-                Platform.runLater(() -> {
-                    Alert warningAlert = Util.generateAlert(Alert.AlertType.WARNING, "Log out", "Log out confirmation.", "Confirm to log out.");
-                    warningAlert.setResultConverter(dialogButton -> {
-                        if (dialogButton == ButtonType.OK) {
-                            try {
-                                Saver saver = new Saver(Client.getClientThread().getUsername(), Client.getEncryptedClient());
-                                saver.saveStores();
-                                saver.saveChatData(Client.getHomeModel().getChatDataCopy());
-                                toServer.writeObject(connectionData);
-                                Client.getClientThread().endConnection();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            System.exit(0);
+//            ObjectOutputStream toServer = Client.getClientThread().getToServer();
+        ClientThread clientThread = Client.getClientThread();
+        if (logout) {
+            Platform.runLater(() -> {
+                Alert warningAlert = Util.generateAlert(Alert.AlertType.WARNING, "Log out", "Log out confirmation.", "Confirm to log out.");
+                warningAlert.setResultConverter(dialogButton -> {
+                    if (dialogButton == ButtonType.OK) {
+                        try {
+                            Saver saver = new Saver(clientThread.getUsername(), Client.getEncryptedClient());
+                            saver.saveStores();
+                            saver.saveChatData(Client.getHomeModel().getChatDataCopy());
+//                                toServer.writeObject(connectionData);
+                            clientThread.sendData(connectionData);
+                            clientThread.endConnection();
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                        return null;
-                    });
-                    warningAlert.getButtonTypes().add(ButtonType.CANCEL);
-                    warningAlert.show();
+                        System.exit(0);
+                    }
+                    return null;
                 });
+                warningAlert.getButtonTypes().add(ButtonType.CANCEL);
+                warningAlert.show();
+            });
 
-            } else {
-                toServer.writeObject(connectionData);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } else {
+            clientThread.sendData(connectionData);
         }
     }
 }

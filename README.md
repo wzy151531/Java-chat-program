@@ -4,7 +4,7 @@ This java project is about a client-server mode and **E2EE** chat program based 
 
 ### Version
 
-Current Client Version: `4.4.0`, Server Version: `4.1.1`
+Current Client Version: `4.4.1`, Server Version: `4.1.2`
 
 ## Alias
 
@@ -68,6 +68,8 @@ and to run the application:
 Or simply use the gradle gui tool inside the IDE(for intellij it's on the right side bar) to run these tasks.
 
 ### Junit test
+
+`Junit tests haven't been updated now, it may occur some errors.`
 
 Both two projects use `junit5` to write some tests exclude socket and GUI tests. To run the test, use the gradle tool `test` in menu `Tasks/verification` or use the command in the terminal:
 
