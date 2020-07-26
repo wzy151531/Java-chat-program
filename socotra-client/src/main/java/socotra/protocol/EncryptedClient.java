@@ -198,6 +198,9 @@ public class EncryptedClient {
      * @param chatSession The group chat session needs to be initialized.
      */
     public void initGroupChat(ChatSession chatSession, boolean needDistribute, boolean init) {
+        Platform.runLater(() -> {
+            Client.showInitGroupChatAlert();
+        });
         String caller = signalProtocolAddress.getName();
         TreeSet<String> others = chatSession.getOthers(caller);
         TreeSet<String> unknownOthers = getUnknownOthers(others);
@@ -250,6 +253,7 @@ public class EncryptedClient {
             if (init) {
                 DataHandler dataHandler = Client.getDataHandler();
                 dataHandler.processGroupData();
+                Client.closeInitGroupChatAlert();
                 Client.closeInitClientAlert();
             } else {
                 Client.getHomeModel().appendChatData(chatSession);
