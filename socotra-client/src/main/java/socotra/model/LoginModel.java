@@ -2,7 +2,6 @@ package socotra.model;
 
 import socotra.Client;
 import socotra.protocol.Loader;
-import socotra.util.SetChatData;
 import socotra.util.Util;
 
 public class LoginModel {
@@ -16,9 +15,8 @@ public class LoginModel {
     }
 
     void loadChatData() {
-        SetChatData setChatData = new SetChatData(loader.loadChatData());
-        Client.setSetChatData(setChatData);
-        setChatData.start();
+        System.out.println("loadChatData.");
+        Client.getHomeModel().setChatData(loader.loadChatData());
     }
 
     /**

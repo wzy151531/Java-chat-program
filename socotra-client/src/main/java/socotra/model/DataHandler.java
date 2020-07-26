@@ -18,10 +18,22 @@ import java.util.HashMap;
 
 public class DataHandler {
 
+    private ArrayList<ConnectionData> pairwiseData;
+    private ArrayList<ConnectionData> senderKeysData;
     private ArrayList<ConnectionData> groupData;
 
     DataHandler() {
         Client.setDataHandler(this);
+    }
+
+    private void initClient() {
+        Client.showInitClientAlert();
+        ControllerUtil controllerUtil = new ControllerUtil();
+        controllerUtil.loadHomePage();
+        Client.getLoginModel().loadChatData();
+        processPairwiseData();
+        processSenderKeyData();
+        Client.closeInitClientAlert();
     }
 
     boolean handle(ConnectionData connectionData) {
@@ -36,12 +48,9 @@ public class DataHandler {
                     return false;
                 } else {
                     Client.getLoginModel().loadStores();
-                    ControllerUtil controllerUtil = new ControllerUtil();
                     Platform.runLater(() -> {
                         Client.closeWaitingAlert();
-                        controllerUtil.loadHomePage();
-                        Client.showInitClientAlert();
-                        Client.getLoginModel().loadChatData();
+                        initClient();
                     });
                 }
                 break;
@@ -123,12 +132,12 @@ public class DataHandler {
     }
 
     private void processDepositData(ConnectionData connectionData) {
+        this.pairwiseData = connectionData.getDepositPairwiseData();
+        this.senderKeysData = connectionData.getDepositSenderKeyData();
         this.groupData = connectionData.getDepositGroupData();
-        processPairwiseData(connectionData.getDepositPairwiseData());
-        processSenderKeyData(connectionData.getDepositSenderKeyData());
     }
 
-    private void processPairwiseData(ArrayList<ConnectionData> pairwiseData) {
+    private void processPairwiseData() {
         System.out.println("process pairwise data.");
         if (pairwiseData == null) return;
         pairwiseData.forEach(n -> {
@@ -136,15 +145,15 @@ public class DataHandler {
         });
     }
 
-    private void processSenderKeyData(ArrayList<ConnectionData> senderKeyData) {
+    private void processSenderKeyData() {
         System.out.println("process senderKey data.");
-        if (senderKeyData == null) {
+        if (senderKeysData == null) {
             processGroupData();
             return;
         }
         ;
         System.out.println("SenderKey isn't null");
-        senderKeyData.forEach(n -> {
+        senderKeysData.forEach(n -> {
             processReceSenderKey(n, true);
         });
     }

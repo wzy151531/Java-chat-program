@@ -12,7 +12,6 @@ import socotra.controller.LoginController;
 import socotra.controller.SignUpController;
 import socotra.model.*;
 import socotra.protocol.*;
-import socotra.util.SetChatData;
 import socotra.util.SetOnlineUsers;
 import socotra.util.TestProtocol;
 import socotra.util.Util;
@@ -72,8 +71,6 @@ public class Client extends Application {
     /**
      * Set chat data thread.
      */
-    private static SetChatData setChatData;
-
     private static Alert waitingAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Connecting To Server.", "Please Be Patient.");
 
     private static Alert initClientAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Client.", "Please Be Patient.");
@@ -165,11 +162,6 @@ public class Client extends Application {
         if (setOnlineUsers != null) {
             synchronized (setOnlineUsers) {
                 setOnlineUsers.notify();
-            }
-        }
-        if (setChatData != null) {
-            synchronized (setChatData) {
-                setChatData.notify();
             }
         }
     }
@@ -267,15 +259,6 @@ public class Client extends Application {
      */
     public static void setSetOnlineUsers(SetOnlineUsers setOnlineUsers) {
         Client.setOnlineUsers = setOnlineUsers;
-    }
-
-    /**
-     * Setter for setChatData.
-     *
-     * @param setChatData Set chat data thread.
-     */
-    public static void setSetChatData(SetChatData setChatData) {
-        Client.setChatData = setChatData;
     }
 
     /**

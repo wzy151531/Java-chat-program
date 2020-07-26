@@ -4,7 +4,7 @@ This java project is about a client-server mode and **E2EE** chat program based 
 
 ### Version
 
-Current Client Version: `4.4.2`, Server Version: `4.1.2`
+Current Client Version: `4.4.3`, Server Version: `4.1.2`
 
 ## Alias
 
@@ -19,9 +19,8 @@ The whole project is divided into two parts: server and client. Both projects ar
 * Use TLS connection.
 * Show if the message is sent.
 * Search chat record at local.
-* ~~Group chat~~.
 * ~~Clients' text chat data stored in database.~~
-* Single E2EE chat between two clients(include text and audio data).
+* Pairwise E2EE chat between two clients(include text and audio data).
 * Save encrypted signal storages at client local.
 * Encrypted group chat.
 * Save encrypted chatData at local.
@@ -31,8 +30,9 @@ The whole project is divided into two parts: server and client. Both projects ar
 - [x] Server stores unreceived messages until the receiver is online.
 - [x] Save history messages at client local.
 - [x] Encrypt all store files and chatData file.
+- [ ] Implement multi-device system.
 - [ ] Further encrypted group chat operations(add/leave memebers).
-- [ ] Store symmetric encryption key that encrypts the history messages in client OP-TEE.
+- [ ] ~~Store symmetric encryption key that encrypts the history messages in client OP-TEE.~~
 - [ ] History messages backup from old device to new device.
 - [ ] Client appends pre keys to database.
 - [ ] Client updates signed pre key in database.

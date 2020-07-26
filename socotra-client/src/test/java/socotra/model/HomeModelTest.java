@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
-import socotra.util.SetChatData;
 import socotra.util.SetOnlineUsers;
 import socotra.util.UtilTest;
 

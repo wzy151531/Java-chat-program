@@ -250,15 +250,13 @@ public class EncryptedClient {
 
     private void finishInitGroupChat(ChatSession chatSession, boolean init) {
         Platform.runLater(() -> {
-            if (init) {
-                DataHandler dataHandler = Client.getDataHandler();
+            DataHandler dataHandler = Client.getDataHandler();
+            if (init && !dataHandler.isGroupDataNull()) {
                 dataHandler.processGroupData();
-                Client.closeInitGroupChatAlert();
-                Client.closeInitClientAlert();
             } else {
                 Client.getHomeModel().appendChatData(chatSession);
-                Client.closeInitGroupChatAlert();
             }
+            Client.closeInitGroupChatAlert();
         });
     }
 

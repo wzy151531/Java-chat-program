@@ -203,7 +203,9 @@ public class HomeModel {
     }
 
     public void appendChatData(ChatSession chatSession) {
-        this.chatData.put(chatSession, FXCollections.observableArrayList(new ArrayList<>()));
+        if (chatData.get(chatSession) == null) {
+            this.chatData.put(chatSession, FXCollections.observableArrayList(new ArrayList<>()));
+        }
         if (!chatSessionList.contains(chatSession)) {
             this.chatSessionList.add(chatSession);
         }
