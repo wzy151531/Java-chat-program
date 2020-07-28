@@ -117,20 +117,22 @@ public class ClientThread extends Thread {
         String CLIENT_KEY_STORE_PASSWORD = "socotra";
         System.setProperty("javax.net.ssl.trustStore", CLIENT_KEY_STORE);
         // See handle shake process under debug.
-//            System.setProperty("javax.net.debug", "ssl,handshake");
+//        System.setProperty("javax.net.debug", "ssl,handshake");
 
         KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(new FileInputStream(CLIENT_KEY_STORE), CLIENT_KEY_STORE_PASSWORD.toCharArray());
 
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, CLIENT_KEY_STORE_PASSWORD.toCharArray());
+//        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+//        kmf.init(ks, CLIENT_KEY_STORE_PASSWORD.toCharArray());
 
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         tmf.init(ks);
 
         SSLContext context = SSLContext.getInstance("TLS");
         TrustManager[] trustManagers = tmf.getTrustManagers();
-        context.init(kmf.getKeyManagers(), trustManagers, null);
+        // If server needn't verify client, kmf is not necessary.
+//        context.init(kmf.getKeyManagers(), trustManagers, null);
+        context.init(null, trustManagers, null);
         SocketFactory factory = context.getSocketFactory();
         server = (SSLSocket) factory.createSocket(serverName, 50443);
         server.startHandshake();
