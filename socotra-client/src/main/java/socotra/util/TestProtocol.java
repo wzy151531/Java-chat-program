@@ -10,6 +10,7 @@ import org.whispersystems.libsignal.fingerprint.NumericFingerprintGenerator;
 import org.whispersystems.libsignal.groups.GroupCipher;
 import org.whispersystems.libsignal.groups.GroupSessionBuilder;
 import org.whispersystems.libsignal.groups.SenderKeyName;
+import org.whispersystems.libsignal.groups.state.SenderKeyRecord;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
 import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage;
@@ -107,22 +108,34 @@ public class TestProtocol {
     public static void testGroup() throws Exception {
         GroupSessionBuilder groupSessionBuilder_1 = new GroupSessionBuilder(tc1.getSenderKeyStore());
         GroupSessionBuilder groupSessionBuilder_2 = new GroupSessionBuilder(tc2.getSenderKeyStore());
-        SenderKeyDistributionMessage senderKeyDistributionMessage_1 = groupSessionBuilder_1.create(new SenderKeyName(groupId, signalProtocolAddress1));
-        SenderKeyDistributionMessage senderKeyDistributionMessage_2 = groupSessionBuilder_2.create(new SenderKeyName(groupId, signalProtocolAddress2));
-        groupSessionBuilder_1.process(new SenderKeyName(groupId, signalProtocolAddress2), senderKeyDistributionMessage_2);
-        groupSessionBuilder_2.process(new SenderKeyName(groupId, signalProtocolAddress1), senderKeyDistributionMessage_1);
+        SenderKeyName senderKeyName_1 = new SenderKeyName(groupId, signalProtocolAddress1);
+        SenderKeyName senderKeyName_2 = new SenderKeyName(groupId, signalProtocolAddress2);
+        SenderKeyDistributionMessage senderKeyDistributionMessage_1 = groupSessionBuilder_1.create(senderKeyName_1);
+        SenderKeyDistributionMessage senderKeyDistributionMessage_2 = groupSessionBuilder_2.create(senderKeyName_2);
 
-        GroupCipher groupCipher_1_send = new GroupCipher(tc1.getSenderKeyStore(), new SenderKeyName(groupId, signalProtocolAddress1));
+        groupSessionBuilder_1.process(senderKeyName_2, senderKeyDistributionMessage_2);
+        groupSessionBuilder_2.process(senderKeyName_1, senderKeyDistributionMessage_1);
+
+        GroupCipher groupCipher_1_send = new GroupCipher(tc1.getSenderKeyStore(), senderKeyName_1);
         byte[] message1_1 = groupCipher_1_send.encrypt("Hello guys".getBytes(StandardCharsets.UTF_8));
 
-        GroupCipher groupCipher_2_rece_1 = new GroupCipher(tc2.getSenderKeyStore(), new SenderKeyName(groupId, signalProtocolAddress1));
+        // TODO: before create own new sender key, delete previous sender key.
+        tc1.getSenderKeyStore().storeSenderKey(senderKeyName_1, new SenderKeyRecord());
+        SenderKeyDistributionMessage senderKeyDistributionMessage_1_2 = groupSessionBuilder_1.create(senderKeyName_1);
+        groupSessionBuilder_2.process(senderKeyName_1, senderKeyDistributionMessage_1_2);
+
+        byte[] message1_2_1 = groupCipher_1_send.encrypt("New".getBytes(StandardCharsets.UTF_8));
+
+        GroupCipher groupCipher_2_rece_1 = new GroupCipher(tc2.getSenderKeyStore(), senderKeyName_1);
         byte[] result1_1 = groupCipher_2_rece_1.decrypt(message1_1);
         System.out.println(new String(result1_1));
+        byte[] result1_2_1 = groupCipher_2_rece_1.decrypt(message1_2_1);
+        System.out.println(new String(result1_2_1));
 
-        GroupCipher groupCipher_2_send = new GroupCipher(tc2.getSenderKeyStore(), new SenderKeyName(groupId, signalProtocolAddress2));
+        GroupCipher groupCipher_2_send = new GroupCipher(tc2.getSenderKeyStore(), senderKeyName_2);
         byte[] message2_1 = groupCipher_2_send.encrypt("Alright".getBytes(StandardCharsets.UTF_8));
 
-        GroupCipher groupCipher_1_rece_2 = new GroupCipher(tc1.getSenderKeyStore(), new SenderKeyName(groupId, signalProtocolAddress2));
+        GroupCipher groupCipher_1_rece_2 = new GroupCipher(tc1.getSenderKeyStore(), senderKeyName_2);
         byte[] result2_1 = groupCipher_1_rece_2.decrypt(message2_1);
         System.out.println(new String(result2_1));
     }

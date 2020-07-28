@@ -343,7 +343,7 @@ public class Client extends Application {
         primaryStage.show();
         stage = primaryStage;
 
-        TestProtocol.testFingerprint();
+        TestProtocol.testGroup();
     }
 
 }

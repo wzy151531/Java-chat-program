@@ -6,6 +6,7 @@ import org.whispersystems.libsignal.ecc.Curve;
 import org.whispersystems.libsignal.groups.GroupCipher;
 import org.whispersystems.libsignal.groups.GroupSessionBuilder;
 import org.whispersystems.libsignal.groups.SenderKeyName;
+import org.whispersystems.libsignal.groups.state.SenderKeyRecord;
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage;
 import org.whispersystems.libsignal.state.*;
 import org.whispersystems.libsignal.util.KeyHelper;
@@ -213,9 +214,8 @@ public class EncryptedClient {
 
     public void distributeSenderKey(TreeSet<String> others, ChatSession chatSession, boolean needDistribute, boolean init) {
         GroupSessionBuilder groupSessionBuilder = new GroupSessionBuilder(senderKeyStore);
-        SenderKeyDistributionMessage SKDM = groupSessionBuilder.create(
-                new SenderKeyName(chatSession.generateChatIdCSV(),
-                        signalProtocolAddress));
+        SenderKeyName senderKeyName = new SenderKeyName(chatSession.generateChatIdCSV(), signalProtocolAddress);
+        SenderKeyDistributionMessage SKDM = groupSessionBuilder.create(senderKeyName);
         HashMap<String, ConnectionData> senderKeysData = new HashMap<>();
         others.forEach(n -> {
             try {
@@ -230,10 +230,15 @@ public class EncryptedClient {
 
     public void processReceivedSenderKey(byte[] senderKey, ChatSession chatSession, boolean needDistribute, String senderName, boolean init) {
         try {
+            // TODO: judge if senderKeyRecord is empty to decide whether need to distribute sender key message.
+            SenderKeyName senderKeyName = new SenderKeyName(chatSession.generateChatIdCSV(), signalProtocolAddress);
+            SenderKeyRecord senderKeyRecord = senderKeyStore.loadSenderKey(senderKeyName);
+
             SenderKeyDistributionMessage SKDM = new SenderKeyDistributionMessage(senderKey);
             GroupSessionBuilder groupSessionBuilder = new GroupSessionBuilder(senderKeyStore);
             groupSessionBuilder.process(new SenderKeyName(chatSession.generateChatIdCSV(),
                     new SignalProtocolAddress(senderName, 1)), SKDM);
+
             DataHandler dataHandler = Client.getDataHandler();
             if (needDistribute) {
                 initGroupChat(chatSession, false, init);
