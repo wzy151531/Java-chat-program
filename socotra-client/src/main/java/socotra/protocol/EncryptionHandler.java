@@ -24,10 +24,10 @@ public abstract class EncryptionHandler {
         return encryptData(audio, chatSession, ConnectionData.ENCRYPTED_AUDIO);
     }
 
-    static ConnectionData encryptSKDMData(byte[] senderKey, ChatSession chatSession, String receiverName, boolean needDistribute) throws UntrustedIdentityException {
+    static ConnectionData encryptSKDMData(byte[] senderKey, ChatSession chatSession, String receiverName) throws UntrustedIdentityException {
         SessionCipher sessionCipher = Client.getEncryptedClient().getSessionCipher(receiverName);
         CiphertextMessage cipherSenderKey = sessionCipher.encrypt(senderKey);
-        return new ConnectionData(cipherSenderKey.serialize(), Client.getClientThread().getUsername(), chatSession, needDistribute, receiverName, cipherSenderKey.getType());
+        return new ConnectionData(cipherSenderKey.serialize(), Client.getClientThread().getUsername(), chatSession, receiverName, cipherSenderKey.getType());
     }
 
     public static byte[] decryptSKDMData(ConnectionData connectionData) throws Exception {

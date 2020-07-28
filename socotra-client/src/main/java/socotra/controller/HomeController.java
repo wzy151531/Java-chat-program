@@ -21,6 +21,7 @@ import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.model.HomeModel;
+import socotra.protocol.EncryptedClient;
 import socotra.util.SendThread;
 import socotra.util.Util;
 
@@ -622,7 +623,8 @@ public class HomeController {
             return;
         }
         ChatSession chatSession = new ChatSession(newGroup, true, true, ChatSession.GROUP);
-        Client.getEncryptedClient().initGroupChat(chatSession, true, false);
+        EncryptedClient encryptedClient = Client.getEncryptedClient();
+        encryptedClient.initGroupChat(chatSession, encryptedClient.createSenderKey(chatSession.generateChatIdCSV()), false);
         this.cancelAdding(event);
     }
 

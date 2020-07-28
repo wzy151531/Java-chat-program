@@ -149,7 +149,7 @@ class DataHandler {
                 e.printStackTrace();
             }
         });
-        Util.privateSend(new ConnectionData(result, connectionData.getChatSession(), connectionData.getNeedDistribute(), connectionData.isInit()), connectionData.getUserSignature());
+        Util.privateSend(new ConnectionData(result, connectionData.getChatSession(), connectionData.isInit()), connectionData.getUserSignature());
     }
 
 }

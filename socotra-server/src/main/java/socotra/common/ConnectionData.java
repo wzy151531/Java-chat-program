@@ -78,7 +78,6 @@ public class ConnectionData implements Serializable {
     private int cipherType;
     private int dataType;
 
-    private boolean needDistribute;
     private TreeSet<String> receiversUsername;
     private HashMap<String, KeyBundle> keyBundles;
     private HashMap<String, ConnectionData> senderKeysData;
@@ -254,17 +253,15 @@ public class ConnectionData implements Serializable {
     /**
      * If the connection data is about senderKeyDistributionMessage for group chat, the connection data's type is 8.
      *
-     * @param cipherData     The sender's senderKey.
-     * @param userSignature  The sender's username.
-     * @param chatSession    The group chat session.
-     * @param needDistribute If receiver's sender key needs to distribute to others in this group.
+     * @param cipherData    The sender's senderKey.
+     * @param userSignature The sender's username.
+     * @param chatSession   The group chat session.
      */
-    public ConnectionData(byte[] cipherData, String userSignature, ChatSession chatSession, boolean needDistribute, String receiverUsername, int cipherType) {
+    public ConnectionData(byte[] cipherData, String userSignature, ChatSession chatSession, String receiverUsername, int cipherType) {
         this.type = 8;
         this.cipherData = cipherData;
         this.userSignature = userSignature;
         this.chatSession = chatSession;
-        this.needDistribute = needDistribute;
         this.receiverUsername = receiverUsername;
         this.cipherType = cipherType;
     }
@@ -275,31 +272,25 @@ public class ConnectionData implements Serializable {
      * @param receiversUsername The username of receivers.
      * @param chatSession       The chat session related.
      * @param userSignature     The sender's username.
-     * @param needDistribute    If receiver's sender key needs to distribute.(Not only the initiator needs to request
-     *                          others' key bundle)
      */
-    public ConnectionData(TreeSet<String> receiversUsername, ChatSession chatSession, String userSignature, boolean needDistribute, boolean init) {
+    public ConnectionData(TreeSet<String> receiversUsername, ChatSession chatSession, String userSignature, boolean init) {
         this.type = 9;
         this.receiversUsername = receiversUsername;
         this.chatSession = chatSession;
         this.userSignature = userSignature;
-        this.needDistribute = needDistribute;
         this.init = init;
     }
 
     /**
      * The connection data is about response of key bundles.
      *
-     * @param keyBundles     The requesting users' key bundles.
-     * @param chatSession    The chat session related.
-     * @param needDistribute If receiver's sender key needs to distribute.(Not only the initiator needs to  request
-     *                       others' key bundle)
+     * @param keyBundles  The requesting users' key bundles.
+     * @param chatSession The chat session related.
      */
-    public ConnectionData(HashMap<String, KeyBundle> keyBundles, ChatSession chatSession, boolean needDistribute, boolean init) {
+    public ConnectionData(HashMap<String, KeyBundle> keyBundles, ChatSession chatSession, boolean init) {
         this.type = 10;
         this.keyBundles = keyBundles;
         this.chatSession = chatSession;
-        this.needDistribute = needDistribute;
         this.init = init;
     }
 
@@ -381,13 +372,6 @@ public class ConnectionData implements Serializable {
             throw new IllegalStateException("Type isn't 9, cannot get receiversUsername");
         }
         return this.receiversUsername;
-    }
-
-    public boolean getNeedDistribute() {
-        if (type != 8 && type != 9 && type != 10) {
-            throw new IllegalStateException("Type isn't 8 or 9 or 10, cannot get needDistribute");
-        }
-        return this.needDistribute;
     }
 
     public KeyBundle getKeyBundle() {

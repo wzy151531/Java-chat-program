@@ -175,7 +175,7 @@ public class DataHandler {
         try {
             byte[] senderKey = EncryptionHandler.decryptSKDMData(connectionData);
             EncryptedClient encryptedClient = Client.getEncryptedClient();
-            encryptedClient.processReceivedSenderKey(senderKey, connectionData.getChatSession(), connectionData.getNeedDistribute(), connectionData.getUserSignature(), init);
+            encryptedClient.processReceivedSenderKey(senderKey, connectionData.getChatSession(), connectionData.getUserSignature(), init);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -193,7 +193,7 @@ public class DataHandler {
         });
         String caller = Client.getClientThread().getUsername();
         ChatSession chatSession = connectionData.getChatSession();
-        encryptedClient.distributeSenderKey(chatSession.getOthers(caller), chatSession, connectionData.getNeedDistribute(), connectionData.isInit());
+        encryptedClient.distributeSenderKey(chatSession.getOthers(caller), chatSession, encryptedClient.getSKDM(), connectionData.isInit());
     }
 
     private void handleChatMessage(ConnectionData connectionData) {
