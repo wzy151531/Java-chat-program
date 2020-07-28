@@ -1,6 +1,7 @@
 package socotra.util;
 
 import socotra.Client;
+import socotra.common.User;
 
 import java.util.TreeSet;
 
@@ -13,14 +14,14 @@ public class SetOnlineUsers extends Thread {
     /**
      * Current online users.
      */
-    private TreeSet<String> onlineUsers;
+    private TreeSet<User> onlineUsers;
 
     /**
      * Constructor for setOnlineUsers.
      *
      * @param onlineUsers Current online users.
      */
-    public SetOnlineUsers(TreeSet<String> onlineUsers) {
+    public SetOnlineUsers(TreeSet<User> onlineUsers) {
         this.onlineUsers = onlineUsers;
     }
 

@@ -1,19 +1,14 @@
 package socotra.service;
 
-import jdk.jshell.spi.ExecutionControlProvider;
 import socotra.Server;
-import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.User;
 import socotra.jdbc.JdbcUtil;
-import socotra.util.Util;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.sql.Connection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -33,7 +28,7 @@ public class ServerThread extends Thread {
     /**
      * The client's username.
      */
-    private String username;
+    private User user;
     /**
      * ObjectInputStream from client socket.
      */
@@ -63,12 +58,12 @@ public class ServerThread extends Thread {
         client.close();
     }
 
-    String getUsername() {
-        return username;
+    User getUser() {
+        return this.user;
     }
 
-    void setUsername(String username) {
-        this.username = username;
+    void setUser(User user) {
+        this.user = user;
     }
 
     void inform(ConnectionData connectionData) throws IOException {
@@ -76,15 +71,18 @@ public class ServerThread extends Thread {
     }
 
     void appendClient() {
-        Server.addClient(username, toClient);
+        Server.addClient(user, toClient);
     }
 
     boolean processSignUp(ConnectionData connectionData) {
         try {
-            int userId = JdbcUtil.signUp(connectionData.getUsername(), connectionData.getPassword());
+            User register = connectionData.getUser();
+            int userId = JdbcUtil.signUp(register, connectionData.getPassword());
             // TODO
             JdbcUtil.storeKeyBundle(userId, connectionData.getKeyBundle());
-            toClient.writeObject(new ConnectionData(-5, true));
+            TreeSet<User> onlineUsers = new TreeSet<>(Server.getClients().keySet());
+            onlineUsers.remove(register);
+            toClient.writeObject(new ConnectionData(-5, true, onlineUsers));
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
             try {
@@ -115,7 +113,7 @@ public class ServerThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Something went wrong. Ending service to client...");
-            Server.removeClient(username, toClient);
+            Server.removeClient(user, toClient);
             System.out.println("User removed. Current online users: " + Server.getClients().keySet());
         } catch (Exception e) {
             e.printStackTrace();

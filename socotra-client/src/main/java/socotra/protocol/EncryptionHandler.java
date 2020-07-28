@@ -10,6 +10,7 @@ import org.whispersystems.libsignal.protocol.SignalMessage;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.User;
 
 import java.nio.charset.StandardCharsets;
 import java.util.TreeSet;
@@ -24,10 +25,10 @@ public abstract class EncryptionHandler {
         return encryptData(audio, chatSession, ConnectionData.ENCRYPTED_AUDIO);
     }
 
-    static ConnectionData encryptSKDMData(byte[] senderKey, ChatSession chatSession, String receiverName) throws UntrustedIdentityException {
-        SessionCipher sessionCipher = Client.getEncryptedClient().getSessionCipher(receiverName);
+    static ConnectionData encryptSKDMData(byte[] senderKey, ChatSession chatSession, User receiver) throws UntrustedIdentityException {
+        SessionCipher sessionCipher = Client.getEncryptedClient().getSessionCipher(receiver);
         CiphertextMessage cipherSenderKey = sessionCipher.encrypt(senderKey);
-        return new ConnectionData(cipherSenderKey.serialize(), Client.getClientThread().getUsername(), chatSession, receiverName, cipherSenderKey.getType());
+        return new ConnectionData(cipherSenderKey.serialize(), Client.getClientThread().getUser(), chatSession, receiver, cipherSenderKey.getType());
     }
 
     public static byte[] decryptSKDMData(ConnectionData connectionData) throws Exception {
@@ -40,20 +41,20 @@ public abstract class EncryptionHandler {
         int cipherTextMessageType = 0;
         switch (chatSession.getSessionType()) {
             case ChatSession.PAIRWISE:
-                String receiverName = extractTheOtherName(chatSession);
-                SessionCipher sessionCipher = encryptedClient.getSessionCipher(receiverName);
+                User receiver = extractTheOtherName(chatSession);
+                SessionCipher sessionCipher = encryptedClient.getSessionCipher(receiver);
                 CiphertextMessage ciphertextMessage = sessionCipher.encrypt(data);
                 encryptedData = ciphertextMessage.serialize();
                 cipherTextMessageType = ciphertextMessage.getType();
                 break;
             case ChatSession.GROUP:
-                GroupCipher groupCipher = encryptedClient.getGroupCipher(Client.getClientThread().getUsername(), chatSession);
+                GroupCipher groupCipher = encryptedClient.getGroupCipher(Client.getClientThread().getUser(), chatSession);
                 encryptedData = groupCipher.encrypt(data);
                 break;
             default:
                 throw new IllegalStateException("Bad chatSession type.");
         }
-        return new ConnectionData(encryptedData, Client.getClientThread().getUsername(), chatSession, cipherTextMessageType, dataType);
+        return new ConnectionData(encryptedData, Client.getClientThread().getUser(), chatSession, cipherTextMessageType, dataType);
 
     }
 
@@ -88,14 +89,15 @@ public abstract class EncryptionHandler {
                 decryptData(connectionData) : decryptGroupData(connectionData), connectionData.getUserSignature(), connectionData.getChatSession());
     }
 
-    private static String extractTheOtherName(ChatSession chatSession) throws IllegalStateException {
-        TreeSet<String> toUsernames = chatSession.getToUsernames();
-        if (toUsernames.size() != 2 || !toUsernames.contains(Client.getClientThread().getUsername())) {
+    private static User extractTheOtherName(ChatSession chatSession) throws IllegalStateException {
+        TreeSet<User> members = chatSession.getMembers();
+        User caller = Client.getClientThread().getUser();
+        if (members.size() != 2 || !members.contains(caller)) {
             throw new IllegalStateException("Bad chat session.");
         }
-        for (String username : toUsernames) {
-            if (!username.equals(Client.getClientThread().getUsername())) {
-                return username;
+        for (User member : members) {
+            if (!member.equals(caller)) {
+                return member;
             }
         }
         throw new IllegalStateException("Bad current chat session.");

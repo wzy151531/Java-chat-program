@@ -6,6 +6,7 @@ import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
+import socotra.common.User;
 import socotra.controller.ControllerUtil;
 import socotra.protocol.EncryptedClient;
 import socotra.protocol.EncryptionHandler;
@@ -15,6 +16,7 @@ import socotra.util.Util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 public class DataHandler {
 
@@ -26,14 +28,23 @@ public class DataHandler {
         Client.setDataHandler(this);
     }
 
-    private void initClient() {
+    private void initClient(ConnectionData connectionData) {
         Client.showInitClientAlert();
         ControllerUtil controllerUtil = new ControllerUtil();
         controllerUtil.loadHomePage();
         Client.getLoginModel().loadChatData();
+
+        processDepositData(connectionData);
+        processOnlineUsers(connectionData.getOnlineUsers());
         processPairwiseData();
         processSenderKeyData();
         Client.closeInitClientAlert();
+    }
+
+    private void processOnlineUsers(TreeSet<User> onlineUsers) {
+        SetOnlineUsers setOnlineUsers = new SetOnlineUsers(onlineUsers);
+        Client.setSetOnlineUsers(setOnlineUsers);
+        setOnlineUsers.start();
     }
 
     boolean handle(ConnectionData connectionData) {
@@ -50,28 +61,28 @@ public class DataHandler {
                     Client.getLoginModel().loadStores();
                     Platform.runLater(() -> {
                         Client.closeWaitingAlert();
-                        initClient();
+                        initClient(connectionData);
                     });
                 }
                 break;
             // If connectionData is about users online information.
             case -2:
-                System.out.println(connectionData.getUserSignature() + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
-                String clientName = connectionData.getUserSignature();
-                if (connectionData.getIsOnline() && !Client.getHomeModel().clientsContains(clientName)) {
-                    Client.getHomeModel().appendClientsList(clientName);
+                User user = connectionData.getUser();
+                System.out.println(user + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
+                if (connectionData.getIsOnline() && !Client.getHomeModel().clientsContains(user)) {
+                    Client.getHomeModel().appendClientsList(user);
                 }
 //                } else if (!connectionData.getIsOnline() && Client.getHomeModel().clientsContains(clientName)) {
 //                    Client.getHomeModel().removeClientsList(clientName);
 //                }
                 break;
             // If connectionData is about set online users.
-            case -3:
-                System.out.println(connectionData.getOnlineUsers());
-                SetOnlineUsers setOnlineUsers = new SetOnlineUsers(connectionData.getOnlineUsers());
-                Client.setSetOnlineUsers(setOnlineUsers);
-                setOnlineUsers.start();
-                break;
+//            case -3:
+////                System.out.println(connectionData.getOnlineUsers());
+//                SetOnlineUsers setOnlineUsers = new SetOnlineUsers(connectionData.getOnlineUsers());
+//                Client.setSetOnlineUsers(setOnlineUsers);
+//                setOnlineUsers.start();
+//                break;
             // If connectionData is about received hint.
             case -4:
                 Client.getHomeModel().updateChatData(connectionData.getUuid(), connectionData.getChatSession());
@@ -90,6 +101,7 @@ public class DataHandler {
                     Platform.runLater(() -> {
                         Client.closeWaitingAlert();
                         controllerUtil.loadHomePage();
+                        processOnlineUsers(connectionData.getOnlineUsers());
                     });
                 }
                 break;
@@ -109,9 +121,9 @@ public class DataHandler {
             case 6:
                 try {
                     EncryptedClient encryptedClient = Client.getEncryptedClient();
-                    String receiverName = connectionData.getReceiverUsername();
-                    encryptedClient.initPairwiseChat(connectionData.getKeyBundle(), receiverName);
-                    encryptedClient.finishInitPairwiseChat(receiverName);
+                    User receiver = connectionData.getReceiverUsername();
+                    encryptedClient.initPairwiseChat(connectionData.getKeyBundle(), receiver);
+                    encryptedClient.finishInitPairwiseChat(receiver);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -122,9 +134,9 @@ public class DataHandler {
             case 10:
                 processReceKeyBundles(connectionData);
                 break;
-            case 12:
-                processDepositData(connectionData);
-                break;
+//            case 12:
+//                processDepositData(connectionData);
+//                break;
             default:
                 System.out.println("Unknown data.");
         }
@@ -132,6 +144,7 @@ public class DataHandler {
     }
 
     private void processDepositData(ConnectionData connectionData) {
+        System.out.println("receive deposit data.");
         this.pairwiseData = connectionData.getDepositPairwiseData();
         this.senderKeysData = connectionData.getDepositSenderKeyData();
         this.groupData = connectionData.getDepositGroupData();
@@ -141,6 +154,7 @@ public class DataHandler {
         System.out.println("process pairwise data.");
         if (pairwiseData == null) return;
         pairwiseData.forEach(n -> {
+            System.out.println("receive pairwise data: " + n.getType());
             handleChatMessage(n);
         });
     }
@@ -183,7 +197,7 @@ public class DataHandler {
 
     private void processReceKeyBundles(ConnectionData connectionData) {
         EncryptedClient encryptedClient = Client.getEncryptedClient();
-        HashMap<String, KeyBundle> keyBundles = connectionData.getKeyBundles();
+        HashMap<User, KeyBundle> keyBundles = connectionData.getKeyBundles();
         keyBundles.forEach((k, v) -> {
             try {
                 encryptedClient.initPairwiseChat(v, k);
@@ -191,7 +205,7 @@ public class DataHandler {
                 e.printStackTrace();
             }
         });
-        String caller = Client.getClientThread().getUsername();
+        User caller = Client.getClientThread().getUser();
         ChatSession chatSession = connectionData.getChatSession();
         encryptedClient.distributeSenderKey(chatSession.getOthers(caller), chatSession, encryptedClient.getSKDM(), connectionData.isInit());
     }
@@ -215,7 +229,7 @@ public class DataHandler {
         } else {
             Client.getHomeModel().appendChatData(connectionData);
         }
-        new SendThread(new ConnectionData(connectionData.getUuid(), Client.getClientThread().getUsername(), connectionData.getChatSession(), connectionData.getUserSignature())).start();
+        new SendThread(new ConnectionData(connectionData.getUuid(), Client.getClientThread().getUser(), connectionData.getChatSession(), connectionData.getUserSignature())).start();
     }
 
 }

@@ -2,6 +2,7 @@ package socotra;
 
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.User;
 import socotra.jdbc.JdbcUtil;
 import socotra.service.ServerThread;
 
@@ -23,15 +24,15 @@ public class Server {
     /**
      * All connected clients's username and their ObjectOutputStream.
      */
-    private static HashMap<String, ObjectOutputStream> clients = new HashMap<>();
+    private static HashMap<User, ObjectOutputStream> clients = new HashMap<>();
     /**
      * SSL server socket.
      */
     private static SSLServerSocket serverSocket;
 
-    private static HashMap<String, ArrayList<ConnectionData>> depositPairwiseData = new HashMap<>();
-    private static HashMap<String, ArrayList<ConnectionData>> depositSenderKeyData = new HashMap<>();
-    private static HashMap<String, ArrayList<ConnectionData>> depositGroupData = new HashMap<>();
+    private static HashMap<User, ArrayList<ConnectionData>> depositPairwiseData = new HashMap<>();
+    private static HashMap<User, ArrayList<ConnectionData>> depositSenderKeyData = new HashMap<>();
+    private static HashMap<User, ArrayList<ConnectionData>> depositGroupData = new HashMap<>();
 
     /**
      * Initialize TLS before creating the SSL server socket.
@@ -112,11 +113,11 @@ public class Server {
     /**
      * Add new client to all clients hash map.
      *
-     * @param username The username of client.
+     * @param user     The user information of client.
      * @param toClient The ObjectOutputStream of client.
      */
-    public synchronized static void addClient(String username, ObjectOutputStream toClient) {
-        Server.clients.put(username, toClient);
+    public synchronized static void addClient(User user, ObjectOutputStream toClient) {
+        Server.clients.put(user, toClient);
     }
 
     /**
@@ -124,76 +125,76 @@ public class Server {
      *
      * @return All connected clients.
      */
-    public synchronized static HashMap<String, ObjectOutputStream> getClients() {
+    public synchronized static HashMap<User, ObjectOutputStream> getClients() {
         return Server.clients;
     }
 
     /**
      * Remove client from all connected clients use username and ObjectOutputStream.
      *
-     * @param username The username of removed client.
+     * @param user The user information of removed client.
      * @param toClient The ObjectOutputStream of removed client.
      */
-    public synchronized static void removeClient(String username, ObjectOutputStream toClient) {
-        Server.clients.remove(username, toClient);
+    public synchronized static void removeClient(User user, ObjectOutputStream toClient) {
+        Server.clients.remove(user, toClient);
     }
 
     /**
      * Remove client from all connected clients use username.
      *
-     * @param username The username of removed client.
+     * @param user The user information of removed client.
      */
-    public synchronized static void removeClient(String username) {
-        Server.clients.remove(username);
+    public synchronized static void removeClient(User user) {
+        Server.clients.remove(user);
     }
 
-    public synchronized static void storePairwiseData(String receiverName, ConnectionData pairwiseData) {
+    public synchronized static void storePairwiseData(User receiver, ConnectionData pairwiseData) {
         System.out.println("Store pairwise data.");
         ChatSession chatSession = pairwiseData.getChatSession();
         if (pairwiseData.getType() != 7 && chatSession.getSessionType() != ChatSession.PAIRWISE) {
             throw new IllegalStateException("Bad pairwiseData.");
         }
-        ArrayList<ConnectionData> des = Server.depositPairwiseData.getOrDefault(receiverName, new ArrayList<>());
+        ArrayList<ConnectionData> des = Server.depositPairwiseData.getOrDefault(receiver, new ArrayList<>());
         des.add(pairwiseData);
-        Server.depositPairwiseData.put(receiverName, des);
+        Server.depositPairwiseData.put(receiver, des);
     }
 
-    public synchronized static void storeSenderKeyData(String receiverName, ConnectionData senderKeyData) {
+    public synchronized static void storeSenderKeyData(User receiver, ConnectionData senderKeyData) {
         System.out.println("Store senderKey data.");
         if (senderKeyData.getType() != 8) {
             throw new IllegalStateException("Bad senderKeyData.");
         }
-        ArrayList<ConnectionData> des = Server.depositSenderKeyData.getOrDefault(receiverName, new ArrayList<>());
+        ArrayList<ConnectionData> des = Server.depositSenderKeyData.getOrDefault(receiver, new ArrayList<>());
         des.add(senderKeyData);
-        Server.depositSenderKeyData.put(receiverName, des);
+        Server.depositSenderKeyData.put(receiver, des);
     }
 
-    public synchronized static void storeGroupData(String receiverName, ConnectionData groupData) {
+    public synchronized static void storeGroupData(User receiver, ConnectionData groupData) {
         System.out.println("Store group data.");
         ChatSession chatSession = groupData.getChatSession();
         if (groupData.getType() != 7 && chatSession.getSessionType() != ChatSession.GROUP) {
             throw new IllegalStateException("Bad groupData.");
         }
-        ArrayList<ConnectionData> des = Server.depositGroupData.getOrDefault(receiverName, new ArrayList<>());
+        ArrayList<ConnectionData> des = Server.depositGroupData.getOrDefault(receiver, new ArrayList<>());
         des.add(groupData);
-        Server.depositGroupData.put(receiverName, des);
+        Server.depositGroupData.put(receiver, des);
     }
 
-    public synchronized static ArrayList<ConnectionData> loadPairwiseData(String username) {
-        ArrayList<ConnectionData> result = Server.depositPairwiseData.get(username);
-        Server.depositPairwiseData.remove(username);
+    public synchronized static ArrayList<ConnectionData> loadPairwiseData(User user) {
+        ArrayList<ConnectionData> result = Server.depositPairwiseData.get(user);
+        Server.depositPairwiseData.remove(user);
         return result;
     }
 
-    public synchronized static ArrayList<ConnectionData> loadSenderKeyData(String username) {
-        ArrayList<ConnectionData> result = Server.depositSenderKeyData.get(username);
-        Server.depositSenderKeyData.remove(username);
+    public synchronized static ArrayList<ConnectionData> loadSenderKeyData(User user) {
+        ArrayList<ConnectionData> result = Server.depositSenderKeyData.get(user);
+        Server.depositSenderKeyData.remove(user);
         return result;
     }
 
-    public synchronized static ArrayList<ConnectionData> loadGroupData(String username) {
-        ArrayList<ConnectionData> result = Server.depositGroupData.get(username);
-        Server.depositGroupData.remove(username);
+    public synchronized static ArrayList<ConnectionData> loadGroupData(User user) {
+        ArrayList<ConnectionData> result = Server.depositGroupData.get(user);
+        Server.depositGroupData.remove(user);
         return result;
     }
 

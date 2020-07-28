@@ -8,6 +8,7 @@ import org.whispersystems.libsignal.state.PreKeyRecord;
 import socotra.Client;
 import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
+import socotra.common.User;
 import socotra.protocol.EncryptedClient;
 import socotra.util.Util;
 
@@ -37,7 +38,7 @@ public class ClientThread extends Thread {
     /**
      * Current user's username.
      */
-    private final String username;
+    private final User user;
     /**
      * Current user's password.
      */
@@ -67,12 +68,12 @@ public class ClientThread extends Thread {
      * out streams.
      *
      * @param serverName The server want to connect.
-     * @param username   The user's username.
+     * @param user       The user's information.
      * @param password   The user's password.
      */
-    ClientThread(String serverName, String username, String password, int type) {
+    ClientThread(String serverName, User user, String password, int type) {
         this.serverName = serverName;
-        this.username = username;
+        this.user = user;
         this.password = password;
         this.type = type;
     }
@@ -82,8 +83,8 @@ public class ClientThread extends Thread {
      *
      * @return The user's username.
      */
-    public String getUsername() {
-        return username;
+    public User getUser() {
+        return user;
     }
 
     /**
@@ -136,7 +137,7 @@ public class ClientThread extends Thread {
     }
 
     private void processLogin() throws IOException {
-        toServer.writeObject(new ConnectionData(-1, username, password));
+        toServer.writeObject(new ConnectionData(-1, user, password));
     }
 
     private KeyBundle generateKeyBundle(EncryptedClient encryptedClient) {
@@ -151,7 +152,7 @@ public class ClientThread extends Thread {
 
     private void processSignUp() throws IOException {
         EncryptedClient encryptedClient = Client.getEncryptedClient();
-        toServer.writeObject(new ConnectionData(username, password, generateKeyBundle(encryptedClient)));
+        toServer.writeObject(new ConnectionData(user, password, generateKeyBundle(encryptedClient)));
     }
 
     private void handleIOException(IOException e) {

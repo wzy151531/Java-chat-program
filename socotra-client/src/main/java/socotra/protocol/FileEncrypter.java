@@ -1,5 +1,7 @@
 package socotra.protocol;
 
+import socotra.common.User;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -12,14 +14,14 @@ public class FileEncrypter {
     private static final String key = "aaaabbbbccccdddd";
     private static final String ivParameter = "AAAABBBBCCCCDDDD";
     private static final String userDirPath = "src/main/resources/userData";
-    private final String username;
+    private final User user;
 
-    public FileEncrypter(String username) {
-        this.username = username;
+    public FileEncrypter(User user) {
+        this.user = user;
     }
 
     private void handleFile(int mode, String src, String des) throws Exception {
-        File srcFile = new File(userDirPath + "/" + username, src);
+        File srcFile = new File(userDirPath + "/" + user.toString(), src);
         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(
                 srcFile));
         byte[] bytIn = new byte[(int) srcFile.length()];
@@ -37,7 +39,7 @@ public class FileEncrypter {
             throw new IllegalStateException("Bad mode.");
         }
         byte[] bytOut = cipher.doFinal(bytIn);
-        File desFile = new File(userDirPath + "/" + username, des);
+        File desFile = new File(userDirPath + "/" + user.toString(), des);
         BufferedOutputStream bos = new BufferedOutputStream(
                 new FileOutputStream(desFile));
         bos.write(bytOut);

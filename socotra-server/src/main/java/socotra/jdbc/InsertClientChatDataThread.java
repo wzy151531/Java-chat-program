@@ -27,14 +27,14 @@ public class InsertClientChatDataThread extends Thread {
      * Start inserting the connection data.
      */
     public void run() {
-        try {
-            int userId = JdbcUtil.queryUserId(connectionData.getUserSignature());
-            String sessionName = Util.generateChatName(connectionData.getChatSession().getToUsernames());
-            JdbcUtil.storeSession(userId, sessionName);
-            JdbcUtil.storeChatHistory(connectionData.getUuid().toString(), connectionData.getTextData(), connectionData.getUserSignature(), sessionName);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            int userId = JdbcUtil.queryUserId(connectionData.getUserSignature());
+//            String sessionName = Util.generateChatName(connectionData.getChatSession().getMembers());
+//            JdbcUtil.storeSession(userId, sessionName);
+//            JdbcUtil.storeChatHistory(connectionData.getUuid().toString(), connectionData.getTextData(), connectionData.getUserSignature(), sessionName);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
 }

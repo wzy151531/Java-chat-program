@@ -16,6 +16,7 @@ import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage;
 import org.whispersystems.libsignal.protocol.SignalMessage;
 import org.whispersystems.libsignal.state.PreKeyBundle;
+import socotra.common.User;
 import socotra.protocol.EncryptedClient;
 import socotra.protocol.FileEncrypter;
 
@@ -34,10 +35,10 @@ public class TestProtocol {
 
     static {
         try {
-            tc1 = new EncryptedClient("tc1"); // tc1
-            tc2 = new EncryptedClient("tc2"); // tc2
-            tc3 = new EncryptedClient("tc3"); // tc3
-            tc4 = new EncryptedClient("tc4"); // tc4
+            tc1 = new EncryptedClient(new User("tc1", 1, true)); // tc1
+            tc2 = new EncryptedClient(new User("tc2", 1, true)); // tc2
+            tc3 = new EncryptedClient(new User("tc3", 1, true)); // tc3
+            tc4 = new EncryptedClient(new User("tc4", 1, true)); // tc4
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -142,7 +143,7 @@ public class TestProtocol {
 
     public static void testAES() {
         try {
-            FileEncrypter fileEncrypter = new FileEncrypter("1");
+            FileEncrypter fileEncrypter = new FileEncrypter(new User("1", 1, true));
             fileEncrypter.encrypt("identityKeyStore.csv", "identityKeyStore.csv");
             fileEncrypter.decrypt("identityKeyStore.csv", "identityKeyStore.csv");
         } catch (Exception e) {

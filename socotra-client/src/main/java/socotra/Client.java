@@ -79,6 +79,8 @@ public class Client extends Application {
 
     private static Alert initPairwiseChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Pairwise Chat.", "Please Be Patient.");
 
+    private static Alert reInitPairwiseChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Reinitializing Pairwise Chat.", "Please Be Patient.");
+
     private static DataHandler dataHandler;
 
     /**
@@ -304,6 +306,15 @@ public class Client extends Application {
     public static void closeInitPairwiseChatAlert() {
         initPairwiseChatAlert.setAlertType(Alert.AlertType.INFORMATION);
         initPairwiseChatAlert.close();
+    }
+
+    public static void showReInitPairwiseChatAlert() {
+        reInitPairwiseChatAlert.show();
+    }
+
+    public static void closeReInitPairwiseChatAlert() {
+        reInitPairwiseChatAlert.setAlertType(Alert.AlertType.INFORMATION);
+        reInitPairwiseChatAlert.close();
     }
 
     public static void showInitClientAlert() {

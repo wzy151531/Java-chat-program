@@ -19,7 +19,7 @@ public class ChatSession implements Serializable {
     /**
      * The users in chat session.
      */
-    private TreeSet<String> toUsernames;
+    private TreeSet<User> members;
     /**
      * The hint indicates whether the chat session receive new message.
      */
@@ -32,20 +32,20 @@ public class ChatSession implements Serializable {
     /**
      * Constructor for chatSession.
      *
-     * @param toUsernames The users in chat session.
+     * @param members The users in chat session.
      * @param hint        The hint indicates whether the chat session receive new message.
      */
 
     /**
      * Constructor for chatSession.
      *
-     * @param toUsernames The users in chat session.
+     * @param members     The users in chat session.
      * @param hint        The hint indicates whether the chat session receive new message.
      * @param encrypted   Whether chat session is encrypted.
      * @param sessionType The type of session.(group or pairwise)
      */
-    public ChatSession(TreeSet<String> toUsernames, boolean hint, boolean encrypted, int sessionType) {
-        this.toUsernames = toUsernames;
+    public ChatSession(TreeSet<User> members, boolean hint, boolean encrypted, int sessionType) {
+        this.members = members;
         this.hint = hint;
         this.encrypted = encrypted;
         this.sessionType = sessionType;
@@ -58,9 +58,11 @@ public class ChatSession implements Serializable {
         }
         this.sessionType = Integer.parseInt(parts[parts.length - 1]);
         String[] users = parts[parts.length - 2].split("\\|");
-        this.toUsernames = new TreeSet<>();
-        for (String username : users) {
-            this.toUsernames.add(username);
+        this.members = new TreeSet<>();
+        for (String user : users) {
+            String[] userParts = user.split(":");
+            User temp = new User(userParts[0], Integer.parseInt(userParts[1]), true);
+            this.members.add(temp);
         }
         this.hint = false;
         this.encrypted = parts.length == 3;
@@ -71,43 +73,47 @@ public class ChatSession implements Serializable {
     }
 
     /**
-     * Getter for toUsernames.
+     * Getter for members.
      *
      * @return The users in chat session.
      */
-    public TreeSet<String> getToUsernames() {
-        return toUsernames;
+    public TreeSet<User> getMembers() {
+        return members;
     }
 
     /**
-     * Setter for toUsernames.
+     * Setter for members.
      *
-     * @param toUsernames The users in chat session.
+     * @param members The users in chat session.
      */
-    public void setToUsernames(TreeSet<String> toUsernames) {
-        this.toUsernames = toUsernames;
+    public void setMembers(TreeSet<User> members) {
+        this.members = members;
     }
 
-    public String generateChatName(String caller) {
-        TreeSet<String> copy = new TreeSet<>(this.toUsernames);
+    public String generateChatName(User caller) {
+        TreeSet<User> copy = new TreeSet<>(this.members);
         copy.remove(caller);
-        String temp = copy.toString();
+        TreeSet<String> membersName = new TreeSet<>();
+        copy.forEach(n -> {
+            membersName.add(n.getUsername());
+        });
+        String temp = membersName.toString();
         String chatName = temp.substring(1, temp.length() - 1);
         return this.isEncrypted() ? "🔒" + chatName : chatName;
     }
 
     public String generateChatIdCSV() {
         String temp = "";
-        for (String username : toUsernames) {
-            temp = temp + username + "|";
+        for (User user : members) {
+            temp = temp + user + "|";
         }
         String result = temp.substring(0, temp.length() - 1);
         result = result + "/" + sessionType;
         return this.isEncrypted() ? "🔒/" + result : result;
     }
 
-    public TreeSet<String> getOthers(String caller) {
-        TreeSet<String> result = new TreeSet<>(this.toUsernames);
+    public TreeSet<User> getOthers(User caller) {
+        TreeSet<User> result = new TreeSet<>(this.members);
         result.remove(caller);
         return result;
     }
@@ -144,7 +150,7 @@ public class ChatSession implements Serializable {
     public boolean equals(Object o) {
         ChatSession chatSession = (ChatSession) o;
         try {
-            return this.toUsernames.equals(chatSession.toUsernames) &&
+            return this.members.equals(chatSession.members) &&
                     this.encrypted == chatSession.isEncrypted() &&
                     this.sessionType == chatSession.getSessionType();
         } catch (NullPointerException e) {
@@ -160,7 +166,11 @@ public class ChatSession implements Serializable {
      */
     @Override
     public int hashCode() {
-        return this.toUsernames.hashCode();
+        int hash = 17;
+        hash = hash * 31 + this.members.hashCode();
+        hash = hash * 31 + (this.encrypted ? 0 : 1);
+        hash = hash * 31 + this.sessionType;
+        return hash;
     }
 
 }

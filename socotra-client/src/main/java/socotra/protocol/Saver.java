@@ -2,6 +2,7 @@ package socotra.protocol;
 
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.User;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,18 +14,18 @@ import java.util.HashMap;
 public class Saver {
 
     private final String userDirPath = "src/main/resources/userData";
-    private final String username;
+    private final User user;
     private final EncryptedClient encryptedClient;
     private final FileEncrypter fileEncrypter;
 
-    public Saver(String username, EncryptedClient encryptedClient) {
-        this.username = username;
+    public Saver(User user, EncryptedClient encryptedClient) {
+        this.user = user;
         this.encryptedClient = encryptedClient;
-        File userDir = new File(userDirPath, username);
+        File userDir = new File(userDirPath, user.toString());
         if (!userDir.exists()) {
             userDir.mkdir();
         }
-        this.fileEncrypter = new FileEncrypter(username);
+        this.fileEncrypter = new FileEncrypter(user);
     }
 
     public void saveStores() {
@@ -54,7 +55,7 @@ public class Saver {
     }
 
     private void writeStore(HashMap<String, byte[]> hashMap, String fileName) throws IOException {
-        File file = new File(userDirPath + "/" + username, fileName);
+        File file = new File(userDirPath + "/" + user.toString(), fileName);
         if (!file.exists()) {
             file.createNewFile();
         }
@@ -78,7 +79,7 @@ public class Saver {
     }
 
     private void writeChatData(HashMap<ChatSession, ArrayList<ConnectionData>> chatData) throws IOException {
-        File file = new File(userDirPath + "/" + username, "chatData");
+        File file = new File(userDirPath + "/" + user.toString(), "chatData");
         if (!file.exists()) {
             file.createNewFile();
         }

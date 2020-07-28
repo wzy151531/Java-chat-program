@@ -5,12 +5,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import socotra.Client;
+import socotra.common.User;
 import socotra.model.LoginModel;
 import socotra.util.Util;
 
@@ -37,6 +35,12 @@ public class LoginController {
      */
     @FXML
     private PasswordField passwordField;
+
+    @FXML
+    private TextField deviceIdField;
+
+    @FXML
+    private CheckBox activeCheckBox;
     /**
      * The login button.
      */
@@ -58,12 +62,15 @@ public class LoginController {
         String serverName = serverField.getText();
         String username = usernameField.getText();
         String password = passwordField.getText();
+        String deviceId = deviceIdField.getText();
+        boolean active = activeCheckBox.isSelected();
         if (Util.isEmpty(username) || Util.isEmpty(password)) {
             Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Validate Error.", "Please input the info.").show();
             return;
         }
+        User user = new User(username, Util.isEmpty(deviceId) ? 1 : Integer.parseInt(deviceId), active);
         Client.setLoginModel(new LoginModel());
-        Client.getLoginModel().handleLogin(serverName, username, password);
+        Client.getLoginModel().handleLogin(serverName, user, password);
         Client.showWaitingAlert();
     }
 

@@ -20,9 +20,9 @@ public class ChatSessionTest {
 
     @Test
     public void testGetToUsernamesAndSetToUsernames() {
-        chatSession1.setToUsernames(UtilTest.generateTreeSet("admin"));
+        chatSession1.setMembers(UtilTest.generateTreeSet("admin"));
         TreeSet<String> expected = UtilTest.generateTreeSet("admin");
-        TreeSet<String> actual = chatSession1.getToUsernames();
+        TreeSet<String> actual = chatSession1.getMembers();
         assertEquals(expected, actual);
     }
 

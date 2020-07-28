@@ -31,7 +31,7 @@ public class ConnectionData implements Serializable {
     /**
      * The username of the login connection data.
      */
-    private String username;
+    private User user;
     /**
      * The password of the login connection data.
      */
@@ -43,7 +43,7 @@ public class ConnectionData implements Serializable {
     /**
      * The online users.
      */
-    private TreeSet<String> onlineUsers;
+    private TreeSet<User> onlineUsers;
     /**
      * The validation result of the login connection data.
      */
@@ -62,7 +62,7 @@ public class ConnectionData implements Serializable {
     /**
      * The user signature of connection data.
      */
-    private String userSignature;
+    private User userSignature;
     /**
      * The chat session that data send to.
      */
@@ -72,15 +72,15 @@ public class ConnectionData implements Serializable {
      */
     private HashMap<ChatSession, List<ConnectionData>> chatData;
 
-    private String receiverUsername;
+    private User receiverUsername;
     private KeyBundle keyBundle;
     private byte[] cipherData;
     private int cipherType;
     private int dataType;
 
-    private TreeSet<String> receiversUsername;
-    private HashMap<String, KeyBundle> keyBundles;
-    private HashMap<String, ConnectionData> senderKeysData;
+    private TreeSet<User> receiversUsername;
+    private HashMap<User, KeyBundle> keyBundles;
+    private HashMap<User, ConnectionData> senderKeysData;
 
     private ArrayList<ConnectionData> depositPairwiseData;
     private ArrayList<ConnectionData> depositSenderKeyData;
@@ -95,17 +95,27 @@ public class ConnectionData implements Serializable {
      */
     public ConnectionData(boolean validated) {
         this.type = -1;
-        this.validated = validated;
+        this.validated = false;
+    }
+
+    public ConnectionData(TreeSet<User> onlineUsers, ArrayList<ConnectionData> depositPairwiseData,
+                          ArrayList<ConnectionData> depositSenderKeyData, ArrayList<ConnectionData> depositGroupData) {
+        this.type = -1;
+        this.validated = true;
+        this.onlineUsers = onlineUsers;
+        this.depositPairwiseData = depositPairwiseData;
+        this.depositSenderKeyData = depositSenderKeyData;
+        this.depositGroupData = depositGroupData;
     }
 
     /**
      * If connection data is about the information of user's online status, the connection data's type is -2.
      *
-     * @param userSignature The online user's name.
+     * @param user The online/offline information of user.
      */
-    public ConnectionData(String userSignature, boolean isOnline) {
+    public ConnectionData(User user, boolean isOnline) {
         this.type = -2;
-        this.userSignature = userSignature;
+        this.user = user;
         this.isOnline = isOnline;
     }
 
@@ -114,10 +124,10 @@ public class ConnectionData implements Serializable {
      *
      * @param onlineUsers The current online users' name.
      */
-    public ConnectionData(TreeSet<String> onlineUsers) {
-        this.type = -3;
-        this.onlineUsers = onlineUsers;
-    }
+//    public ConnectionData(TreeSet<User> onlineUsers) {
+//        this.type = -3;
+//        this.onlineUsers = onlineUsers;
+//    }
 
     /**
      * If connection data is about received hint, the connection data's type is -4.
@@ -127,7 +137,7 @@ public class ConnectionData implements Serializable {
      * @param chatSession      The chatSession this connection data belong.
      * @param receiverUsername The receiver's username.
      */
-    public ConnectionData(UUID uuid, String userSignature, ChatSession chatSession, String receiverUsername) {
+    public ConnectionData(UUID uuid, User userSignature, ChatSession chatSession, User receiverUsername) {
         this.uuid = uuid;
         this.type = -4;
         this.userSignature = userSignature;
@@ -144,12 +154,12 @@ public class ConnectionData implements Serializable {
      * If connection data is about login information, the connection data's type is 0.
      *
      * @param type     The connection data's type.
-     * @param username The user's username.
+     * @param user     The user to login.
      * @param password The user's password.
      */
-    public ConnectionData(int type, String username, String password) {
+    public ConnectionData(int type, User user, String password) {
         this.type = 0;
-        this.username = username;
+        this.user = user;
         this.password = password;
     }
 
@@ -160,7 +170,7 @@ public class ConnectionData implements Serializable {
      * @param userSignature The connection data sender's username.
      * @param chatSession   The chat session the data send to.
      */
-    public ConnectionData(String textData, String userSignature, ChatSession chatSession) {
+    public ConnectionData(String textData, User userSignature, ChatSession chatSession) {
         this.uuid = UUID.randomUUID();
         this.type = 1;
         this.textData = textData;
@@ -177,7 +187,7 @@ public class ConnectionData implements Serializable {
      * @param userSignature The userSignature of connectionData.
      * @param chatSession   The chatSession of connectionData.
      */
-    public ConnectionData(String textData, UUID uuid, String userSignature, ChatSession chatSession) {
+    public ConnectionData(String textData, UUID uuid, User userSignature, ChatSession chatSession) {
         this.uuid = uuid;
         this.type = 1;
         this.textData = textData;
@@ -193,7 +203,7 @@ public class ConnectionData implements Serializable {
      * @param userSignature The connection data sender's username.
      * @param chatSession   The chat session the data send to.
      */
-    public ConnectionData(byte[] audioData, String userSignature, ChatSession chatSession) {
+    public ConnectionData(byte[] audioData, User userSignature, ChatSession chatSession) {
         this.uuid = UUID.randomUUID();
         this.type = 2;
         this.audioData = audioData;
@@ -201,7 +211,7 @@ public class ConnectionData implements Serializable {
         this.chatSession = chatSession;
     }
 
-    public ConnectionData(byte[] audioData, UUID uuid, String userSignature, ChatSession chatSession) {
+    public ConnectionData(byte[] audioData, UUID uuid, User userSignature, ChatSession chatSession) {
         this.uuid = uuid;
         this.type = 2;
         this.audioData = audioData;
@@ -215,32 +225,32 @@ public class ConnectionData implements Serializable {
      * @param chatData      The chat history data of user.
      * @param userSignature The user want to store the chatData.
      */
-    public ConnectionData(HashMap<ChatSession, List<ConnectionData>> chatData, String userSignature) {
+    public ConnectionData(HashMap<ChatSession, List<ConnectionData>> chatData, User userSignature) {
         this.type = 3;
         this.chatData = chatData;
         this.userSignature = userSignature;
     }
 
-    public ConnectionData(String username, String password, KeyBundle keyBundle) {
+    public ConnectionData(User user, String password, KeyBundle keyBundle) {
         this.type = 4;
-        this.username = username;
+        this.user = user;
         this.password = password;
         this.keyBundle = keyBundle;
     }
 
-    public ConnectionData(String receiverUsername, String userSignature) {
+    public ConnectionData(User receiverUsername, User userSignature) {
         this.type = 5;
         this.receiverUsername = receiverUsername;
         this.userSignature = userSignature;
     }
 
-    public ConnectionData(KeyBundle keyBundle, String receiverUsername) {
+    public ConnectionData(KeyBundle keyBundle, User receiverUsername) {
         this.type = 6;
         this.keyBundle = keyBundle;
         this.receiverUsername = receiverUsername;
     }
 
-    public ConnectionData(byte[] cipherData, String userSignature, ChatSession chatSession, int cipherType, int dataType) {
+    public ConnectionData(byte[] cipherData, User userSignature, ChatSession chatSession, int cipherType, int dataType) {
         this.uuid = UUID.randomUUID();
         this.type = 7;
         this.cipherData = cipherData;
@@ -257,7 +267,7 @@ public class ConnectionData implements Serializable {
      * @param userSignature The sender's username.
      * @param chatSession   The group chat session.
      */
-    public ConnectionData(byte[] cipherData, String userSignature, ChatSession chatSession, String receiverUsername, int cipherType) {
+    public ConnectionData(byte[] cipherData, User userSignature, ChatSession chatSession, User receiverUsername, int cipherType) {
         this.type = 8;
         this.cipherData = cipherData;
         this.userSignature = userSignature;
@@ -273,7 +283,7 @@ public class ConnectionData implements Serializable {
      * @param chatSession       The chat session related.
      * @param userSignature     The sender's username.
      */
-    public ConnectionData(TreeSet<String> receiversUsername, ChatSession chatSession, String userSignature, boolean init) {
+    public ConnectionData(TreeSet<User> receiversUsername, ChatSession chatSession, User userSignature, boolean init) {
         this.type = 9;
         this.receiversUsername = receiversUsername;
         this.chatSession = chatSession;
@@ -287,7 +297,7 @@ public class ConnectionData implements Serializable {
      * @param keyBundles  The requesting users' key bundles.
      * @param chatSession The chat session related.
      */
-    public ConnectionData(HashMap<String, KeyBundle> keyBundles, ChatSession chatSession, boolean init) {
+    public ConnectionData(HashMap<User, KeyBundle> keyBundles, ChatSession chatSession, boolean init) {
         this.type = 10;
         this.keyBundles = keyBundles;
         this.chatSession = chatSession;
@@ -299,7 +309,7 @@ public class ConnectionData implements Serializable {
      *
      * @param senderKeysData The sender keys data.
      */
-    public ConnectionData(HashMap<String, ConnectionData> senderKeysData) {
+    public ConnectionData(HashMap<User, ConnectionData> senderKeysData) {
         senderKeysData.forEach((k, v) -> {
             if (v.getType() != 8) {
                 throw new IllegalStateException("Type isn't 8, connection data is not about sender keys.");
@@ -309,20 +319,26 @@ public class ConnectionData implements Serializable {
         this.senderKeysData = senderKeysData;
     }
 
-    /**
-     * The connection data is about deposit data.
-     *
-     * @param depositPairwiseData  Deposit pairwise data.
-     * @param depositSenderKeyData Deposit senderKey data.
-     * @param depositGroupData     Deposit group data.
-     */
-    public ConnectionData(ArrayList<ConnectionData> depositPairwiseData,
-                          ArrayList<ConnectionData> depositSenderKeyData,
-                          ArrayList<ConnectionData> depositGroupData) {
-        this.type = 12;
-        this.depositPairwiseData = depositPairwiseData;
-        this.depositSenderKeyData = depositSenderKeyData;
-        this.depositGroupData = depositGroupData;
+//    /**
+//     * The connection data is about deposit data.
+//     *
+//     * @param depositPairwiseData  Deposit pairwise data.
+//     * @param depositSenderKeyData Deposit senderKey data.
+//     * @param depositGroupData     Deposit group data.
+//     */
+//    public ConnectionData(ArrayList<ConnectionData> depositPairwiseData,
+//                          ArrayList<ConnectionData> depositSenderKeyData,
+//                          ArrayList<ConnectionData> depositGroupData) {
+//        this.type = 12;
+//        this.depositPairwiseData = depositPairwiseData;
+//        this.depositSenderKeyData = depositSenderKeyData;
+//        this.depositGroupData = depositGroupData;
+//    }
+
+    public ConnectionData(User userSignature, KeyBundle keyBundle) {
+        this.type = 13;
+        this.userSignature = userSignature;
+        this.keyBundle = keyBundle;
     }
 
     public boolean isInit() {
@@ -333,41 +349,41 @@ public class ConnectionData implements Serializable {
     }
 
     public ArrayList<ConnectionData> getDepositPairwiseData() {
-        if (type != 12) {
-            throw new IllegalStateException("Type isn't 12, cannot get depositPairwiseData");
+        if (type != -1) {
+            throw new IllegalStateException("Type isn't -1, cannot get depositPairwiseData");
         }
         return this.depositPairwiseData;
     }
 
     public ArrayList<ConnectionData> getDepositSenderKeyData() {
-        if (type != 12) {
-            throw new IllegalStateException("Type isn't 12, cannot get depositSenderKeyData");
+        if (type != -1) {
+            throw new IllegalStateException("Type isn't -1, cannot get depositSenderKeyData");
         }
         return this.depositSenderKeyData;
     }
 
     public ArrayList<ConnectionData> getDepositGroupData() {
-        if (type != 12) {
-            throw new IllegalStateException("Type isn't 12, cannot get depositGroupData");
+        if (type != -1) {
+            throw new IllegalStateException("Type isn't -1, cannot get depositGroupData");
         }
         return this.depositGroupData;
     }
 
-    public HashMap<String, ConnectionData> getSenderKeysData() {
+    public HashMap<User, ConnectionData> getSenderKeysData() {
         if (type != 11) {
             throw new IllegalStateException("Type isn't 11, cannot get senderKeysData");
         }
         return this.senderKeysData;
     }
 
-    public HashMap<String, KeyBundle> getKeyBundles() {
+    public HashMap<User, KeyBundle> getKeyBundles() {
         if (type != 10) {
             throw new IllegalStateException("Type isn't 10, cannot get keyBundles");
         }
         return this.keyBundles;
     }
 
-    public TreeSet<String> getReceiversUsername() {
+    public TreeSet<User> getReceiversUsername() {
         if (type != 9) {
             throw new IllegalStateException("Type isn't 9, cannot get receiversUsername");
         }
@@ -375,8 +391,8 @@ public class ConnectionData implements Serializable {
     }
 
     public KeyBundle getKeyBundle() {
-        if (type != 4 && type != 6) {
-            throw new IllegalStateException("Type isn't 4 or 6, cannot get keyBundle");
+        if (type != 4 && type != 6 && type != 13) {
+            throw new IllegalStateException("Type isn't 4 or 6 or 13, cannot get keyBundle");
         }
         return this.keyBundle;
     }
@@ -402,7 +418,7 @@ public class ConnectionData implements Serializable {
         return this.dataType;
     }
 
-    public String getReceiverUsername() {
+    public User getReceiverUsername() {
         if (type != -4 && type != 5 && type != 6 && type != 8) {
             throw new IllegalStateException("Type isn't 5 or 6 or 8, cannot get receiverUsername");
         }
@@ -459,11 +475,11 @@ public class ConnectionData implements Serializable {
      *
      * @return The username of the login connection data.
      */
-    public String getUsername() {
-        if (type != 0 && type != 4) {
-            throw new IllegalStateException("Type isn't 0 or 4, cannot get username.");
+    public User getUser() {
+        if (type != -2 && type != 0 && type != 4) {
+            throw new IllegalStateException("Type isn't -2 or 0 or 4, cannot get username.");
         }
-        return username;
+        return user;
     }
 
     /**
@@ -495,9 +511,9 @@ public class ConnectionData implements Serializable {
      *
      * @return The online users.
      */
-    public TreeSet<String> getOnlineUsers() {
-        if (type != -3) {
-            throw new IllegalStateException("Type isn't -3, connot get onlineUsers.");
+    public TreeSet<User> getOnlineUsers() {
+        if (type != -1 && type != -5) {
+            throw new IllegalStateException("Type isn't -1 or -5, cannot get onlineUsers.");
         }
         return onlineUsers;
     }
@@ -550,9 +566,9 @@ public class ConnectionData implements Serializable {
      *
      * @return The userSignature of the connection data.
      */
-    public String getUserSignature() {
-        if (type != -2 && type != -4 && type != 1 && type != 2 && type != 3 && type != 5 && type != 7 && type != 8 && type != 9) {
-            throw new IllegalStateException("Type isn't -2 or -4 or 1 or 2 or 3 or 5 or 7 or 8 or 9, cannot get text data.");
+    public User getUserSignature() {
+        if (type != -2 && type != -4 && type != 1 && type != 2 && type != 3 && type != 5 && type != 7 && type != 8 && type != 9 && type != 13) {
+            throw new IllegalStateException("Type isn't -2 or -4 or 1 or 2 or 3 or 5 or 7 or 8 or 9 or 13, cannot get text data.");
         }
         return userSignature;
     }

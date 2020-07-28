@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.User;
 import socotra.model.HomeModel;
 import socotra.protocol.EncryptedClient;
 import socotra.util.SendThread;
@@ -107,7 +108,7 @@ public class HomeController {
      * Online clients list.
      */
     @FXML
-    private ListView<String> clientsList;
+    private ListView<User> clientsList;
     /**
      * Chat session name label.
      */
@@ -141,7 +142,7 @@ public class HomeController {
     /**
      * The new group chat session needs to be added.
      */
-    private TreeSet<String> newGroup = new TreeSet<>();
+    private TreeSet<User> newGroup = new TreeSet<>();
 
     /**
      * Set stop capturing button disabled value.
@@ -224,7 +225,7 @@ public class HomeController {
     @FXML
     private void initialize() {
         Client.setHomeModel(new HomeModel());
-        usernameLabel.setText(Client.getClientThread().getUsername());
+        usernameLabel.setText(Client.getClientThread().getUser().getUsername());
         stopButton.setDisable(true);
         sendAudioButton.setDisable(true);
         emojiList.setVisible(false);
@@ -305,7 +306,7 @@ public class HomeController {
                         });
                         Client.getHomeModel().handlePlayAudio(item.getAudioData());
                     });
-                    if (item.getUserSignature().equals(Client.getClientThread().getUsername())) {
+                    if (item.getUserSignature().equals(Client.getClientThread().getUser())) {
                         Label signature = new Label(" :" + item.getUserSignature());
                         HBox content = item.getIsSent() ? new HBox(sentCircle, button, signature) : new HBox(notSentCircle, button, signature);
                         content.setAlignment(Pos.CENTER_RIGHT);
@@ -320,7 +321,7 @@ public class HomeController {
                     // If user received own messages, show in right.
                     Circle notSentCircle = new Circle(2.0, Color.RED);
                     Circle sentCircle = new Circle(2.0, Color.LIGHTGREEN);
-                    if (item.getUserSignature().equals(Client.getClientThread().getUsername())) {
+                    if (item.getUserSignature().equals(Client.getClientThread().getUser())) {
                         Label signature = new Label(" :" + item.getUserSignature());
                         Label textData = new Label(item.getTextData());
                         HBox content = item.getIsSent() ? new HBox(sentCircle, textData, signature) : new HBox(notSentCircle, textData, signature);
@@ -352,7 +353,7 @@ public class HomeController {
                     setGraphic(null);
                     setText("");
                 } else {
-                    String chatName = item.generateChatName(Client.getClientThread().getUsername());
+                    String chatName = item.generateChatName(Client.getClientThread().getUser());
                     Button button = new Button(chatName);
                     button.setPrefSize(170.0, 15.0);
                     button.setFont(new Font(15));
@@ -384,7 +385,7 @@ public class HomeController {
     private void configClientsList() {
         clientsList.setCellFactory(l -> new ListCell<>() {
             @Override
-            protected void updateItem(String item, boolean empty) {
+            protected void updateItem(User item, boolean empty) {
                 super.updateItem(item, empty);
                 if (item == null) {
                     setGraphic(null);
@@ -395,17 +396,18 @@ public class HomeController {
                     button.setPrefSize(50.0, 15.0);
                     button.setFont(new Font(15));
                     button.setOnAction(evt -> {
-                        TreeSet<String> clients = new TreeSet<>();
-                        clients.add(item);
-                        if (!item.equals("all")) {
-                            clients.add(Client.getClientThread().getUsername());
-                        }
-                        if (!Client.getHomeModel().chatSessionExist(clients)) {
+                        TreeSet<User> members = new TreeSet<>();
+                        members.add(item);
+                        members.add(Client.getClientThread().getUser());
+//                        if (!item.equals("all")) {
+//                            members.add(Client.getClientThread().getUsername());
+//                        }
+                        if (!Client.getHomeModel().chatSessionExist(members)) {
                             Client.showInitPairwiseChatAlert();
                             Client.getEncryptedClient().requestKeyBundle(item);
                         }
                     });
-                    Label clientName = new Label(item);
+                    Label clientName = new Label(item.toString());
                     HBox content = new HBox();
                     content.setPrefWidth(180.0);
                     HBox content1 = new HBox(clientName);
@@ -414,7 +416,7 @@ public class HomeController {
                     HBox content2 = new HBox(button);
                     content2.setAlignment(Pos.CENTER_RIGHT);
 
-                    if (isCreatingGroup && !item.equals("all")) {
+                    if (isCreatingGroup) {
                         CheckBox checkBox = new CheckBox();
                         checkBox.setOnAction(evt -> {
                             if (checkBox.isSelected()) {
@@ -617,7 +619,7 @@ public class HomeController {
             Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Cannot create a group chat with less two people.", "Try again.").show();
             return;
         }
-        newGroup.add(Client.getClientThread().getUsername());
+        newGroup.add(Client.getClientThread().getUser());
         if (Client.getHomeModel().chatSessionExist(newGroup)) {
             Util.generateAlert(Alert.AlertType.WARNING, "Warning", "The group chat has already existed.", "Try again.").show();
             return;

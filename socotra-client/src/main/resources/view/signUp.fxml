@@ -23,7 +23,9 @@
         <TextField fx:id="usernameField" layoutX="172.0" layoutY="109.0"/>
         <PasswordField fx:id="passwordField" layoutX="172.0" layoutY="154.0"/>
         <PasswordField fx:id="repeatField" layoutX="172.0" layoutY="195.0"/>
-        <Button fx:id="submitButton" defaultButton="true" layoutX="277.0" layoutY="257.0" mnemonicParsing="false"
+        <TextField fx:id="deviceIdField" layoutX="172.0" layoutY="235.0" text="1"/>
+        <Button fx:id="submitButton" defaultButton="true" layoutX="277.0" layoutY="276.0" mnemonicParsing="false"
                 onAction="#submit" text="submit"/>
+        <Label layoutX="81.0" layoutY="240.0" text="DeviceId:"/>
     </children>
 </AnchorPane>

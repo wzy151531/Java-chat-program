@@ -14,6 +14,7 @@ import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
+import socotra.common.User;
 import socotra.model.DataHandler;
 import socotra.util.SendThread;
 
@@ -38,8 +39,8 @@ public class EncryptedClient {
 
     private SenderKeyDistributionMessage SKDM;
 
-    public EncryptedClient(String username) {
-        this.signalProtocolAddress = new SignalProtocolAddress(username, 1);
+    public EncryptedClient(User user) {
+        this.signalProtocolAddress = new SignalProtocolAddress(user.getUsername(), user.getDeviceId());
         Client.setEncryptedClient(this);
         try {
             create();
@@ -50,8 +51,8 @@ public class EncryptedClient {
         register();
     }
 
-    EncryptedClient(byte[] serializedIdentityKeyPair, int registrationId, String username) {
-        this.signalProtocolAddress = new SignalProtocolAddress(username, 1);
+    EncryptedClient(byte[] serializedIdentityKeyPair, int registrationId, User user) {
+        this.signalProtocolAddress = new SignalProtocolAddress(user.getUsername(), user.getDeviceId());
         Client.setEncryptedClient(this);
         try {
             load(serializedIdentityKeyPair, registrationId);
@@ -66,6 +67,10 @@ public class EncryptedClient {
             throw new IllegalStateException("SKDM is null.");
         }
         return this.SKDM;
+    }
+
+    public User getUser() {
+        return new User(signalProtocolAddress.getName(), signalProtocolAddress.getDeviceId(), true);
     }
 
     public SignalProtocolAddress getSignalProtocolAddress() {
@@ -174,15 +179,15 @@ public class EncryptedClient {
     /**
      * Request receiver's key bundle from server.
      *
-     * @param receiverName The username of receiver.
+     * @param receiver The user information of receiver.
      */
-    public void requestKeyBundle(String receiverName) {
-        new SendThread(new ConnectionData(receiverName, Client.getClientThread().getUsername())).start();
+    public void requestKeyBundle(User receiver) {
+        new SendThread(new ConnectionData(receiver, Client.getClientThread().getUser())).start();
     }
 
-    public void initPairwiseChat(KeyBundle keyBundle, String receiverName) throws InvalidKeyException, UntrustedIdentityException {
+    public void initPairwiseChat(KeyBundle keyBundle, User receiver) throws InvalidKeyException, UntrustedIdentityException {
         SessionBuilder sessionBuilder = new SessionBuilder(sessionStore, preKeyStore, signedPreKeyStore, identityKeyStore,
-                new SignalProtocolAddress(receiverName, 1));
+                new SignalProtocolAddress(receiver.getUsername(), receiver.getDeviceId()));
         PreKeyBundle preKeyBundle = new PreKeyBundle(keyBundle.getRegistrationId(), 1, keyBundle.getPreKeyId(),
                 keyBundle.getPreKey() == null ? null : Curve.decodePoint(keyBundle.getPreKey(), 0), keyBundle.getSignedPreKeyId(),
                 Curve.decodePoint(keyBundle.getSignedPreKey(), 0), keyBundle.getSignedPreKeySignature(),
@@ -190,11 +195,11 @@ public class EncryptedClient {
         sessionBuilder.process(preKeyBundle);
     }
 
-    public void finishInitPairwiseChat(String receiverName) {
-        TreeSet<String> users = new TreeSet<>();
-        users.add(receiverName);
-        users.add(signalProtocolAddress.getName());
-        ChatSession chatSession = new ChatSession(users, true, true, ChatSession.PAIRWISE);
+    public void finishInitPairwiseChat(User receiver) {
+        TreeSet<User> members = new TreeSet<>();
+        members.add(receiver);
+        members.add(getUser());
+        ChatSession chatSession = new ChatSession(members, true, true, ChatSession.PAIRWISE);
         Client.getHomeModel().appendChatSessionList(chatSession);
         Platform.runLater(() -> {
             Client.closeInitPairwiseChatAlert();
@@ -210,9 +215,8 @@ public class EncryptedClient {
         Platform.runLater(() -> {
             Client.showInitGroupChatAlert();
         });
-        String caller = signalProtocolAddress.getName();
-        TreeSet<String> others = chatSession.getOthers(caller);
-        TreeSet<String> unknownOthers = getUnknownOthers(others);
+        TreeSet<User> others = chatSession.getOthers(getUser());
+        TreeSet<User> unknownOthers = getUnknownOthers(others);
         if (unknownOthers.isEmpty()) {
             distributeSenderKey(others, chatSession, SKDM, init);
         } else {
@@ -221,8 +225,8 @@ public class EncryptedClient {
         }
     }
 
-    public void distributeSenderKey(TreeSet<String> others, ChatSession chatSession, SenderKeyDistributionMessage SKDM, boolean init) {
-        HashMap<String, ConnectionData> senderKeysData = new HashMap<>();
+    public void distributeSenderKey(TreeSet<User> others, ChatSession chatSession, SenderKeyDistributionMessage SKDM, boolean init) {
+        HashMap<User, ConnectionData> senderKeysData = new HashMap<>();
         others.forEach(n -> {
             try {
                 senderKeysData.put(n, EncryptionHandler.encryptSKDMData(SKDM.serialize(), chatSession, n));
@@ -234,11 +238,10 @@ public class EncryptedClient {
         finishInitGroupChat(chatSession, init);
     }
 
-    public void processReceivedSenderKey(byte[] senderKey, ChatSession chatSession, String senderName, boolean init) {
+    public void processReceivedSenderKey(byte[] senderKey, ChatSession chatSession, User sender, boolean init) {
         try {
-            storeReceivedSenderKey(senderKey, chatSession.generateChatIdCSV(), senderName);
+            storeReceivedSenderKey(senderKey, chatSession.generateChatIdCSV(), sender);
 
-            // TODO: judge if senderKeyRecord is empty to decide whether need to distribute sender key message.
             SenderKeyName senderKeyName = new SenderKeyName(chatSession.generateChatIdCSV(), signalProtocolAddress);
             SenderKeyRecord senderKeyRecord = senderKeyStore.loadSenderKey(senderKeyName);
             boolean isFresh = senderKeyRecord.isEmpty();
@@ -270,29 +273,29 @@ public class EncryptedClient {
         });
     }
 
-    private TreeSet<String> getUnknownOthers(TreeSet<String> others) {
-        TreeSet<String> result = new TreeSet<>();
+    private TreeSet<User> getUnknownOthers(TreeSet<User> others) {
+        TreeSet<User> result = new TreeSet<>();
         others.forEach(n -> {
-            if (!sessionStore.containsSession(new SignalProtocolAddress(n, 1))) {
+            if (!sessionStore.containsSession(new SignalProtocolAddress(n.getUsername(), n.getDeviceId()))) {
                 result.add(n);
             }
         });
         return result;
     }
 
-    private void requestKeyBundles(TreeSet<String> unknownOthers, ChatSession chatSession, boolean init) {
-        new SendThread(new ConnectionData(unknownOthers, chatSession, signalProtocolAddress.getName(), init)).start();
+    private void requestKeyBundles(TreeSet<User> unknownOthers, ChatSession chatSession, boolean init) {
+        new SendThread(new ConnectionData(unknownOthers, chatSession, getUser(), init)).start();
     }
 
-    SessionCipher getSessionCipher(String theOther) {
-        SignalProtocolAddress theOtherAddress = new SignalProtocolAddress(theOther, 1);
+    SessionCipher getSessionCipher(User theOther) {
+        SignalProtocolAddress theOtherAddress = new SignalProtocolAddress(theOther.getUsername(), theOther.getDeviceId());
         return new SessionCipher(sessionStore, preKeyStore,
                 signedPreKeyStore, identityKeyStore, theOtherAddress);
     }
 
-    GroupCipher getGroupCipher(String senderName, ChatSession chatSession) {
+    GroupCipher getGroupCipher(User sender, ChatSession chatSession) {
         String groupId = chatSession.generateChatIdCSV();
-        SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(senderName, 1);
+        SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(sender.getUsername(), sender.getDeviceId());
         return new GroupCipher(senderKeyStore, new SenderKeyName(groupId, signalProtocolAddress));
     }
 
@@ -316,12 +319,12 @@ public class EncryptedClient {
         return createSenderKey(groupId);
     }
 
-    private void storeReceivedSenderKey(byte[] senderKey, String groupId, String senderName) {
+    private void storeReceivedSenderKey(byte[] senderKey, String groupId, User sender) {
         try {
             SenderKeyDistributionMessage SKDM = new SenderKeyDistributionMessage(senderKey);
             GroupSessionBuilder groupSessionBuilder = new GroupSessionBuilder(senderKeyStore);
             groupSessionBuilder.process(new SenderKeyName(groupId,
-                    new SignalProtocolAddress(senderName, 1)), SKDM);
+                    new SignalProtocolAddress(sender.getUsername(), sender.getDeviceId())), SKDM);
         } catch (InvalidMessageException | LegacyMessageException e) {
             System.out.println("Bad senderKey.");
         }

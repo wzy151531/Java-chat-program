@@ -11,6 +11,7 @@ import org.whispersystems.libsignal.state.SessionRecord;
 import org.whispersystems.libsignal.state.SignedPreKeyRecord;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.User;
 import socotra.util.Util;
 
 import java.io.*;
@@ -22,17 +23,17 @@ import java.util.UUID;
 public class Loader {
 
     private final String userDirPath = "src/main/resources/userData";
-    private final String username;
+    private final User user;
     private final FileEncrypter fileEncrypter;
     private EncryptedClient encryptedClient;
 
-    public Loader(String username) {
-        this.username = username;
-        File userDir = new File(userDirPath, username);
+    public Loader(User user) {
+        this.user = user;
+        File userDir = new File(userDirPath, user.toString());
         if (!userDir.exists()) {
             userDir.mkdir();
         }
-        this.fileEncrypter = new FileEncrypter(username);
+        this.fileEncrypter = new FileEncrypter(user);
     }
 
     public void loadStores() {
@@ -73,13 +74,13 @@ public class Loader {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        File file = new File(userDirPath + "/" + username, fileName);
+        File file = new File(userDirPath + "/" + user.toString(), fileName);
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line;
         if (fileName.equals("identityKeyStore.csv")) {
             line = br.readLine();
             String[] firstLine = line.split(",");
-            encryptedClient = new EncryptedClient(hexStrToByteArray(firstLine[0]), Integer.parseInt(firstLine[1]), username);
+            encryptedClient = new EncryptedClient(hexStrToByteArray(firstLine[0]), Integer.parseInt(firstLine[1]), user);
         }
         while ((line = br.readLine()) != null) {
             String[] record = line.split(",");
@@ -119,7 +120,7 @@ public class Loader {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        File file = new File(userDirPath + "/" + username, "chatData");
+        File file = new File(userDirPath + "/" + user.toString(), "chatData");
         if (!file.exists()) {
             return new HashMap<>();
         }
@@ -135,7 +136,9 @@ public class Loader {
                 UUID uuid = UUID.fromString(records[0]);
                 int type = Integer.parseInt(records[1]);
                 String data = records[2];
-                String userSignature = records[3];
+                String userSignatureParts = records[3];
+                String[] userParts = userSignatureParts.split(":");
+                User userSignature = new User(userParts[0], Integer.parseInt(userParts[1]), true);
                 List<ConnectionData> temp = result.getOrDefault(chatSession, new ArrayList<>());
                 if (type == 1) {
                     temp.add(new ConnectionData(data, uuid, userSignature, chatSession));

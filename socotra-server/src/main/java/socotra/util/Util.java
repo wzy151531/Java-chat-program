@@ -3,6 +3,7 @@ package socotra.util;
 import socotra.Server;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.User;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -32,13 +33,13 @@ public abstract class Util {
      * Send special connectionData to certain user and broadcast other same connectionData to others.
      *
      * @param connectionData        The connectionData needs to broadcast to others.
-     * @param username              The certain user needs to send the special connectionData.
+     * @param user                  The certain user needs to send the special connectionData.
      * @param specialConnectionData The special connectionData needs to be sent to the certain user.
      */
-    public synchronized static void broadcast(ConnectionData connectionData, String username, ConnectionData specialConnectionData) {
+    public synchronized static void broadcast(ConnectionData connectionData, User user, ConnectionData specialConnectionData) {
         Server.getClients().forEach((k, v) -> {
             try {
-                if (!k.equals(username)) {
+                if (!k.equals(user)) {
                     v.writeObject(connectionData);
                 } else {
                     v.writeObject(specialConnectionData);
@@ -53,12 +54,12 @@ public abstract class Util {
      * Broadcast connectionData to all online clients except the certain user.
      *
      * @param connectionData The connectionData needs to broadcast.
-     * @param username       The certain user that will not receive the broadcast connectionData.
+     * @param user           The certain user that will not receive the broadcast connectionData.
      */
-    public synchronized static void broadcast(ConnectionData connectionData, String username) {
+    public synchronized static void broadcast(ConnectionData connectionData, User user) {
         Server.getClients().forEach((k, v) -> {
             try {
-                if (!k.equals(username)) {
+                if (!k.equals(user)) {
                     v.writeObject(connectionData);
                 }
             } catch (IOException e) {
@@ -73,11 +74,11 @@ public abstract class Util {
      * Add synchronized to make this function invoked once at same time.
      *
      * @param connectionData The private connectionData.
-     * @param toUsername     The certain user.
+     * @param receiver       The certain user.
      */
-    public synchronized static void privateSend(ConnectionData connectionData, String toUsername) {
+    public synchronized static void privateSend(ConnectionData connectionData, User receiver) {
         try {
-            ObjectOutputStream oos = Server.getClients().get(toUsername);
+            ObjectOutputStream oos = Server.getClients().get(receiver);
             if (oos != null) {
                 oos.writeObject(connectionData);
             }
@@ -90,14 +91,14 @@ public abstract class Util {
      * Send connectionData to a group.
      *
      * @param connectionData The connectionData needs to be sent.
-     * @param toUsernames    The user names in the group.
+     * @param members        The users in the group.
      */
-    public synchronized static void groupSend(ConnectionData connectionData, TreeSet<String> toUsernames) {
-        ArrayList<String> clients = new ArrayList<>(toUsernames);
-        clients.remove(connectionData.getUserSignature());
-        for (String toUsername : clients) {
-            HashMap<String, ObjectOutputStream> allClients = Server.getClients();
-            ObjectOutputStream oos = allClients.get(toUsername);
+    public synchronized static void groupSend(ConnectionData connectionData, TreeSet<User> members) {
+        ArrayList<User> receivers = new ArrayList<>(members);
+        receivers.remove(connectionData.getUserSignature());
+        for (User receiver : receivers) {
+            HashMap<User, ObjectOutputStream> allClients = Server.getClients();
+            ObjectOutputStream oos = allClients.get(receiver);
             if (oos != null) {
                 try {
                     oos.writeObject(connectionData);
@@ -108,10 +109,10 @@ public abstract class Util {
                 ChatSession chatSession = connectionData.getChatSession();
                 switch (chatSession.getSessionType()) {
                     case ChatSession.PAIRWISE:
-                        Server.storePairwiseData(toUsername, connectionData);
+                        Server.storePairwiseData(receiver, connectionData);
                         break;
                     case ChatSession.GROUP:
-                        Server.storeGroupData(toUsername, connectionData);
+                        Server.storeGroupData(receiver, connectionData);
                         break;
                     default:
                         throw new IllegalStateException("Bad chatSession type.");
@@ -126,14 +127,14 @@ public abstract class Util {
      * @param toUsernames The given user names.
      * @return The boolean indicates whether any of the given users is online.
      */
-    public static boolean isAnyOnline(TreeSet<String> toUsernames) {
-        for (String username : toUsernames) {
-            if (Server.getClients().keySet().contains(username)) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    public static boolean isAnyOnline(TreeSet<String> toUsernames) {
+//        for (String username : toUsernames) {
+//            if (Server.getClients().keySet().contains(username)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * Generate chat session name according to the toUsernames in chatSession.
@@ -141,10 +142,10 @@ public abstract class Util {
      * @param toUsernames toUsernames in chatSession.
      * @return The String represent the chatSession.
      */
-    public static String generateChatName(TreeSet<String> toUsernames) {
-        String result = toUsernames.toString().replace(" ", "");
-        return result.substring(1, result.length() - 1);
-    }
+//    public static String generateChatName(TreeSet<String> toUsernames) {
+//        String result = toUsernames.toString().replace(" ", "");
+//        return result.substring(1, result.length() - 1);
+//    }
 
     /**
      * Print clientsChatData.
@@ -155,7 +156,7 @@ public abstract class Util {
         clientsChatData.forEach((k, v) -> {
             System.out.println("============" + k);
             v.forEach((k1, v1) -> {
-                System.out.println(k1.getToUsernames());
+                System.out.println(k1.getMembers());
                 v1.forEach(n -> {
                     System.out.println("    " + n.getTextData());
                 });

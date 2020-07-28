@@ -18,6 +18,7 @@ import org.whispersystems.libsignal.protocol.CiphertextMessage;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.User;
 import socotra.controller.HomeController;
 import socotra.protocol.EncryptedClient;
 import socotra.protocol.EncryptionHandler;
@@ -53,7 +54,7 @@ public class HomeModel {
     /**
      * Current online clients list.
      */
-    private ObservableList<String> clientsList = FXCollections.observableArrayList(new ArrayList<>());
+    private ObservableList<User> clientsList = FXCollections.observableArrayList(new ArrayList<>());
     /**
      * An AudioFormat object for a given set of format parameters.
      */
@@ -163,7 +164,7 @@ public class HomeModel {
      *
      * @return Current online clients.
      */
-    public ObservableList<String> getClientsList() {
+    public ObservableList<User> getClientsList() {
         return this.clientsList;
     }
 
@@ -217,9 +218,9 @@ public class HomeModel {
      * @param clients The chat session needs to be created.
      * @return The boolean indicates whether the new chat session has existed in chat session list.
      */
-    public boolean chatSessionExist(TreeSet<String> clients) {
+    public boolean chatSessionExist(TreeSet<User> clients) {
         for (ChatSession chatSession : chatSessionList) {
-            if (chatSession.getToUsernames().equals(clients)) {
+            if (chatSession.getMembers().equals(clients)) {
                 return true;
             }
         }
@@ -268,29 +269,31 @@ public class HomeModel {
         });
     }
 
-    public boolean clientsContains(String clientName) {
-        return this.clientsList.contains(clientName);
+    public boolean clientsContains(User user) {
+        return this.clientsList.contains(user);
     }
 
     /**
      * Append new client to clients list.
      *
-     * @param clientName New client.
+     * @param user New client.
      */
-    public void appendClientsList(String clientName) {
+    public void appendClientsList(User user) {
         Platform.runLater(() -> {
-            this.clientsList.add(clientName);
+            if (!this.clientsList.contains(user)) {
+                this.clientsList.add(user);
+            }
         });
     }
 
     /**
      * Remove clinet from clients list.
      *
-     * @param clientName The client needs to be removed.
+     * @param user The client needs to be removed.
      */
-    public void removeClientsList(String clientName) {
+    public void removeClientsList(User user) {
         Platform.runLater(() -> {
-            this.clientsList.remove(clientName);
+            this.clientsList.remove(user);
         });
     }
 
@@ -378,7 +381,7 @@ public class HomeModel {
                     return;
                 }
             } else {
-                connectionData = new ConnectionData(text, Client.getClientThread().getUsername(), currentChatSession);
+                connectionData = new ConnectionData(text, Client.getClientThread().getUser(), currentChatSession);
                 appendChatData(connectionData);
             }
             new SendThread(connectionData).start();
@@ -395,13 +398,13 @@ public class HomeModel {
             if (currentChatSession.isEncrypted()) {
                 try {
                     connectionData = EncryptionHandler.encryptAudioData(audioData, currentChatSession);
-                    appendChatData(new ConnectionData(audioData, connectionData.getUuid(), Client.getClientThread().getUsername(), currentChatSession));
+                    appendChatData(new ConnectionData(audioData, connectionData.getUuid(), Client.getClientThread().getUser(), currentChatSession));
                 } catch (UntrustedIdentityException e) {
                     e.printStackTrace();
                     return;
                 }
             } else {
-                connectionData = new ConnectionData(audioData, Client.getClientThread().getUsername(), currentChatSession);
+                connectionData = new ConnectionData(audioData, Client.getClientThread().getUser(), currentChatSession);
                 appendChatData(connectionData);
             }
             new SendThread(connectionData).start();
@@ -466,7 +469,7 @@ public class HomeModel {
      * Send log out connectionData to server.
      */
     public void handleLogout() {
-        ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUsername(), false);
+        ConnectionData connectionData = new ConnectionData(Client.getClientThread().getUser(), false);
         new SendThread(connectionData, true).start();
     }
 

@@ -1,9 +1,9 @@
 package socotra.service;
 
 import socotra.Server;
-import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
+import socotra.common.User;
 import socotra.jdbc.JdbcUtil;
 import socotra.util.Util;
 
@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.TreeSet;
 
 class DataHandler {
@@ -25,27 +24,53 @@ class DataHandler {
     private void processOnline() {
         serverThread.appendClient();
         System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
-        HashMap<ChatSession, List<ConnectionData>> chatData = JdbcUtil.getCertainChatData(serverThread.getUsername());
-        if (chatData != null) {
-            Util.privateSend(new ConnectionData(chatData, "server"), serverThread.getUsername());
+        User user = serverThread.getUser();
+//        HashMap<ChatSession, List<ConnectionData>> chatData = JdbcUtil.getCertainChatData(user);
+//        if (chatData != null) {
+//            Util.privateSend(new ConnectionData(chatData, "server"), user);
+//        }
+        // user wants to login normally.
+        if (user.isActive()) {
+
+            // Inform the new client current online users and inform other clients that the new client is online.
+            Util.broadcast(new ConnectionData(user, true), user);
+            try {
+                boolean isActive = JdbcUtil.isActive(user);
+                boolean isFresh = JdbcUtil.isFresh(user);
+                if (!isActive && !isFresh) {
+                    processSwitchDevice(user);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        TreeSet<String> allClientsName = new TreeSet<>(Server.getClients().keySet());
-        allClientsName.remove(serverThread.getUsername());
-        // Inform the new client current online users and inform other clients that the new client is online.
-        Util.broadcast(new ConnectionData(serverThread.getUsername(), true), serverThread.getUsername(), new ConnectionData(allClientsName));
     }
 
-    private boolean processLogin(String username, String password) {
-        serverThread.setUsername(username);
+    private void processSwitchDevice(User user) {
         try {
-            if (!JdbcUtil.validateUser(username, password)) {
+            KeyBundle keyBundle = JdbcUtil.queryKeyBundle(user);
+            Util.broadcast(new ConnectionData(user, keyBundle), user);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean processLogin(User user, String password) {
+        serverThread.setUser(user);
+        try {
+            if (!JdbcUtil.validateUser(user, password)) {
                 System.out.println("Invalidated user.");
                 serverThread.inform(new ConnectionData(false));
                 return false;
             } else {
-                serverThread.inform(new ConnectionData(true));
+                TreeSet<User> onlineUsers = new TreeSet<>(Server.getClients().keySet());
+                onlineUsers.remove(user);
+                ArrayList<ConnectionData> pairwiseData = Server.loadPairwiseData(user);
+                ArrayList<ConnectionData> senderKeyData = Server.loadSenderKeyData(user);
+                ArrayList<ConnectionData> groupData = Server.loadGroupData(user);
+                serverThread.inform(new ConnectionData(onlineUsers, pairwiseData, senderKeyData, groupData));
                 processOnline();
-                processDepositData(username);
+//                processDepositData(user);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -53,20 +78,21 @@ class DataHandler {
         return true;
     }
 
-    private void processDepositData(String username) {
-        ArrayList<ConnectionData> pairwiseData = Server.loadPairwiseData(username);
-        ArrayList<ConnectionData> senderKeyData = Server.loadSenderKeyData(username);
-        ArrayList<ConnectionData> groupData = Server.loadGroupData(username);
-        try {
-            serverThread.inform(new ConnectionData(pairwiseData, senderKeyData, groupData));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void processDepositData(User user) {
+//        ArrayList<ConnectionData> pairwiseData = Server.loadPairwiseData(user);
+//        ArrayList<ConnectionData> senderKeyData = Server.loadSenderKeyData(user);
+//        ArrayList<ConnectionData> groupData = Server.loadGroupData(user);
+//        try {
+//            serverThread.inform(new ConnectionData(pairwiseData, senderKeyData, groupData));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     private boolean processLogout() {
-        Util.broadcast(new ConnectionData(serverThread.getUsername(), false), serverThread.getUsername());
-        Server.removeClient(serverThread.getUsername());
+        User user = serverThread.getUser();
+        Util.broadcast(new ConnectionData(user, false), user);
+        Server.removeClient(user);
         System.out.println("User log out. Current online users: " + Server.getClients().keySet());
         return false;
     }
@@ -75,7 +101,7 @@ class DataHandler {
         switch (connectionData.getType()) {
             // If connection data is about login.
             case 0:
-                if (!processLogin(connectionData.getUsername(), connectionData.getPassword())) {
+                if (!processLogin(connectionData.getUser(), connectionData.getPassword())) {
                     return false;
                 }
                 break;
@@ -87,14 +113,14 @@ class DataHandler {
                 Util.privateSend(connectionData, connectionData.getReceiverUsername());
                 break;
             // If connection data is about normal chat message.
-            case 1:
-                connectionData.setIsSent(true);
-                // Once received the text data, use a new thread to insert it into database.
-                JdbcUtil.insertClientChatData(connectionData);
+//            case 1:
+//                connectionData.setIsSent(true);
+//                // Once received the text data, use a new thread to insert it into database.
+//                JdbcUtil.insertClientChatData(connectionData);
             case 2:
             case 7:
                 connectionData.setIsSent(true);
-                Util.groupSend(connectionData, connectionData.getChatSession().getToUsernames());
+                Util.groupSend(connectionData, connectionData.getChatSession().getMembers());
                 break;
             // If connection data is about store chat history.
             case 3:
@@ -104,7 +130,7 @@ class DataHandler {
                 if (!serverThread.processSignUp(connectionData)) {
                     return false;
                 }
-                serverThread.setUsername(connectionData.getUsername());
+                serverThread.setUser(connectionData.getUser());
                 processOnline();
                 break;
             case 5:
@@ -128,7 +154,7 @@ class DataHandler {
     }
 
     private void processDistributeSenderKey(ConnectionData connectionData) {
-        HashMap<String, ConnectionData> senderKeysData = connectionData.getSenderKeysData();
+        HashMap<User, ConnectionData> senderKeysData = connectionData.getSenderKeysData();
         senderKeysData.forEach((k, v) -> {
             if (Server.getClients().containsKey(k)) {
                 Util.privateSend(v, k);
@@ -139,8 +165,8 @@ class DataHandler {
     }
 
     private void processQueryKeyBundles(ConnectionData connectionData) {
-        HashMap<String, KeyBundle> result = new HashMap<>();
-        TreeSet<String> receiversUsername = connectionData.getReceiversUsername();
+        HashMap<User, KeyBundle> result = new HashMap<>();
+        TreeSet<User> receiversUsername = connectionData.getReceiversUsername();
         receiversUsername.forEach(n -> {
             try {
                 KeyBundle keyBundle = JdbcUtil.queryKeyBundle(n);

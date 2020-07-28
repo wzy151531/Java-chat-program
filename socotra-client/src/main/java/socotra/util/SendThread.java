@@ -58,7 +58,7 @@ public class SendThread extends Thread {
                 warningAlert.setResultConverter(dialogButton -> {
                     if (dialogButton == ButtonType.OK) {
                         try {
-                            Saver saver = new Saver(clientThread.getUsername(), Client.getEncryptedClient());
+                            Saver saver = new Saver(clientThread.getUser(), Client.getEncryptedClient());
                             saver.saveStores();
                             saver.saveChatData(Client.getHomeModel().getChatDataCopy());
 //                                toServer.writeObject(connectionData);

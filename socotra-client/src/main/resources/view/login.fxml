@@ -8,23 +8,28 @@
 <?import javafx.scene.control.* ?>
 <?import javafx.scene.layout.* ?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="380.0"
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="427.0"
             prefWidth="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="socotra.controller.LoginController">
     <children>
-        <Label layoutX="174.0" layoutY="34.0" prefHeight="80.0" prefWidth="134.0" text="Login">
+        <Label layoutX="172.0" layoutY="20.0" prefHeight="80.0" prefWidth="134.0" text="Login">
             <font>
                 <Font size="28.0"/>
             </font>
         </Label>
         <Label layoutX="82.0" layoutY="100.0" text="Server:"/>
-        <Label layoutX="82.0" layoutY="160.0" text="Username:"/>
+        <Label layoutX="81.0" layoutY="161.0" text="Username:"/>
         <Label layoutX="82.0" layoutY="222.0" text="Password:"/>
         <TextField fx:id="serverField" layoutX="172.0" layoutY="95.0"/>
         <TextField fx:id="usernameField" layoutX="172.0" layoutY="156.0"/>
         <PasswordField fx:id="passwordField" layoutX="172.0" layoutY="217.0"/>
-        <Button fx:id="loginButton" defaultButton="true" layoutX="295.0" layoutY="293.0" mnemonicParsing="false"
+        <TextField fx:id="deviceIdField" layoutX="172.0" layoutY="278.0" text="1"/>
+        <CheckBox fx:id="activeCheckBox" layoutX="129.0" layoutY="339.0" mnemonicParsing="false" text="active"
+                  selected="true"/>
+        <Button fx:id="loginButton" defaultButton="true" layoutX="297.0" layoutY="334.0" mnemonicParsing="false"
                 onAction="#login" text="login"/>
-        <Button fx:id="signUpButton" layoutX="225.0" layoutY="293.0" mnemonicParsing="false" onAction="#signUp" text="SignUp"/>
+        <Button fx:id="signUpButton" layoutX="223.0" layoutY="334.0" mnemonicParsing="false" onAction="#signUp"
+                text="SignUp"/>
+        <Label layoutX="85.0" layoutY="283.0" text="DeviceId:"/>
     </children>
 </AnchorPane>
