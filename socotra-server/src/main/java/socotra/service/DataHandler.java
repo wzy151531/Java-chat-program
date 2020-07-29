@@ -15,13 +15,16 @@ import java.util.TreeSet;
 
 class DataHandler {
 
+    private static final int LOGIN = 1;
+    private static final int SIGNUP = 2;
     private final ServerThread serverThread;
+
 
     DataHandler(ServerThread serverThread) {
         this.serverThread = serverThread;
     }
 
-    private void processOnline() {
+    private void processOnline(int type) {
         serverThread.appendClient();
         System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
         User user = serverThread.getUser();
@@ -31,10 +34,18 @@ class DataHandler {
 //        }
         // user wants to login normally.
         if (user.isActive()) {
-
-            // Inform the new client current online users and inform other clients that the new client is online.
-            Util.broadcast(new ConnectionData(user, true), user);
             try {
+                if (type == LOGIN) {
+                    TreeSet<User> onlineUsers = new TreeSet<>(Server.getClients().keySet());
+                    onlineUsers.remove(user);
+                    ArrayList<ConnectionData> pairwiseData = Server.loadPairwiseData(user);
+                    ArrayList<ConnectionData> senderKeyData = Server.loadSenderKeyData(user);
+                    ArrayList<ConnectionData> groupData = Server.loadGroupData(user);
+                    serverThread.inform(new ConnectionData(onlineUsers, pairwiseData, senderKeyData, groupData));
+                }
+
+                // Inform the new client current online users and inform other clients that the new client is online.
+                Util.broadcast(new ConnectionData(user, true), user);
                 boolean isActive = JdbcUtil.isActive(user);
                 boolean isFresh = JdbcUtil.isFresh(user);
                 if (!isActive && !isFresh) {
@@ -47,12 +58,8 @@ class DataHandler {
     }
 
     private void processSwitchDevice(User user) {
-        try {
-            KeyBundle keyBundle = JdbcUtil.queryKeyBundle(user);
-            Util.broadcast(new ConnectionData(user, keyBundle), user);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        System.out.println("Switch device: " + user);
+        Util.broadcast(new ConnectionData(user), user);
     }
 
     private boolean processLogin(User user, String password) {
@@ -63,13 +70,7 @@ class DataHandler {
                 serverThread.inform(new ConnectionData(false));
                 return false;
             } else {
-                TreeSet<User> onlineUsers = new TreeSet<>(Server.getClients().keySet());
-                onlineUsers.remove(user);
-                ArrayList<ConnectionData> pairwiseData = Server.loadPairwiseData(user);
-                ArrayList<ConnectionData> senderKeyData = Server.loadSenderKeyData(user);
-                ArrayList<ConnectionData> groupData = Server.loadGroupData(user);
-                serverThread.inform(new ConnectionData(onlineUsers, pairwiseData, senderKeyData, groupData));
-                processOnline();
+                processOnline(LOGIN);
 //                processDepositData(user);
             }
         } catch (Exception e) {
@@ -120,6 +121,7 @@ class DataHandler {
             case 2:
             case 7:
                 connectionData.setIsSent(true);
+                System.out.println("Rece data to: " + connectionData.getChatSession().getMembers());
                 Util.groupSend(connectionData, connectionData.getChatSession().getMembers());
                 break;
             // If connection data is about store chat history.
@@ -131,12 +133,13 @@ class DataHandler {
                     return false;
                 }
                 serverThread.setUser(connectionData.getUser());
-                processOnline();
+                processOnline(SIGNUP);
                 break;
             case 5:
+                System.out.println("receiver query keyBundle request.");
                 try {
                     KeyBundle keyBundle = JdbcUtil.queryKeyBundle(connectionData.getReceiverUsername());
-                    Util.privateSend(new ConnectionData(keyBundle, connectionData.getReceiverUsername()), connectionData.getUserSignature());
+                    Util.privateSend(new ConnectionData(keyBundle, connectionData.getReceiverUsername(), connectionData.isReInit()), connectionData.getUserSignature());
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }

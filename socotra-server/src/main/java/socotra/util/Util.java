@@ -107,6 +107,7 @@ public abstract class Util {
                 }
             } else {
                 ChatSession chatSession = connectionData.getChatSession();
+                System.out.println(receiver + " is not online currently.");
                 switch (chatSession.getSessionType()) {
                     case ChatSession.PAIRWISE:
                         Server.storePairwiseData(receiver, connectionData);

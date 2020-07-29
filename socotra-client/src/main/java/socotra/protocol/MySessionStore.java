@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class MySessionStore implements SessionStore {
 
@@ -56,6 +57,16 @@ public class MySessionStore implements SessionStore {
     @Override
     public synchronized boolean containsSession(SignalProtocolAddress address) {
         return this.sessionMap.containsKey(address);
+    }
+
+    synchronized boolean containsRelatedSession(String username) {
+        Set<SignalProtocolAddress> keySet = sessionMap.keySet();
+        for (SignalProtocolAddress addr : keySet) {
+            if (addr.getName().equals(username)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

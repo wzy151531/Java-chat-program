@@ -82,11 +82,11 @@ public class ServerThread extends Thread {
             JdbcUtil.storeKeyBundle(userId, connectionData.getKeyBundle());
             TreeSet<User> onlineUsers = new TreeSet<>(Server.getClients().keySet());
             onlineUsers.remove(register);
-            toClient.writeObject(new ConnectionData(-5, true, onlineUsers));
+            toClient.writeObject(new ConnectionData(-5, onlineUsers));
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
             try {
-                toClient.writeObject(new ConnectionData(-5, false));
+                toClient.writeObject(new ConnectionData(-5, e.getMessage()));
                 return false;
             } catch (Exception e1) {
                 e1.printStackTrace();

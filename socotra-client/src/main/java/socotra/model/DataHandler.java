@@ -2,6 +2,9 @@ package socotra.model;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import org.whispersystems.libsignal.InvalidKeyException;
+import org.whispersystems.libsignal.UntrustedIdentityException;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
@@ -38,7 +41,7 @@ public class DataHandler {
         processOnlineUsers(connectionData.getOnlineUsers());
         processPairwiseData();
         processSenderKeyData();
-        Client.closeInitClientAlert();
+//        Client.closeInitClientAlert();
     }
 
     private void processOnlineUsers(TreeSet<User> onlineUsers) {
@@ -70,11 +73,11 @@ public class DataHandler {
                 User user = connectionData.getUser();
                 System.out.println(user + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
                 if (connectionData.getIsOnline() && !Client.getHomeModel().clientsContains(user)) {
-                    Client.getHomeModel().appendClientsList(user);
+                    HomeModel homeModel = Client.getHomeModel();
+                    homeModel.appendClientsList(user);
+                } else if (!connectionData.getIsOnline() && Client.getHomeModel().clientsContains(user)) {
+                    Client.getHomeModel().removeClientsList(user);
                 }
-//                } else if (!connectionData.getIsOnline() && Client.getHomeModel().clientsContains(clientName)) {
-//                    Client.getHomeModel().removeClientsList(clientName);
-//                }
                 break;
             // If connectionData is about set online users.
 //            case -3:
@@ -92,7 +95,7 @@ public class DataHandler {
                 if (!connectionData.getSignUpSuccess()) {
                     Platform.runLater(() -> {
                         Client.closeWaitingAlert();
-                        Util.generateAlert(Alert.AlertType.ERROR, "Validation Error", "User Already Exists.", "Try another username.").show();
+                        Util.generateAlert(Alert.AlertType.ERROR, "Validation Error", connectionData.getErrorMsg(), "Try again.").show();
                     });
                     return false;
                 } else {
@@ -119,11 +122,21 @@ public class DataHandler {
 //                break;
             // If connectionData is about receiver's key bundle.
             case 6:
+                EncryptedClient encryptedClient = Client.getEncryptedClient();
+                User receiver = connectionData.getReceiverUsername();
+                KeyBundle keyBundle = connectionData.getKeyBundle();
                 try {
-                    EncryptedClient encryptedClient = Client.getEncryptedClient();
-                    User receiver = connectionData.getReceiverUsername();
-                    encryptedClient.initPairwiseChat(connectionData.getKeyBundle(), receiver);
-                    encryptedClient.finishInitPairwiseChat(receiver);
+                    if (connectionData.isReInit()) {
+                        encryptedClient.initPairwiseChat(keyBundle, receiver);
+                        encryptedClient.checkGroupCipher(receiver);
+                        Platform.runLater(() -> {
+                            Client.getHomeModel().updateRelatedSession(receiver);
+                            Client.closeReInitChatAlert();
+                        });
+                    } else {
+                        encryptedClient.initPairwiseChat(keyBundle, receiver);
+                        encryptedClient.finishInitPairwiseChat(receiver);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -137,10 +150,35 @@ public class DataHandler {
 //            case 12:
 //                processDepositData(connectionData);
 //                break;
+            case 13:
+                processSwitchInfo(connectionData.getUserSignature());
+                break;
             default:
                 System.out.println("Unknown data.");
         }
         return true;
+    }
+
+    private void processSwitchInfo(User user) {
+        User me = Client.getClientThread().getUser();
+        if (me.getUsername().equals(user.getUsername())) {
+            Platform.runLater(() -> {
+                Alert warningAlert = Util.generateAlert(Alert.AlertType.WARNING, "Switch Device", "Account logs in on another device.", "If it's not your operation, please change your password soon.");
+                warningAlert.setResultConverter(dialogButton -> {
+                    if (dialogButton == ButtonType.OK) {
+                        Client.processLogout(new ConnectionData(Client.getClientThread().getUser(), false));
+                    }
+                    return null;
+                });
+                warningAlert.show();
+            });
+        } else {
+            Platform.runLater(() -> {
+                Client.showReInitChatAlert();
+                EncryptedClient encryptedClient = Client.getEncryptedClient();
+                encryptedClient.checkPairwiseCipher(user);
+            });
+        }
     }
 
     private void processDepositData(ConnectionData connectionData) {
@@ -174,11 +212,19 @@ public class DataHandler {
 
     public void processGroupData() {
         System.out.println("process group data.");
-        if (groupData == null) return;
+        if (groupData == null) {
+            Platform.runLater(() -> {
+                Client.closeInitClientAlert();
+            });
+            return;
+        }
         groupData.forEach(n -> {
             handleChatMessage(n);
         });
         groupData = null;
+        Platform.runLater(() -> {
+            Client.closeInitClientAlert();
+        });
     }
 
     public boolean isGroupDataNull() {
@@ -207,7 +253,10 @@ public class DataHandler {
         });
         User caller = Client.getClientThread().getUser();
         ChatSession chatSession = connectionData.getChatSession();
-        encryptedClient.distributeSenderKey(chatSession.getOthers(caller), chatSession, encryptedClient.getSKDM(), connectionData.isInit());
+        encryptedClient.distributeSenderKey(chatSession.getOthers(caller), chatSession, encryptedClient.getSKDM());
+        Platform.runLater(() -> {
+            encryptedClient.finishInitGroupChat(chatSession, connectionData.isInit());
+        });
     }
 
     private void handleChatMessage(ConnectionData connectionData) {

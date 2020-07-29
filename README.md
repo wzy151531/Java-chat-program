@@ -4,7 +4,7 @@ This java project is about a client-server mode and **E2EE** chat program based 
 
 ### Version
 
-Current Client Version: `4.5.0`, Server Version: `4.2.0`
+Current Client Version: `4.5.1`, Server Version: `4.2.1`
 
 ## Alias
 
@@ -32,7 +32,8 @@ The whole project is divided into two parts: server and client. Both projects ar
 - [x] Save history messages at client local.
 - [x] Encrypt all store files and chatData file.
 - [x] Implement multi-device system.
-- [ ] Implement switch device function.
+- [x] Implement switch device function.
+- [ ] Implement asychronized switch info notification.
 - [ ] Further encrypted group chat operations(add/leave memebers).
 - [ ] ~~Store symmetric encryption key that encrypts the history messages in client OP-TEE.~~
 - [ ] History messages backup from old device to new device.

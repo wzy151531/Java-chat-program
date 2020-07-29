@@ -90,6 +90,15 @@ public class ChatSession implements Serializable {
         this.members = members;
     }
 
+    public User relatedUser(User user) {
+        for (User other : members) {
+            if (!other.equals(user) && other.getUsername().equals(user.getUsername())) {
+                return other;
+            }
+        }
+        return null;
+    }
+
     public String generateChatName(User caller) {
         TreeSet<User> copy = new TreeSet<>(this.members);
         copy.remove(caller);

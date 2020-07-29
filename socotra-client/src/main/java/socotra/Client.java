@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import socotra.common.ConnectionData;
 import socotra.controller.BoardController;
 import socotra.controller.HomeController;
 import socotra.controller.LoginController;
@@ -15,6 +16,8 @@ import socotra.protocol.*;
 import socotra.util.SetOnlineUsers;
 import socotra.util.TestProtocol;
 import socotra.util.Util;
+
+import java.io.IOException;
 
 /**
  * This is the entry of the application.
@@ -79,7 +82,8 @@ public class Client extends Application {
 
     private static Alert initPairwiseChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Pairwise Chat.", "Please Be Patient.");
 
-    private static Alert reInitPairwiseChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Reinitializing Pairwise Chat.", "Please Be Patient.");
+    private static Alert reInitChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "ReInitializing Chat.", "Please Be Patient.");
+
 
     private static DataHandler dataHandler;
 
@@ -282,6 +286,7 @@ public class Client extends Application {
     }
 
     public static void showWaitingAlert() {
+        waitingAlert.setAlertType(Alert.AlertType.NONE);
         waitingAlert.show();
     }
 
@@ -291,6 +296,7 @@ public class Client extends Application {
     }
 
     public static void showInitGroupChatAlert() {
+        initGroupChatAlert.setAlertType(Alert.AlertType.NONE);
         initGroupChatAlert.show();
     }
 
@@ -300,6 +306,7 @@ public class Client extends Application {
     }
 
     public static void showInitPairwiseChatAlert() {
+        initPairwiseChatAlert.setAlertType(Alert.AlertType.NONE);
         initPairwiseChatAlert.show();
     }
 
@@ -308,16 +315,18 @@ public class Client extends Application {
         initPairwiseChatAlert.close();
     }
 
-    public static void showReInitPairwiseChatAlert() {
-        reInitPairwiseChatAlert.show();
+    public static void showReInitChatAlert() {
+        reInitChatAlert.setAlertType(Alert.AlertType.NONE);
+        reInitChatAlert.show();
     }
 
-    public static void closeReInitPairwiseChatAlert() {
-        reInitPairwiseChatAlert.setAlertType(Alert.AlertType.INFORMATION);
-        reInitPairwiseChatAlert.close();
+    public static void closeReInitChatAlert() {
+        reInitChatAlert.setAlertType(Alert.AlertType.INFORMATION);
+        reInitChatAlert.close();
     }
 
     public static void showInitClientAlert() {
+        initClientAlert.setAlertType(Alert.AlertType.NONE);
         initClientAlert.show();
     }
 
@@ -332,6 +341,19 @@ public class Client extends Application {
 
     public static void setDataHandler(DataHandler dataHandler) {
         Client.dataHandler = dataHandler;
+    }
+
+    public static void processLogout(ConnectionData connectionData) {
+        try {
+            Saver saver = new Saver(clientThread.getUser(), Client.getEncryptedClient());
+            saver.saveStores();
+            saver.saveChatData(Client.getHomeModel().getChatDataCopy());
+            clientThread.sendData(connectionData);
+            clientThread.endConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.exit(0);
     }
 
     /**

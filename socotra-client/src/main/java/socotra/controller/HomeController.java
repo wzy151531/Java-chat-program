@@ -404,7 +404,7 @@ public class HomeController {
 //                        }
                         if (!Client.getHomeModel().chatSessionExist(members)) {
                             Client.showInitPairwiseChatAlert();
-                            Client.getEncryptedClient().requestKeyBundle(item);
+                            Client.getEncryptedClient().requestKeyBundle(item, false);
                         }
                     });
                     Label clientName = new Label(item.toString());

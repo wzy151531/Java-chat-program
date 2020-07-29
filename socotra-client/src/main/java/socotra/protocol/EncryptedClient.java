@@ -19,10 +19,7 @@ import socotra.model.DataHandler;
 import socotra.util.SendThread;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 public class EncryptedClient {
 
@@ -181,8 +178,8 @@ public class EncryptedClient {
      *
      * @param receiver The user information of receiver.
      */
-    public void requestKeyBundle(User receiver) {
-        new SendThread(new ConnectionData(receiver, Client.getClientThread().getUser())).start();
+    public void requestKeyBundle(User receiver, boolean reInit) {
+        new SendThread(new ConnectionData(receiver, Client.getClientThread().getUser(), reInit)).start();
     }
 
     public void initPairwiseChat(KeyBundle keyBundle, User receiver) throws InvalidKeyException, UntrustedIdentityException {
@@ -214,18 +211,19 @@ public class EncryptedClient {
     public void initGroupChat(ChatSession chatSession, SenderKeyDistributionMessage SKDM, boolean init) {
         Platform.runLater(() -> {
             Client.showInitGroupChatAlert();
+            TreeSet<User> others = chatSession.getOthers(getUser());
+            TreeSet<User> unknownOthers = getUnknownOthers(others);
+            if (unknownOthers.isEmpty()) {
+                distributeSenderKey(others, chatSession, SKDM);
+                finishInitGroupChat(chatSession, init);
+            } else {
+                this.SKDM = SKDM;
+                requestKeyBundles(unknownOthers, chatSession, init);
+            }
         });
-        TreeSet<User> others = chatSession.getOthers(getUser());
-        TreeSet<User> unknownOthers = getUnknownOthers(others);
-        if (unknownOthers.isEmpty()) {
-            distributeSenderKey(others, chatSession, SKDM, init);
-        } else {
-            this.SKDM = SKDM;
-            requestKeyBundles(unknownOthers, chatSession, init);
-        }
     }
 
-    public void distributeSenderKey(TreeSet<User> others, ChatSession chatSession, SenderKeyDistributionMessage SKDM, boolean init) {
+    public void distributeSenderKey(TreeSet<User> others, ChatSession chatSession, SenderKeyDistributionMessage SKDM) {
         HashMap<User, ConnectionData> senderKeysData = new HashMap<>();
         others.forEach(n -> {
             try {
@@ -235,7 +233,6 @@ public class EncryptedClient {
             }
         });
         new SendThread(new ConnectionData(senderKeysData)).start();
-        finishInitGroupChat(chatSession, init);
     }
 
     public void processReceivedSenderKey(byte[] senderKey, ChatSession chatSession, User sender, boolean init) {
@@ -261,16 +258,14 @@ public class EncryptedClient {
         }
     }
 
-    private void finishInitGroupChat(ChatSession chatSession, boolean init) {
-        Platform.runLater(() -> {
-            DataHandler dataHandler = Client.getDataHandler();
-            if (init && !dataHandler.isGroupDataNull()) {
-                dataHandler.processGroupData();
-            } else {
-                Client.getHomeModel().appendChatData(chatSession);
-            }
-            Client.closeInitGroupChatAlert();
-        });
+    public void finishInitGroupChat(ChatSession chatSession, boolean init) {
+        DataHandler dataHandler = Client.getDataHandler();
+        if (init && !dataHandler.isGroupDataNull()) {
+            dataHandler.processGroupData();
+        } else {
+            Client.getHomeModel().appendChatData(chatSession);
+        }
+        Client.closeInitGroupChatAlert();
     }
 
     private TreeSet<User> getUnknownOthers(TreeSet<User> others) {
@@ -312,10 +307,9 @@ public class EncryptedClient {
     private SenderKeyDistributionMessage updateSenderKey(String groupId) {
         SenderKeyName senderKeyName = new SenderKeyName(groupId, signalProtocolAddress);
         SenderKeyRecord senderKeyRecord = senderKeyStore.loadSenderKey(senderKeyName);
-        if (senderKeyRecord.isEmpty()) {
-            throw new IllegalStateException("Sender key does not exist, create before.");
+        if (!senderKeyRecord.isEmpty()) {
+            senderKeyStore.storeSenderKey(senderKeyName, new SenderKeyRecord());
         }
-        senderKeyStore.storeSenderKey(senderKeyName, new SenderKeyRecord());
         return createSenderKey(groupId);
     }
 
@@ -327,6 +321,37 @@ public class EncryptedClient {
                     new SignalProtocolAddress(sender.getUsername(), sender.getDeviceId())), SKDM);
         } catch (InvalidMessageException | LegacyMessageException e) {
             System.out.println("Bad senderKey.");
+        }
+    }
+
+    public void checkPairwiseCipher(User user) {
+        System.out.println("check pairwise cipher");
+        SignalProtocolAddress userAddress = new SignalProtocolAddress(user.getUsername(), user.getDeviceId());
+        if (!sessionStore.containsSession(userAddress) &&
+                sessionStore.containsRelatedSession(user.getUsername())) {
+            System.out.println("ReInit pairwise chat.");
+            EncryptedClient encryptedClient = Client.getEncryptedClient();
+            encryptedClient.requestKeyBundle(user, true);
+        } else {
+            Client.closeReInitChatAlert();
+        }
+    }
+
+    public void checkGroupCipher(User user) {
+        System.out.println("check group cipher");
+        Set<String> relatedGroups = senderKeyStore.containsRelatedSenderKey(user);
+        if (!senderKeyStore.containsExactSenderKey(
+                new SignalProtocolAddress(user.getUsername(), user.getDeviceId())) &&
+                !relatedGroups.isEmpty()) {
+            System.out.println("ReInit group chat.");
+            relatedGroups.forEach(n -> {
+                System.out.println("Update sender key for: " + n);
+                SenderKeyDistributionMessage SKDM = updateSenderKey(n);
+                ChatSession chatSession = new ChatSession(n);
+                distributeSenderKey(chatSession.getOthers(
+                        new User(signalProtocolAddress.getName(), signalProtocolAddress.getDeviceId(), true))
+                        , chatSession, SKDM);
+            });
         }
     }
 

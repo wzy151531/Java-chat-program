@@ -173,6 +173,16 @@ public class JdbcUtil {
         return resultSet.next();
     }
 
+    private static boolean validateUserExist(String username) throws Exception {
+        ResultSet resultSet = inquire("select * from users where username='" + username + "'");
+        return resultSet.next();
+    }
+
+    private static boolean validateUserPwd(String username, String password) throws Exception {
+        ResultSet resultSet = inquire("select * from users where username='" + username + "' and password='" + password + "'");
+        return resultSet.next();
+    }
+
     /**
      * Return previous active status of user and set new active status of user.
      *
@@ -453,6 +463,9 @@ public class JdbcUtil {
         if (userExists(user)) {
             throw new IllegalArgumentException("User already exists.");
         }
+        if (validateUserExist(user.getUsername()) && !validateUserPwd(user.getUsername(), password)) {
+            throw new IllegalArgumentException("Password is not correct.");
+        }
         insert("insert into users(username, password, deviceid, active) values ('" + user.getUsername() + "', '" + password + "', " + user.getDeviceId() + ", " + false + ")");
         ResultSet resultSet = inquire("select id from users where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
         if (resultSet.next()) {
@@ -483,7 +496,7 @@ public class JdbcUtil {
         ps.executeUpdate();
     }
 
-    public static KeyBundle queryKeyBundle(User user) throws SQLException, IllegalArgumentException {
+    public synchronized static KeyBundle queryKeyBundle(User user) throws SQLException, IllegalArgumentException {
         int userId = queryUserId(user);
         ResultSet resultSet = inquire("select * from key_bundle where userId='" + userId + "'");
         while (resultSet.next()) {

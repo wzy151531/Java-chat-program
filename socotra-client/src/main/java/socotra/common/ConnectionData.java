@@ -1,6 +1,7 @@
 package socotra.common;
 
 import java.io.Serializable;
+import java.security.Key;
 import java.util.*;
 
 /**
@@ -51,6 +52,8 @@ public class ConnectionData implements Serializable {
 
     private boolean signUpSuccess;
 
+    private String errorMsg;
+
     /**
      * The audio message of the audio connection data.
      */
@@ -87,6 +90,7 @@ public class ConnectionData implements Serializable {
     private ArrayList<ConnectionData> depositGroupData;
     private boolean init;
 
+    private boolean reInit;
 
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
@@ -145,9 +149,16 @@ public class ConnectionData implements Serializable {
         this.receiverUsername = receiverUsername;
     }
 
-    public ConnectionData(int type, boolean signUpSuccess) {
+    public ConnectionData(int type, String errorMsg) {
         this.type = -5;
-        this.signUpSuccess = signUpSuccess;
+        this.signUpSuccess = false;
+        this.errorMsg = errorMsg;
+    }
+
+    public ConnectionData(int type, TreeSet<User> onlineUser) {
+        this.type = -5;
+        this.signUpSuccess = true;
+        this.onlineUsers = onlineUser;
     }
 
     /**
@@ -238,16 +249,18 @@ public class ConnectionData implements Serializable {
         this.keyBundle = keyBundle;
     }
 
-    public ConnectionData(User receiverUsername, User userSignature) {
+    public ConnectionData(User receiverUsername, User userSignature, boolean reInit) {
         this.type = 5;
         this.receiverUsername = receiverUsername;
         this.userSignature = userSignature;
+        this.reInit = reInit;
     }
 
-    public ConnectionData(KeyBundle keyBundle, User receiverUsername) {
+    public ConnectionData(KeyBundle keyBundle, User receiverUsername, boolean reInit) {
         this.type = 6;
         this.keyBundle = keyBundle;
         this.receiverUsername = receiverUsername;
+        this.reInit = reInit;
     }
 
     public ConnectionData(byte[] cipherData, User userSignature, ChatSession chatSession, int cipherType, int dataType) {
@@ -335,10 +348,16 @@ public class ConnectionData implements Serializable {
 //        this.depositGroupData = depositGroupData;
 //    }
 
-    public ConnectionData(User userSignature, KeyBundle keyBundle) {
+    public ConnectionData(User userSignature) {
         this.type = 13;
         this.userSignature = userSignature;
-        this.keyBundle = keyBundle;
+    }
+
+    public boolean isReInit() {
+        if (type != 6 && type != 5) {
+            throw new IllegalStateException("Type isn't 6, cannot get reInit.");
+        }
+        return this.reInit;
     }
 
     public boolean isInit() {
@@ -391,8 +410,8 @@ public class ConnectionData implements Serializable {
     }
 
     public KeyBundle getKeyBundle() {
-        if (type != 4 && type != 6 && type != 13) {
-            throw new IllegalStateException("Type isn't 4 or 6 or 13, cannot get keyBundle");
+        if (type != 4 && type != 6) {
+            throw new IllegalStateException("Type isn't 4 or 6, cannot get keyBundle");
         }
         return this.keyBundle;
     }
@@ -580,7 +599,7 @@ public class ConnectionData implements Serializable {
      */
     public ChatSession getChatSession() {
         if (type != 1 && type != 2 && type != -4 && type != 7 && type != 8 && type != 9 && type != 10) {
-            throw new IllegalStateException("Type isn't 1 or 2 or 4 or 7 or 8 or 9 or 10, cannot get chatSession");
+            throw new IllegalStateException("Type isn't 1 or 2 or -4 or 7 or 8 or 9 or 10, cannot get chatSession");
         }
         return chatSession;
     }
@@ -595,6 +614,13 @@ public class ConnectionData implements Serializable {
             throw new IllegalStateException("Type isn't 3, cannot get chatData.");
         }
         return chatData;
+    }
+
+    public String getErrorMsg() {
+        if (type != -5) {
+            throw new IllegalStateException("Type isn't -5, cannot get errorMsg.");
+        }
+        return errorMsg;
     }
 
 }

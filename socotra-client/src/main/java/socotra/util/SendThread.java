@@ -57,25 +57,17 @@ public class SendThread extends Thread {
                 Alert warningAlert = Util.generateAlert(Alert.AlertType.WARNING, "Log out", "Log out confirmation.", "Confirm to log out.");
                 warningAlert.setResultConverter(dialogButton -> {
                     if (dialogButton == ButtonType.OK) {
-                        try {
-                            Saver saver = new Saver(clientThread.getUser(), Client.getEncryptedClient());
-                            saver.saveStores();
-                            saver.saveChatData(Client.getHomeModel().getChatDataCopy());
-//                                toServer.writeObject(connectionData);
-                            clientThread.sendData(connectionData);
-                            clientThread.endConnection();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        System.exit(0);
+                        Client.processLogout(connectionData);
                     }
                     return null;
                 });
                 warningAlert.getButtonTypes().add(ButtonType.CANCEL);
                 warningAlert.show();
             });
-
         } else {
+            if (connectionData.getType() == 7) {
+                System.out.println("Send data to: " + connectionData.getChatSession().getMembers());
+            }
             clientThread.sendData(connectionData);
         }
     }

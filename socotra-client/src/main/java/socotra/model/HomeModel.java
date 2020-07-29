@@ -103,7 +103,7 @@ public class HomeModel {
     public void setChatData(HashMap<ChatSession, List<ConnectionData>> chatData) {
         Platform.runLater(() -> {
             chatData.forEach((k, v) -> {
-                this.chatData.put(k, FXCollections.observableArrayList(v));
+                this.updateChatData(k, FXCollections.observableArrayList(v));
                 chatSessionList.add(k);
             });
         });
@@ -145,7 +145,7 @@ public class HomeModel {
         ObservableList<ConnectionData> certainChatData = this.chatData.get(chatSession);
         if (certainChatData == null) {
             certainChatData = FXCollections.observableArrayList(new ArrayList<>());
-            this.chatData.put(chatSession, certainChatData);
+            this.updateChatData(chatSession, certainChatData);
         }
         return certainChatData;
     }
@@ -181,7 +181,7 @@ public class HomeModel {
             if (certainChatData == null) {
                 certainChatData = FXCollections.observableArrayList(new ArrayList<>());
                 certainChatData.add(connectionData);
-                this.chatData.put(key, certainChatData);
+                this.updateChatData(key, certainChatData);
 //                this.appendChatSessionList(key);
                 key.setHint(true);
                 if (!chatSessionList.contains(key)) {
@@ -205,11 +205,53 @@ public class HomeModel {
 
     public void appendChatData(ChatSession chatSession) {
         if (chatData.get(chatSession) == null) {
-            this.chatData.put(chatSession, FXCollections.observableArrayList(new ArrayList<>()));
+            this.updateChatData(chatSession, FXCollections.observableArrayList(new ArrayList<>()));
         }
         if (!chatSessionList.contains(chatSession)) {
             this.chatSessionList.add(chatSession);
         }
+    }
+
+    private synchronized void updateChatData(ChatSession k, ObservableList<ConnectionData> v) {
+        chatData.put(k, v);
+    }
+
+    void updateRelatedSession(User user) {
+        Set<ChatSession> sessions = chatData.keySet();
+        for (ChatSession session : sessions) {
+            User pre = session.relatedUser(user);
+            if (pre != null) {
+                ObservableList<ConnectionData> records = chatData.get(session);
+                ChatSession newSession = generateNewSession(session, user);
+                updateChatData(newSession, records);
+            }
+        }
+
+        User preCur = currentChatSession.relatedUser(user);
+        if (preCur != null) {
+            ChatSession newSession = generateNewSession(currentChatSession, user);
+            checkoutChatPanel(newSession);
+        }
+
+        for (ChatSession session : chatSessionList) {
+            User pre = session.relatedUser(user);
+            if (pre != null) {
+                ChatSession newSession = generateNewSession(session, user);
+                chatSessionList.remove(session);
+                chatSessionList.add(newSession);
+            }
+        }
+    }
+
+    private ChatSession generateNewSession(ChatSession oldSession, User newUser) {
+        User oldUser = oldSession.relatedUser(newUser);
+        if (oldUser == null) {
+            throw new IllegalStateException("Bad oldSession");
+        }
+        TreeSet<User> copy = new TreeSet<>(oldSession.getMembers());
+        copy.remove(oldUser);
+        copy.add(newUser);
+        return new ChatSession(copy, false, true, oldSession.getSessionType());
     }
 
     /**
@@ -233,7 +275,7 @@ public class HomeModel {
      * @param uuid        The connectionData's uuid.
      * @param chatSession The chat session that connectionData belongs to.
      */
-    public void updateChatData(UUID uuid, ChatSession chatSession) {
+    void updateChatData(UUID uuid, ChatSession chatSession) {
         Platform.runLater(() -> {
             this.chatData.get(chatSession).forEach(n -> {
                 if (uuid.equals(n.getUuid()) && !n.getIsSent()) {
