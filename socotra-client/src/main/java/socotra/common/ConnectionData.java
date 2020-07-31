@@ -92,6 +92,8 @@ public class ConnectionData implements Serializable {
 
     private boolean reInit;
 
+    private boolean updated;
+
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
      *
@@ -351,6 +353,18 @@ public class ConnectionData implements Serializable {
     public ConnectionData(User userSignature) {
         this.type = 13;
         this.userSignature = userSignature;
+    }
+
+    public ConnectionData(int type, boolean updated) {
+        this.type = 14;
+        this.updated = updated;
+    }
+
+    public boolean isUpdated() {
+        if (type != 14) {
+            throw new IllegalStateException("Type isn't 14, cannot get updated.");
+        }
+        return this.updated;
     }
 
     public boolean isReInit() {

@@ -5,9 +5,7 @@ import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
 import socotra.common.User;
 import socotra.jdbc.JdbcUtil;
-import socotra.util.Util;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +28,7 @@ class DataHandler {
         User user = serverThread.getUser();
 //        HashMap<ChatSession, List<ConnectionData>> chatData = JdbcUtil.getCertainChatData(user);
 //        if (chatData != null) {
-//            Util.privateSend(new ConnectionData(chatData, "server"), user);
+//            Sender.privateSend(new ConnectionData(chatData, "server"), user);
 //        }
         // user wants to login normally.
         if (user.isActive()) {
@@ -45,7 +43,7 @@ class DataHandler {
                 }
 
                 // Inform the new client current online users and inform other clients that the new client is online.
-                Util.broadcast(new ConnectionData(user, true), user);
+                Sender.broadcast(new ConnectionData(user, true), user);
                 boolean isActive = JdbcUtil.isActive(user);
                 boolean isFresh = JdbcUtil.isFresh(user);
                 if (!isActive && !isFresh) {
@@ -59,7 +57,7 @@ class DataHandler {
 
     private void processSwitchDevice(User user) {
         System.out.println("Switch device: " + user);
-        Util.broadcast(new ConnectionData(user), user);
+        Sender.broadcast(new ConnectionData(user), user, new ConnectionData(14, true));
     }
 
     private boolean processLogin(User user, String password) {
@@ -92,7 +90,7 @@ class DataHandler {
 
     private boolean processLogout() {
         User user = serverThread.getUser();
-        Util.broadcast(new ConnectionData(user, false), user);
+        Sender.broadcast(new ConnectionData(user, false), user);
         Server.removeClient(user);
         System.out.println("User log out. Current online users: " + Server.getClients().keySet());
         return false;
@@ -111,7 +109,7 @@ class DataHandler {
                 return processLogout();
             // If connection data is about received hint.
             case -4:
-                Util.privateSend(connectionData, connectionData.getReceiverUsername());
+                Sender.privateSend(connectionData, connectionData.getReceiverUsername());
                 break;
             // If connection data is about normal chat message.
 //            case 1:
@@ -122,7 +120,7 @@ class DataHandler {
             case 7:
                 connectionData.setIsSent(true);
                 System.out.println("Rece data to: " + connectionData.getChatSession().getMembers());
-                Util.groupSend(connectionData, connectionData.getChatSession().getMembers());
+                Sender.groupSend(connectionData, connectionData.getChatSession().getMembers());
                 break;
             // If connection data is about store chat history.
             case 3:
@@ -139,7 +137,7 @@ class DataHandler {
                 System.out.println("receiver query keyBundle request.");
                 try {
                     KeyBundle keyBundle = JdbcUtil.queryKeyBundle(connectionData.getReceiverUsername());
-                    Util.privateSend(new ConnectionData(keyBundle, connectionData.getReceiverUsername(), connectionData.isReInit()), connectionData.getUserSignature());
+                    Sender.privateSend(new ConnectionData(keyBundle, connectionData.getReceiverUsername(), connectionData.isReInit()), connectionData.getUserSignature());
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -160,7 +158,7 @@ class DataHandler {
         HashMap<User, ConnectionData> senderKeysData = connectionData.getSenderKeysData();
         senderKeysData.forEach((k, v) -> {
             if (Server.getClients().containsKey(k)) {
-                Util.privateSend(v, k);
+                Sender.privateSend(v, k);
             } else {
                 Server.storeSenderKeyData(k, v);
             }
@@ -178,7 +176,7 @@ class DataHandler {
                 e.printStackTrace();
             }
         });
-        Util.privateSend(new ConnectionData(result, connectionData.getChatSession(), connectionData.isInit()), connectionData.getUserSignature());
+        Sender.privateSend(new ConnectionData(result, connectionData.getChatSession(), connectionData.isInit()), connectionData.getUserSignature());
     }
 
 }

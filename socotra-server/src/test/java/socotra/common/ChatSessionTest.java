@@ -2,7 +2,7 @@ package socotra.common;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import socotra.util.UtilTest;
+import socotra.util.SenderTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,8 +20,8 @@ public class ChatSessionTest {
 
     @Test
     public void testGetToUsernamesAndSetToUsernames() {
-        chatSession1.setMembers(UtilTest.generateTreeSet("admin"));
-        TreeSet<String> expected = UtilTest.generateTreeSet("admin");
+        chatSession1.setMembers(SenderTest.generateTreeSet("admin"));
+        TreeSet<String> expected = SenderTest.generateTreeSet("admin");
         TreeSet<String> actual = chatSession1.getMembers();
         assertEquals(expected, actual);
     }
@@ -35,18 +35,18 @@ public class ChatSessionTest {
 
     @Test
     public void testEquals() {
-        chatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
-        chatSession2 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), false);
+        chatSession1 = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), true);
+        chatSession2 = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), false);
         boolean actual = chatSession1.equals(chatSession2);
         assertTrue(actual);
 
-        chatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
-        chatSession2 = new ChatSession(UtilTest.generateTreeSet("admin1", "admin"), true);
+        chatSession1 = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), true);
+        chatSession2 = new ChatSession(SenderTest.generateTreeSet("admin1", "admin"), true);
         actual = chatSession1.equals(chatSession2);
         assertTrue(actual);
 
-        chatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
-        chatSession2 = new ChatSession(UtilTest.generateTreeSet("admin2", "admin"), true);
+        chatSession1 = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), true);
+        chatSession2 = new ChatSession(SenderTest.generateTreeSet("admin2", "admin"), true);
         actual = chatSession1.equals(chatSession2);
         assertFalse(actual);
     }

@@ -9,6 +9,7 @@ import socotra.common.User;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -41,6 +42,7 @@ public class MySenderKeyStore implements SenderKeyStore {
     Set<String> containsRelatedSenderKey(User user) {
         Set<String> result = new TreeSet<>();
         Set<SenderKeyName> keySet = senderKeyMap.keySet();
+        Set<SenderKeyName> deletedGroupId = new HashSet<>();
         for (SenderKeyName skn : keySet) {
             if (skn.getSender().getName().equals(user.getUsername())) {
                 ChatSession oldSession = new ChatSession(skn.getGroupId());
@@ -50,8 +52,15 @@ public class MySenderKeyStore implements SenderKeyStore {
                 copy.add(user);
                 ChatSession newSession = new ChatSession(copy, false, true, oldSession.getSessionType());
                 result.add(newSession.generateChatIdCSV());
+
+                oldSession.getMembers().forEach(n -> {
+                    deletedGroupId.add(new SenderKeyName(skn.getGroupId(), new SignalProtocolAddress(n.getUsername(), n.getDeviceId())));
+                });
             }
         }
+        deletedGroupId.forEach(n -> {
+            senderKeyMap.remove(n);
+        });
         return result;
     }
 

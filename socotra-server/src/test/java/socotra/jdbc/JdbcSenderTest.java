@@ -3,13 +3,13 @@ package socotra.jdbc;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import socotra.util.UtilTest;
+import socotra.util.SenderTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.TreeSet;
 
-public class JdbcUtilTest {
+public class JdbcSenderTest {
 
     @BeforeAll
     public static void init() throws Exception {
@@ -37,11 +37,11 @@ public class JdbcUtilTest {
 
     @Test
     public void testGenerateSessionMembers() {
-        TreeSet<String> expected = UtilTest.generateTreeSet("admin", "admin1");
+        TreeSet<String> expected = SenderTest.generateTreeSet("admin", "admin1");
         TreeSet<String> actual = JdbcUtil.generateSessionMembers("admin", "admin1");
         assertEquals(expected, actual);
 
-        expected = UtilTest.generateTreeSet("admin", "admin1", "admin2");
+        expected = SenderTest.generateTreeSet("admin", "admin1", "admin2");
         actual = JdbcUtil.generateSessionMembers("admin,admin1", "admin2");
         assertEquals(expected, actual);
 
@@ -51,7 +51,7 @@ public class JdbcUtilTest {
         actual = JdbcUtil.generateSessionMembers("admin1,admin2", "admin");
         assertEquals(expected, actual);
 
-        expected = UtilTest.generateTreeSet("all");
+        expected = SenderTest.generateTreeSet("all");
         actual = JdbcUtil.generateSessionMembers("all", "admin");
         assertEquals(expected, actual);
     }

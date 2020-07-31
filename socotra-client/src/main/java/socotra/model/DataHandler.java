@@ -5,6 +5,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import org.whispersystems.libsignal.InvalidKeyException;
 import org.whispersystems.libsignal.UntrustedIdentityException;
+import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
@@ -153,10 +154,21 @@ public class DataHandler {
             case 13:
                 processSwitchInfo(connectionData.getUserSignature());
                 break;
+            case 14:
+                processUpdate();
+                break;
             default:
                 System.out.println("Unknown data.");
         }
         return true;
+    }
+
+    private void processUpdate() {
+        EncryptedClient encryptedClient = Client.getEncryptedClient();
+        Client.getHomeModel().getChatSessionList().forEach(n -> {
+            SenderKeyDistributionMessage SKDM = encryptedClient.updateSenderKey(n.generateChatIdCSV());
+            encryptedClient.distributeSenderKey(n.getOthers(Client.getClientThread().getUser()), n, SKDM);
+        });
     }
 
     private void processSwitchInfo(User user) {

@@ -96,7 +96,7 @@ public class Saver {
                     try {
                         bw.write(n.getUuid() + "," + n.getType() + "," +
                                 (n.getType() == 1 ? n.getTextData() : byteArrayToHexStr(n.getAudioData())) + "," +
-                                n.getUserSignature() + "," + n.getChatSession().generateChatIdCSV() + "\n"
+                                n.getUserSignature() + "," + k.generateChatIdCSV() + "\n"
                         );
                     } catch (IOException e) {
                         e.printStackTrace();

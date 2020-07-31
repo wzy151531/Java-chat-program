@@ -227,7 +227,7 @@ public class EncryptedClient {
         HashMap<User, ConnectionData> senderKeysData = new HashMap<>();
         others.forEach(n -> {
             try {
-                senderKeysData.put(n, EncryptionHandler.encryptSKDMData(SKDM.serialize(), chatSession, n));
+                 senderKeysData.put(n, EncryptionHandler.encryptSKDMData(SKDM.serialize(), chatSession, n));
             } catch (UntrustedIdentityException e) {
                 e.printStackTrace();
             }
@@ -304,7 +304,7 @@ public class EncryptedClient {
         return groupSessionBuilder.create(senderKeyName);
     }
 
-    private SenderKeyDistributionMessage updateSenderKey(String groupId) {
+    public SenderKeyDistributionMessage updateSenderKey(String groupId) {
         SenderKeyName senderKeyName = new SenderKeyName(groupId, signalProtocolAddress);
         SenderKeyRecord senderKeyRecord = senderKeyStore.loadSenderKey(senderKeyName);
         if (!senderKeyRecord.isEmpty()) {
@@ -333,6 +333,8 @@ public class EncryptedClient {
             EncryptedClient encryptedClient = Client.getEncryptedClient();
             encryptedClient.requestKeyBundle(user, true);
         } else {
+            checkGroupCipher(user);
+            Client.getHomeModel().updateRelatedSession(user);
             Client.closeReInitChatAlert();
         }
     }

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import socotra.util.UtilTest;
+import socotra.util.SenderTest;
 
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
@@ -13,7 +13,7 @@ public class ServerTest {
 
     @Test
     public void testGetClient() {
-        HashMap<String, ObjectOutputStream> expected = UtilTest.generateHashMap("admin", "admin1", "admin2");
+        HashMap<String, ObjectOutputStream> expected = SenderTest.generateHashMap("admin", "admin1", "admin2");
         Server.getClients().clear();
         expected.forEach((k, v) -> {
             Server.addClient(k, v);
@@ -21,7 +21,7 @@ public class ServerTest {
         HashMap<String, ObjectOutputStream> actual = Server.getClients();
         assertEquals(expected, actual);
 
-        expected = UtilTest.generateHashMap("admin");
+        expected = SenderTest.generateHashMap("admin");
         Server.getClients().clear();
         expected.forEach((k, v) -> {
             Server.addClient(k, v);
@@ -32,14 +32,14 @@ public class ServerTest {
 
     @Test
     public void testAddClient() {
-        HashMap<String, ObjectOutputStream> expected = UtilTest.generateHashMap("admin", "admin1");
+        HashMap<String, ObjectOutputStream> expected = SenderTest.generateHashMap("admin", "admin1");
         Server.getClients().clear();
         Server.getClients().put("admin", null);
         Server.addClient("admin1", null);
         HashMap<String, ObjectOutputStream> actual = Server.getClients();
         assertEquals(expected, actual);
 
-        expected = UtilTest.generateHashMap("admin", "admin1");
+        expected = SenderTest.generateHashMap("admin", "admin1");
         Server.getClients().clear();
         Server.getClients().put("admin", null);
         Server.getClients().put("admin1", null);
@@ -50,7 +50,7 @@ public class ServerTest {
 
     @Test
     public void testRemoveClient() {
-        HashMap<String, ObjectOutputStream> expected = UtilTest.generateHashMap("admin", "admin1");
+        HashMap<String, ObjectOutputStream> expected = SenderTest.generateHashMap("admin", "admin1");
         Server.getClients().clear();
         expected.forEach((k, v) -> {
             Server.addClient(k, v);
@@ -60,7 +60,7 @@ public class ServerTest {
         HashMap<String, ObjectOutputStream> actual = Server.getClients();
         assertEquals(expected, actual);
 
-        expected = UtilTest.generateHashMap("admin");
+        expected = SenderTest.generateHashMap("admin");
         Server.getClients().clear();
         expected.forEach((k, v) -> {
             Server.addClient(k, v);

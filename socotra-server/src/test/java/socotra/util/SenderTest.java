@@ -5,12 +5,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import socotra.Server;
+import socotra.service.Sender;
 
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.TreeSet;
 
-public class UtilTest {
+public class SenderTest {
 
     public static TreeSet<String> generateTreeSet(String... toUsernames) {
         TreeSet<String> result = new TreeSet<>();
@@ -32,12 +33,12 @@ public class UtilTest {
     public void testGenerateChatName() {
         TreeSet<String> toUsernames = generateTreeSet("admin");
         String expected = "admin";
-        String actual = Util.generateChatName(toUsernames);
+        String actual = Sender.generateChatName(toUsernames);
         assertEquals(expected, actual);
 
         toUsernames = generateTreeSet("admin", "admin1", "admin2");
         expected = "admin,admin1,admin2";
-        actual = Util.generateChatName(toUsernames);
+        actual = Sender.generateChatName(toUsernames);
         assertEquals(expected, actual);
     }
 
@@ -49,7 +50,7 @@ public class UtilTest {
             Server.addClient(k, v);
         });
         TreeSet<String> users = generateTreeSet("admin");
-        boolean actual = Util.isAnyOnline(users);
+        boolean actual = Sender.isAnyOnline(users);
         assertTrue(actual);
 
         onlineUsers = generateHashMap("admin", "admin1");
@@ -58,7 +59,7 @@ public class UtilTest {
             Server.addClient(k, v);
         });
         users = generateTreeSet("admin1", "admin2");
-        actual = Util.isAnyOnline(users);
+        actual = Sender.isAnyOnline(users);
         assertTrue(actual);
 
         onlineUsers = generateHashMap("admin", "admin1");
@@ -67,7 +68,7 @@ public class UtilTest {
             Server.addClient(k, v);
         });
         users = generateTreeSet("admin2", "admin3");
-        actual = Util.isAnyOnline(users);
+        actual = Sender.isAnyOnline(users);
         assertFalse(actual);
     }
 

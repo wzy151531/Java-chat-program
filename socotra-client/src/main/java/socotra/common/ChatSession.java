@@ -99,12 +99,12 @@ public class ChatSession implements Serializable {
         return null;
     }
 
-    public String generateChatName(User caller) {
+    public String generateChatName() {
         TreeSet<User> copy = new TreeSet<>(this.members);
-        copy.remove(caller);
+//        copy.remove(caller);
         TreeSet<String> membersName = new TreeSet<>();
         copy.forEach(n -> {
-            membersName.add(n.getUsername());
+            membersName.add(n.toString());
         });
         String temp = membersName.toString();
         String chatName = temp.substring(1, temp.length() - 1);

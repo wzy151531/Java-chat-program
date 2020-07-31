@@ -353,7 +353,7 @@ public class HomeController {
                     setGraphic(null);
                     setText("");
                 } else {
-                    String chatName = item.generateChatName(Client.getClientThread().getUser());
+                    String chatName = item.generateChatName();
                     Button button = new Button(chatName);
                     button.setPrefSize(170.0, 15.0);
                     button.setFont(new Font(15));

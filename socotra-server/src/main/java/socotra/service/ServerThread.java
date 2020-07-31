@@ -71,7 +71,7 @@ public class ServerThread extends Thread {
     }
 
     void appendClient() {
-        Server.addClient(user, toClient);
+        Server.addClient(user, new OutputHandler(toClient));
     }
 
     boolean processSignUp(ConnectionData connectionData) {
@@ -113,7 +113,7 @@ public class ServerThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Something went wrong. Ending service to client...");
-            Server.removeClient(user, toClient);
+            Server.removeClient(user);
             System.out.println("User removed. Current online users: " + Server.getClients().keySet());
         } catch (Exception e) {
             e.printStackTrace();

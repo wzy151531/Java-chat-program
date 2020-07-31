@@ -2,7 +2,7 @@ package socotra.common;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import socotra.util.UtilTest;
+import socotra.util.SenderTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,8 +28,8 @@ public class ConnectionDataTest {
     @BeforeAll
     public static void init() {
         uuid = UUID.randomUUID();
-        onlineUsers = UtilTest.generateTreeSet("admin", "admin1", "admin2");
-        chatSession = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
+        onlineUsers = SenderTest.generateTreeSet("admin", "admin1", "admin2");
+        chatSession = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), true);
         audioData = "audio".getBytes();
         chatData = generateMockChatData();
         typeNegativeOne = new ConnectionData(true);
@@ -45,11 +45,11 @@ public class ConnectionDataTest {
 
     private static HashMap<ChatSession, List<ConnectionData>> generateMockChatData() {
         HashMap<ChatSession, List<ConnectionData>> result = new HashMap<>();
-        ChatSession mockChatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
+        ChatSession mockChatSession1 = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), true);
         List<ConnectionData> mockList1 = new ArrayList<>();
         mockList1.add(new ConnectionData("test", "admin", mockChatSession1));
         mockList1.add(new ConnectionData("test1", "admin", mockChatSession1));
-        ChatSession mockChatSession2 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true);
+        ChatSession mockChatSession2 = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), true);
         List<ConnectionData> mockList2 = new ArrayList<>();
         mockList2.add(new ConnectionData("test2", "admin1", mockChatSession2));
         mockList2.add(new ConnectionData("test3", "admin1", mockChatSession2));
@@ -240,7 +240,7 @@ public class ConnectionDataTest {
 
     @Test
     public void testGetOnlineUsers() {
-        TreeSet<String> expected = UtilTest.generateTreeSet("admin", "admin1", "admin2");
+        TreeSet<String> expected = SenderTest.generateTreeSet("admin", "admin1", "admin2");
         TreeSet<String> actual = typeNegativeThree.getOnlineUsers();
         assertEquals(expected, actual);
         assertThrows(IllegalStateException.class, () -> {

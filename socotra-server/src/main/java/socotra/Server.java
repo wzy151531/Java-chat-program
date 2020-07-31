@@ -4,6 +4,7 @@ import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.User;
 import socotra.jdbc.JdbcUtil;
+import socotra.service.OutputHandler;
 import socotra.service.ServerThread;
 
 import javax.net.ServerSocketFactory;
@@ -24,7 +25,7 @@ public class Server {
     /**
      * All connected clients's username and their ObjectOutputStream.
      */
-    private static HashMap<User, ObjectOutputStream> clients = new HashMap<>();
+    private static HashMap<User, OutputHandler> clients = new HashMap<>();
     /**
      * SSL server socket.
      */
@@ -76,7 +77,7 @@ public class Server {
             // TODO
 //            JdbcUtil.setClientsChatData(JdbcUtil.queryClientsChatData());
             System.out.println("Clients chat data loaded.");
-//            Util.printClientsChatData(JdbcUtil.getClientsChatData());
+//            Sender.printClientsChatData(JdbcUtil.getClientsChatData());
         } catch (IOException e) {
             System.err.println("Couldn't listen on port: 50443.");
             e.printStackTrace();
@@ -116,7 +117,7 @@ public class Server {
      * @param user     The user information of client.
      * @param toClient The ObjectOutputStream of client.
      */
-    public synchronized static void addClient(User user, ObjectOutputStream toClient) {
+    public synchronized static void addClient(User user, OutputHandler toClient) {
         Server.clients.put(user, toClient);
     }
 
@@ -125,17 +126,17 @@ public class Server {
      *
      * @return All connected clients.
      */
-    public synchronized static HashMap<User, ObjectOutputStream> getClients() {
+    public synchronized static HashMap<User, OutputHandler> getClients() {
         return Server.clients;
     }
 
     /**
      * Remove client from all connected clients use username and ObjectOutputStream.
      *
-     * @param user The user information of removed client.
+     * @param user     The user information of removed client.
      * @param toClient The ObjectOutputStream of removed client.
      */
-    public synchronized static void removeClient(User user, ObjectOutputStream toClient) {
+    public synchronized static void removeClient(User user, OutputHandler toClient) {
         Server.clients.remove(user, toClient);
     }
 

@@ -216,16 +216,21 @@ public class HomeModel {
         chatData.put(k, v);
     }
 
-    void updateRelatedSession(User user) {
-        Set<ChatSession> sessions = chatData.keySet();
+    private void updateRelatedChatData(User user) {
+        Set<ChatSession> sessions = new HashSet<>(chatData.keySet());
         for (ChatSession session : sessions) {
             User pre = session.relatedUser(user);
             if (pre != null) {
                 ObservableList<ConnectionData> records = chatData.get(session);
                 ChatSession newSession = generateNewSession(session, user);
                 updateChatData(newSession, records);
+                chatData.remove(session);
             }
         }
+    }
+
+    public void updateRelatedSession(User user) {
+        updateRelatedChatData(user);
 
         User preCur = currentChatSession.relatedUser(user);
         if (preCur != null) {
@@ -233,7 +238,9 @@ public class HomeModel {
             checkoutChatPanel(newSession);
         }
 
-        for (ChatSession session : chatSessionList) {
+
+        Set<ChatSession> copySessions = new HashSet<>(chatSessionList);
+        for (ChatSession session : copySessions) {
             User pre = session.relatedUser(user);
             if (pre != null) {
                 ChatSession newSession = generateNewSession(session, user);

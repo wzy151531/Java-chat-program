@@ -5,10 +5,8 @@ import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
 import socotra.common.User;
-import socotra.util.Util;
 
 import java.io.*;
-import java.security.Key;
 import java.sql.*;
 import java.util.*;
 
@@ -366,7 +364,7 @@ public class JdbcUtil {
 //                int userId = queryUserId(k);
 //                v.forEach((k1, v1) -> {
 //                    try {
-//                        String sessionName = Util.generateChatName(k1.getMembers());
+//                        String sessionName = Sender.generateChatName(k1.getMembers());
 //
 //                        storeSession(userId, sessionName);
 //                        v1.forEach(n -> {
