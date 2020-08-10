@@ -28,6 +28,7 @@ public class DataHandler {
     private ArrayList<ConnectionData> pairwiseData;
     private ArrayList<ConnectionData> senderKeysData;
     private ArrayList<ConnectionData> groupData;
+    private ArrayList<ConnectionData> switchData;
 
     DataHandler() {
         Client.setDataHandler(this);
@@ -81,13 +82,6 @@ public class DataHandler {
                     Client.getHomeModel().removeClientsList(user);
                 }
                 break;
-            // If connectionData is about set online users.
-//            case -3:
-////                System.out.println(connectionData.getOnlineUsers());
-//                SetOnlineUsers setOnlineUsers = new SetOnlineUsers(connectionData.getOnlineUsers());
-//                Client.setSetOnlineUsers(setOnlineUsers);
-//                setOnlineUsers.start();
-//                break;
             // If connectionData is about received hint.
             case -4:
                 Client.getHomeModel().updateChatData(connectionData.getUuid(), connectionData.getChatSession());
@@ -116,12 +110,6 @@ public class DataHandler {
             case 7:
                 handleChatMessage(connectionData);
                 break;
-            // If connectionData is about chat history data.
-//            case 3:
-//                SetChatData setChatData = new SetChatData(connectionData.getChatData());
-//                Client.setSetChatData(setChatData);
-//                setChatData.start();
-//                break;
             // If connectionData is about receiver's key bundle.
             case 6:
                 EncryptedClient encryptedClient = Client.getEncryptedClient();
@@ -149,9 +137,6 @@ public class DataHandler {
             case 10:
                 processReceKeyBundles(connectionData);
                 break;
-//            case 12:
-//                processDepositData(connectionData);
-//                break;
             case 13:
                 processSwitchInfo(connectionData.getUserSignature());
                 break;
@@ -191,6 +176,7 @@ public class DataHandler {
         this.pairwiseData = connectionData.getDepositPairwiseData();
         this.senderKeysData = connectionData.getDepositSenderKeyData();
         this.groupData = connectionData.getDepositGroupData();
+        this.switchData = connectionData.getDepositSwitchData();
     }
 
     private void processPairwiseData() {
@@ -218,6 +204,7 @@ public class DataHandler {
     public void processGroupData() {
         System.out.println("process group data.");
         if (groupData == null) {
+            processSwitchData();
             Platform.runLater(() -> {
                 Client.closeInitClientAlert();
             });
@@ -227,8 +214,19 @@ public class DataHandler {
             handleChatMessage(n);
         });
         groupData = null;
+        processSwitchData();
         Platform.runLater(() -> {
             Client.closeInitClientAlert();
+        });
+    }
+
+    private void processSwitchData() {
+        if (switchData == null) {
+            System.out.println("Switch data is null");
+            return;
+        }
+        switchData.forEach(n -> {
+            processSwitchInfo(n.getUserSignature());
         });
     }
 

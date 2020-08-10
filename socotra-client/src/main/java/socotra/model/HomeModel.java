@@ -232,12 +232,13 @@ public class HomeModel {
     public void updateRelatedSession(User user) {
         updateRelatedChatData(user);
 
-        User preCur = currentChatSession.relatedUser(user);
-        if (preCur != null) {
-            ChatSession newSession = generateNewSession(currentChatSession, user);
-            checkoutChatPanel(newSession);
+        if (currentChatSession != null) {
+            User preCur = currentChatSession.relatedUser(user);
+            if (preCur != null) {
+                ChatSession newSession = generateNewSession(currentChatSession, user);
+                checkoutChatPanel(newSession);
+            }
         }
-
 
         Set<ChatSession> copySessions = new HashSet<>(chatSessionList);
         for (ChatSession session : copySessions) {
@@ -245,7 +246,9 @@ public class HomeModel {
             if (pre != null) {
                 ChatSession newSession = generateNewSession(session, user);
                 chatSessionList.remove(session);
-                chatSessionList.add(newSession);
+                if (!chatSessionList.contains(newSession)) {
+                    chatSessionList.add(newSession);
+                }
             }
         }
     }

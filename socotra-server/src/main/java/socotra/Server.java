@@ -11,10 +11,11 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This file is entry of server, used to accept clients.
@@ -34,6 +35,9 @@ public class Server {
     private static HashMap<User, ArrayList<ConnectionData>> depositPairwiseData = new HashMap<>();
     private static HashMap<User, ArrayList<ConnectionData>> depositSenderKeyData = new HashMap<>();
     private static HashMap<User, ArrayList<ConnectionData>> depositGroupData = new HashMap<>();
+    private static HashMap<User, ArrayList<ConnectionData>> depositSwitchData = new HashMap<>();
+
+    private static Set<User> users = new HashSet<>();
 
     /**
      * Initialize TLS before creating the SSL server socket.
@@ -75,6 +79,8 @@ public class Server {
             JdbcUtil.init();
             JdbcUtil.connect();
             // TODO: load user info
+            users = JdbcUtil.loadUsers();
+
         } catch (IOException e) {
             System.err.println("Couldn't listen on port: 50443.");
             e.printStackTrace();
@@ -106,6 +112,14 @@ public class Server {
                 e.printStackTrace();
             }
         }
+    }
+
+    public synchronized static Set<User> getUsers() {
+        return Server.users;
+    }
+
+    public synchronized static void appendUsers(User user) {
+        Server.users.add(user);
     }
 
     /**
@@ -178,6 +192,14 @@ public class Server {
         Server.depositGroupData.put(receiver, des);
     }
 
+    public synchronized static void storeSwitchData(User receiver, ConnectionData switchData) {
+//        System.out.println("Store switch data to " + receiver);
+        ArrayList<ConnectionData> des = Server.depositSwitchData.getOrDefault(receiver, new ArrayList<>());
+        des.add(switchData);
+        Server.depositSwitchData.put(receiver, des);
+    }
+
+
     public synchronized static ArrayList<ConnectionData> loadPairwiseData(User user) {
         ArrayList<ConnectionData> result = Server.depositPairwiseData.get(user);
         Server.depositPairwiseData.remove(user);
@@ -193,6 +215,18 @@ public class Server {
     public synchronized static ArrayList<ConnectionData> loadGroupData(User user) {
         ArrayList<ConnectionData> result = Server.depositGroupData.get(user);
         Server.depositGroupData.remove(user);
+        return result;
+    }
+
+    public synchronized static ArrayList<ConnectionData> loadSwitchData(User user) {
+        ArrayList<ConnectionData> result = Server.depositSwitchData.get(user);
+        if (result != null) {
+            System.out.println("Load switch data to " + user);
+            result.forEach(n -> {
+                System.out.println("    " + n.getUserSignature() + " 's switch data.");
+            });
+        }
+        Server.depositSwitchData.remove(user);
         return result;
     }
 

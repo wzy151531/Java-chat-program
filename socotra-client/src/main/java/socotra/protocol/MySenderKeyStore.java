@@ -29,6 +29,13 @@ public class MySenderKeyStore implements SenderKeyStore {
         return result;
     }
 
+    public void printSenderKeyNames() {
+        System.out.println("senderKeyMap:");
+        senderKeyMap.keySet().forEach(n -> {
+            System.out.println("    " + n.getGroupId() + ", " + n.getSender());
+        });
+    }
+
     boolean containsExactSenderKey(SignalProtocolAddress userAddress) {
         Set<SenderKeyName> keySet = senderKeyMap.keySet();
         for (SenderKeyName skn : keySet) {
@@ -40,11 +47,14 @@ public class MySenderKeyStore implements SenderKeyStore {
     }
 
     Set<String> containsRelatedSenderKey(User user) {
+//        System.out.println("Before:");
+//        printSenderKeyNames();
+
         Set<String> result = new TreeSet<>();
         Set<SenderKeyName> keySet = senderKeyMap.keySet();
         Set<SenderKeyName> deletedGroupId = new HashSet<>();
         for (SenderKeyName skn : keySet) {
-            if (skn.getSender().getName().equals(user.getUsername())) {
+            if (skn.getSender().getName().equals(user.getUsername()) && skn.getSender().getDeviceId() != user.getDeviceId()) {
                 ChatSession oldSession = new ChatSession(skn.getGroupId());
                 TreeSet<User> copy = new TreeSet<>(oldSession.getMembers());
                 User pre = new User(skn.getSender().getName(), skn.getSender().getDeviceId(), true);
@@ -61,6 +71,9 @@ public class MySenderKeyStore implements SenderKeyStore {
         deletedGroupId.forEach(n -> {
             senderKeyMap.remove(n);
         });
+
+//        System.out.println("After:");
+//        printSenderKeyNames();
         return result;
     }
 

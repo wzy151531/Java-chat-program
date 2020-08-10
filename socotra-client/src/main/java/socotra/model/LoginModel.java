@@ -10,6 +10,7 @@ public class LoginModel {
     private Loader loader;
 
     void loadStores() {
+        System.out.println("loadStores");
         Loader loader = new Loader(Client.getClientThread().getUser());
         this.loader = loader;
         loader.loadStores();
@@ -24,7 +25,7 @@ public class LoginModel {
      * Send login connectionData to inform server.
      *
      * @param serverName The server name needs to connect.
-     * @param user   The user used to login.
+     * @param user       The user used to login.
      * @param password   The password used to login.
      * @return The errorType after login.
      */

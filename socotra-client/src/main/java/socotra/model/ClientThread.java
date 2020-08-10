@@ -225,7 +225,6 @@ public class ClientThread extends Thread {
             DataHandler dataHandler = new DataHandler();
             while (true) {
                 ConnectionData connectionData = (ConnectionData) fromServer.readObject();
-                System.out.println("Received connectionData.");
                 if (!dataHandler.handle(connectionData)) {
                     return;
                 }

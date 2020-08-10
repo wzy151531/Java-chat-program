@@ -133,6 +133,16 @@ public class JdbcUtil {
         statement.executeUpdate(sql);
     }
 
+    public static Set<User> loadUsers() throws SQLException {
+        System.out.println("Load users.");
+        ResultSet resultSet = inquire("select username, deviceid, active from users");
+        Set<User> result = new HashSet<>();
+        while (resultSet.next()) {
+            result.add(new User(resultSet.getString("username"), resultSet.getInt("deviceid"), resultSet.getBoolean("active")));
+        }
+        return result;
+    }
+
     public static boolean validateUser(User user, String password) throws IllegalArgumentException, SQLException {
         ResultSet resultSet = inquire("select active from users where username='" + user.getUsername() + "' and password='" + password + "' and deviceid=" + user.getDeviceId());
         while (resultSet.next()) {
@@ -147,18 +157,6 @@ public class JdbcUtil {
         throw new IllegalArgumentException("Invalidated user.");
     }
 
-    /**
-     * Validate user's identity.
-     *
-     * @param user     The user's information.
-     * @param password The user's password input.
-     * @return The boolean indicates that whether the user is validated.
-     * @throws Exception Exception when doing sql statement.
-     */
-//    public static boolean validateUser(User user, String password) throws Exception {
-//        ResultSet resultSet = inquire("select * from users where username='" + user.getUsername() + "' and password='" + password + "' and deviceid=" + user.getDeviceId());
-//        return resultSet.next();
-//    }
     private static boolean validateUserExist(String username) throws Exception {
         ResultSet resultSet = inquire("select * from users where username='" + username + "'");
         return resultSet.next();
@@ -176,32 +174,31 @@ public class JdbcUtil {
      * @return
      * @throws Exception
      */
-    public static boolean isActive(User user) throws Exception {
-        ResultSet resultSet = inquire("select active from users where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
-        boolean result;
-        if (resultSet.next()) {
-            result = resultSet.getBoolean("active");
-            if (!result) {
-                insert("update users SET active=" + false + " where username='" + user.getUsername() + "'");
-                insert("update users SET active=" + true + " where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
-            }
-            return result;
-        }
-        throw new IllegalArgumentException("User does not exist.");
-    }
-
-    public static boolean isFresh(User user) throws Exception {
-        ResultSet resultSet = inquire("select count(*) as count from users where username='" + user.getUsername() + "'");
-        int count = 0;
-        if (resultSet.next()) {
-            count = resultSet.getInt("count");
-        }
-        if (count == 0) {
-            throw new IllegalStateException("Bad user.");
-        }
-        return count == 1;
-    }
-
+//    public static boolean isActive(User user) throws Exception {
+//        ResultSet resultSet = inquire("select active from users where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
+//        boolean result;
+//        if (resultSet.next()) {
+//            result = resultSet.getBoolean("active");
+//            if (!result) {
+//                insert("update users SET active=" + false + " where username='" + user.getUsername() + "'");
+//                insert("update users SET active=" + true + " where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
+//            }
+//            return result;
+//        }
+//        throw new IllegalArgumentException("User does not exist.");
+//    }
+//
+//    public static boolean isFresh(User user) throws Exception {
+//        ResultSet resultSet = inquire("select count(*) as count from users where username='" + user.getUsername() + "'");
+//        int count = 0;
+//        if (resultSet.next()) {
+//            count = resultSet.getInt("count");
+//        }
+//        if (count == 0) {
+//            throw new IllegalStateException("Bad user.");
+//        }
+//        return count == 1;
+//    }
     private static boolean userExists(User user) throws Exception {
         ResultSet resultSet = inquire("select * from users where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
         return resultSet.next();

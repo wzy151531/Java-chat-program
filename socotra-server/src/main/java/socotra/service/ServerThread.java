@@ -110,7 +110,6 @@ public class ServerThread extends Thread {
             DataHandler dataHandler = new DataHandler(this);
             while (true) {
                 ConnectionData connectionData = (ConnectionData) fromClient.readObject();
-                System.out.println("Received data.");
                 if (!dataHandler.handle(connectionData)) {
                     return;
                 }

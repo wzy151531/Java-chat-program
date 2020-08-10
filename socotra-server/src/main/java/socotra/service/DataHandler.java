@@ -37,18 +37,12 @@ class DataHandler {
                     ArrayList<ConnectionData> pairwiseData = Server.loadPairwiseData(user);
                     ArrayList<ConnectionData> senderKeyData = Server.loadSenderKeyData(user);
                     ArrayList<ConnectionData> groupData = Server.loadGroupData(user);
-                    serverThread.inform(new ConnectionData(onlineUsers, pairwiseData, senderKeyData, groupData));
+                    ArrayList<ConnectionData> switchData = Server.loadSwitchData(user);
+                    serverThread.inform(new ConnectionData(onlineUsers, pairwiseData, senderKeyData, groupData, switchData));
                 }
-
                 if (isSwitch) {
                     processSwitchDevice(user);
                 }
-                // Inform the new client current online users and inform other clients that the new client is online.
-//                boolean isActive = JdbcUtil.isActive(user);
-//                boolean isFresh = JdbcUtil.isFresh(user);
-//                if (!isActive && !isFresh) {
-//                    processSwitchDevice(user);
-//                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -111,18 +105,13 @@ class DataHandler {
             case 4:
                 try {
                     boolean isFresh = serverThread.processSignUp(connectionData);
+                    Server.appendUsers(connectionData.getUser());
                     serverThread.setUser(connectionData.getUser());
                     processOnline(SIGNUP, !isFresh);
                 } catch (IllegalArgumentException e) {
                     System.out.println(e.getMessage());
                     return false;
                 }
-
-//                if (!serverThread.processSignUp(connectionData)) {
-//                    return false;
-//                }
-//                serverThread.setUser(connectionData.getUser());
-//                processOnline(SIGNUP);
                 break;
             case 5:
                 System.out.println("receiver query keyBundle request.");

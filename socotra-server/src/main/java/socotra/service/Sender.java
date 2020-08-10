@@ -5,9 +5,7 @@ import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeSet;
+import java.util.*;
 
 public abstract class Sender {
 
@@ -30,11 +28,19 @@ public abstract class Sender {
      * @param specialConnectionData The special connectionData needs to be sent to the certain user.
      */
     static void broadcast(ConnectionData connectionData, User user, ConnectionData specialConnectionData) {
+        Set<User> onlineUsers = Server.getClients().keySet();
+        Set<User> usersCopy = new HashSet<>(Server.getUsers());
         Server.getClients().forEach((k, v) -> {
             if (!k.equals(user)) {
                 v.sendMsg(connectionData);
             } else {
                 v.sendMsg(specialConnectionData);
+            }
+        });
+        usersCopy.removeAll(onlineUsers);
+        usersCopy.forEach(n -> {
+            if (!n.getUsername().equals(user.getUsername())) {
+                Server.storeSwitchData(n, connectionData);
             }
         });
     }

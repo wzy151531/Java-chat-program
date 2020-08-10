@@ -88,6 +88,7 @@ public class ConnectionData implements Serializable {
     private ArrayList<ConnectionData> depositPairwiseData;
     private ArrayList<ConnectionData> depositSenderKeyData;
     private ArrayList<ConnectionData> depositGroupData;
+    private ArrayList<ConnectionData> depositSwitchData;
     private boolean init;
 
     private boolean reInit;
@@ -105,13 +106,15 @@ public class ConnectionData implements Serializable {
     }
 
     public ConnectionData(TreeSet<User> onlineUsers, ArrayList<ConnectionData> depositPairwiseData,
-                          ArrayList<ConnectionData> depositSenderKeyData, ArrayList<ConnectionData> depositGroupData) {
+                          ArrayList<ConnectionData> depositSenderKeyData, ArrayList<ConnectionData> depositGroupData,
+                          ArrayList<ConnectionData> depositSwitchData) {
         this.type = -1;
         this.validated = true;
         this.onlineUsers = onlineUsers;
         this.depositPairwiseData = depositPairwiseData;
         this.depositSenderKeyData = depositSenderKeyData;
         this.depositGroupData = depositGroupData;
+        this.depositSwitchData = depositSwitchData;
     }
 
     /**
@@ -334,22 +337,6 @@ public class ConnectionData implements Serializable {
         this.senderKeysData = senderKeysData;
     }
 
-//    /**
-//     * The connection data is about deposit data.
-//     *
-//     * @param depositPairwiseData  Deposit pairwise data.
-//     * @param depositSenderKeyData Deposit senderKey data.
-//     * @param depositGroupData     Deposit group data.
-//     */
-//    public ConnectionData(ArrayList<ConnectionData> depositPairwiseData,
-//                          ArrayList<ConnectionData> depositSenderKeyData,
-//                          ArrayList<ConnectionData> depositGroupData) {
-//        this.type = 12;
-//        this.depositPairwiseData = depositPairwiseData;
-//        this.depositSenderKeyData = depositSenderKeyData;
-//        this.depositGroupData = depositGroupData;
-//    }
-
     public ConnectionData(User userSignature) {
         this.type = 13;
         this.userSignature = userSignature;
@@ -400,6 +387,13 @@ public class ConnectionData implements Serializable {
             throw new IllegalStateException("Type isn't -1, cannot get depositGroupData");
         }
         return this.depositGroupData;
+    }
+
+    public ArrayList<ConnectionData> getDepositSwitchData() {
+        if (type != -1) {
+            throw new IllegalStateException("Type isn't -1, cannot get depositSwitchData");
+        }
+        return this.depositSwitchData;
     }
 
     public HashMap<User, ConnectionData> getSenderKeysData() {
