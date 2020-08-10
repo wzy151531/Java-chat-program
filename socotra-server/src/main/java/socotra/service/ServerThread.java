@@ -4,6 +4,7 @@ import socotra.Server;
 import socotra.common.ConnectionData;
 import socotra.common.User;
 import socotra.jdbc.JdbcUtil;
+import socotra.jdbc.TwoTuple;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -77,24 +78,28 @@ public class ServerThread extends Thread {
     boolean processSignUp(ConnectionData connectionData) {
         try {
             User register = connectionData.getUser();
-            int userId = JdbcUtil.signUp(register, connectionData.getPassword());
+            TwoTuple<Integer, Boolean> results = JdbcUtil.signUp(register, connectionData.getPassword());
+            int userId = results.getFirst();
+            boolean isFresh = results.getSecond();
             // TODO
             JdbcUtil.storeKeyBundle(userId, connectionData.getKeyBundle());
             TreeSet<User> onlineUsers = new TreeSet<>(Server.getClients().keySet());
             onlineUsers.remove(register);
             toClient.writeObject(new ConnectionData(-5, onlineUsers));
+            return isFresh;
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
             try {
                 toClient.writeObject(new ConnectionData(-5, e.getMessage()));
-                return false;
+                throw new IllegalArgumentException(e.getMessage());
             } catch (Exception e1) {
                 e1.printStackTrace();
+                throw new IllegalStateException();
             }
         } catch (Exception e) {
             e.printStackTrace();
+            throw new IllegalStateException();
         }
-        return true;
     }
 
     /**

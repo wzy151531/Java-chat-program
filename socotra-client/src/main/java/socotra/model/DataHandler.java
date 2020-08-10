@@ -16,6 +16,7 @@ import socotra.protocol.EncryptedClient;
 import socotra.protocol.EncryptionHandler;
 import socotra.util.SendThread;
 import socotra.util.SetOnlineUsers;
+import socotra.util.UpdateSenderKey;
 import socotra.util.Util;
 
 import java.util.ArrayList;
@@ -155,20 +156,12 @@ public class DataHandler {
                 processSwitchInfo(connectionData.getUserSignature());
                 break;
             case 14:
-                processUpdate();
+                new UpdateSenderKey().start();
                 break;
             default:
                 System.out.println("Unknown data.");
         }
         return true;
-    }
-
-    private void processUpdate() {
-        EncryptedClient encryptedClient = Client.getEncryptedClient();
-        Client.getHomeModel().getChatSessionList().forEach(n -> {
-            SenderKeyDistributionMessage SKDM = encryptedClient.updateSenderKey(n.generateChatIdCSV());
-            encryptedClient.distributeSenderKey(n.getOthers(Client.getClientThread().getUser()), n, SKDM);
-        });
     }
 
     private void processSwitchInfo(User user) {

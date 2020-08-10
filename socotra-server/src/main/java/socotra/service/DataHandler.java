@@ -6,6 +6,7 @@ import socotra.common.KeyBundle;
 import socotra.common.User;
 import socotra.jdbc.JdbcUtil;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,17 +23,14 @@ class DataHandler {
         this.serverThread = serverThread;
     }
 
-    private void processOnline(int type) {
+    private void processOnline(int type, boolean isSwitch) {
         serverThread.appendClient();
         System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
         User user = serverThread.getUser();
-//        HashMap<ChatSession, List<ConnectionData>> chatData = JdbcUtil.getCertainChatData(user);
-//        if (chatData != null) {
-//            Sender.privateSend(new ConnectionData(chatData, "server"), user);
-//        }
         // user wants to login normally.
         if (user.isActive()) {
             try {
+                Sender.broadcast(new ConnectionData(user, true), user);
                 if (type == LOGIN) {
                     TreeSet<User> onlineUsers = new TreeSet<>(Server.getClients().keySet());
                     onlineUsers.remove(user);
@@ -42,13 +40,15 @@ class DataHandler {
                     serverThread.inform(new ConnectionData(onlineUsers, pairwiseData, senderKeyData, groupData));
                 }
 
-                // Inform the new client current online users and inform other clients that the new client is online.
-                Sender.broadcast(new ConnectionData(user, true), user);
-                boolean isActive = JdbcUtil.isActive(user);
-                boolean isFresh = JdbcUtil.isFresh(user);
-                if (!isActive && !isFresh) {
+                if (isSwitch) {
                     processSwitchDevice(user);
                 }
+                // Inform the new client current online users and inform other clients that the new client is online.
+//                boolean isActive = JdbcUtil.isActive(user);
+//                boolean isFresh = JdbcUtil.isFresh(user);
+//                if (!isActive && !isFresh) {
+//                    processSwitchDevice(user);
+//                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -63,30 +63,21 @@ class DataHandler {
     private boolean processLogin(User user, String password) {
         serverThread.setUser(user);
         try {
-            if (!JdbcUtil.validateUser(user, password)) {
-                System.out.println("Invalidated user.");
+            boolean isSwitch = JdbcUtil.validateUser(user, password);
+            processOnline(LOGIN, isSwitch);
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+            try {
                 serverThread.inform(new ConnectionData(false));
-                return false;
-            } else {
-                processOnline(LOGIN);
-//                processDepositData(user);
+            } catch (IOException e1) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
+            return false;
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return true;
     }
-
-//    private void processDepositData(User user) {
-//        ArrayList<ConnectionData> pairwiseData = Server.loadPairwiseData(user);
-//        ArrayList<ConnectionData> senderKeyData = Server.loadSenderKeyData(user);
-//        ArrayList<ConnectionData> groupData = Server.loadGroupData(user);
-//        try {
-//            serverThread.inform(new ConnectionData(pairwiseData, senderKeyData, groupData));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     private boolean processLogout() {
         User user = serverThread.getUser();
@@ -111,27 +102,27 @@ class DataHandler {
             case -4:
                 Sender.privateSend(connectionData, connectionData.getReceiverUsername());
                 break;
-            // If connection data is about normal chat message.
-//            case 1:
-//                connectionData.setIsSent(true);
-//                // Once received the text data, use a new thread to insert it into database.
-//                JdbcUtil.insertClientChatData(connectionData);
             case 2:
             case 7:
                 connectionData.setIsSent(true);
                 System.out.println("Rece data to: " + connectionData.getChatSession().getMembers());
                 Sender.groupSend(connectionData, connectionData.getChatSession().getMembers());
                 break;
-            // If connection data is about store chat history.
-            case 3:
-//                        JdbcUtil.updateClientsChatData(connectionData.getUserSignature(), connectionData.getChatData());
-                break;
             case 4:
-                if (!serverThread.processSignUp(connectionData)) {
+                try {
+                    boolean isFresh = serverThread.processSignUp(connectionData);
+                    serverThread.setUser(connectionData.getUser());
+                    processOnline(SIGNUP, !isFresh);
+                } catch (IllegalArgumentException e) {
+                    System.out.println(e.getMessage());
                     return false;
                 }
-                serverThread.setUser(connectionData.getUser());
-                processOnline(SIGNUP);
+
+//                if (!serverThread.processSignUp(connectionData)) {
+//                    return false;
+//                }
+//                serverThread.setUser(connectionData.getUser());
+//                processOnline(SIGNUP);
                 break;
             case 5:
                 System.out.println("receiver query keyBundle request.");

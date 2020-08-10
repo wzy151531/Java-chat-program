@@ -74,10 +74,7 @@ public class Server {
             System.out.println("Server bound.");
             JdbcUtil.init();
             JdbcUtil.connect();
-            // TODO
-//            JdbcUtil.setClientsChatData(JdbcUtil.queryClientsChatData());
-            System.out.println("Clients chat data loaded.");
-//            Sender.printClientsChatData(JdbcUtil.getClientsChatData());
+            // TODO: load user info
         } catch (IOException e) {
             System.err.println("Couldn't listen on port: 50443.");
             e.printStackTrace();

@@ -1,8 +1,6 @@
 package socotra.jdbc;
 
 import com.jcraft.jsch.*;
-import socotra.common.ChatSession;
-import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
 import socotra.common.User;
 
@@ -50,10 +48,6 @@ public class JdbcUtil {
      * Database connection.
      */
     private static Connection connection;
-    /**
-     * Chat history data of all clients.
-     */
-    private static HashMap<String, HashMap<ChatSession, List<ConnectionData>>> clientsChatData;
 
     /**
      * Load ssh connection information from jdbc.properties file.
@@ -67,29 +61,10 @@ public class JdbcUtil {
             sshPassword = properties.getProperty("sshPassword");
             dbUser = properties.getProperty("dbUser");
             dbPassword = properties.getProperty("dbPassword");
-            clientsChatData = new HashMap<>();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-    }
-
-    /**
-     * Getter for clientsChatData.
-     *
-     * @return The chat history data of all clients.
-     */
-    public static HashMap<String, HashMap<ChatSession, List<ConnectionData>>> getClientsChatData() {
-        return clientsChatData;
-    }
-
-    /**
-     * Setter for clientsChatData.
-     *
-     * @param clientsChatData The chat history data of all clients.
-     */
-    public static void setClientsChatData(HashMap<String, HashMap<ChatSession, List<ConnectionData>>> clientsChatData) {
-        JdbcUtil.clientsChatData = clientsChatData;
     }
 
     /**
@@ -153,9 +128,23 @@ public class JdbcUtil {
      * @param sql The sql wants to be executed.
      * @throws Exception Exception thrown while executing the sql.
      */
-    public synchronized static void insert(String sql) throws Exception {
+    public synchronized static void insert(String sql) throws SQLException {
         Statement statement = connection.createStatement();
         statement.executeUpdate(sql);
+    }
+
+    public static boolean validateUser(User user, String password) throws IllegalArgumentException, SQLException {
+        ResultSet resultSet = inquire("select active from users where username='" + user.getUsername() + "' and password='" + password + "' and deviceid=" + user.getDeviceId());
+        while (resultSet.next()) {
+            boolean isActive = resultSet.getBoolean("active");
+            boolean result = !isActive && user.isActive();
+            if (result) {
+                insert("update users SET active=" + false + " where username='" + user.getUsername() + "'");
+                insert("update users SET active=" + true + " where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
+            }
+            return result;
+        }
+        throw new IllegalArgumentException("Invalidated user.");
     }
 
     /**
@@ -166,11 +155,10 @@ public class JdbcUtil {
      * @return The boolean indicates that whether the user is validated.
      * @throws Exception Exception when doing sql statement.
      */
-    public static boolean validateUser(User user, String password) throws Exception {
-        ResultSet resultSet = inquire("select * from users where username='" + user.getUsername() + "' and password='" + password + "' and deviceid=" + user.getDeviceId());
-        return resultSet.next();
-    }
-
+//    public static boolean validateUser(User user, String password) throws Exception {
+//        ResultSet resultSet = inquire("select * from users where username='" + user.getUsername() + "' and password='" + password + "' and deviceid=" + user.getDeviceId());
+//        return resultSet.next();
+//    }
     private static boolean validateUserExist(String username) throws Exception {
         ResultSet resultSet = inquire("select * from users where username='" + username + "'");
         return resultSet.next();
@@ -190,14 +178,14 @@ public class JdbcUtil {
      */
     public static boolean isActive(User user) throws Exception {
         ResultSet resultSet = inquire("select active from users where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
-        insert("update users SET active=" + false + " where username='" + user.getUsername() + "'");
-//        String sql = "update users SET active = ? WHERE username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId();
-//        PreparedStatement ps = connection.prepareStatement(sql);
-//        ps.setBoolean(1, user.isActive());
-//        ps.executeUpdate();
-        insert("update users SET active=" + user.isActive() + " where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
+        boolean result;
         if (resultSet.next()) {
-            return resultSet.getBoolean("active");
+            result = resultSet.getBoolean("active");
+            if (!result) {
+                insert("update users SET active=" + false + " where username='" + user.getUsername() + "'");
+                insert("update users SET active=" + true + " where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
+            }
+            return result;
         }
         throw new IllegalArgumentException("User does not exist.");
     }
@@ -218,47 +206,6 @@ public class JdbcUtil {
         ResultSet resultSet = inquire("select * from users where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
         return resultSet.next();
     }
-
-    /**
-     * Update clientsChatData.
-     *
-     * @param username The user who needs to update his chat history data.
-     * @param chatData The chat history data of user.
-     */
-//    public synchronized static void updateClientsChatData(String username, HashMap<ChatSession, List<ConnectionData>> chatData) {
-//        clientsChatData.put(username, chatData);
-//        storeClientsChatData(clientsChatData);
-//    }
-
-    /**
-     * Get certain chat history data of given user.
-     *
-     * @param username The given user name.
-     * @return The certain chat history data of given user.
-     */
-//    public static HashMap<ChatSession, List<ConnectionData>> getCertainChatData(String username) {
-//        return clientsChatData.get(username);
-//    }
-
-    /**
-     * Query chat history data of all clients from database.
-     *
-     * @return Chat history data of all clients.
-     * @throws Exception The exception when query in database.
-     */
-//    public static HashMap<String, HashMap<ChatSession, List<ConnectionData>>> queryClientsChatData() throws Exception {
-//        HashMap<String, HashMap<ChatSession, List<ConnectionData>>> result = new HashMap<>();
-//        HashMap<Integer, String> userIdNameMap = queryUserIdNameMap();
-//        userIdNameMap.forEach((k, v) -> {
-//            try {
-//                HashMap<ChatSession, List<ConnectionData>> chatData = generateChatData(k, v);
-//                result.put(v, chatData);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
-//        return result;
-//    }
 
     /**
      * Query userId and name of all clients from database.
@@ -295,114 +242,13 @@ public class JdbcUtil {
     }
 
     /**
-     * Generate chatData according to the userId and username from database.
-     *
-     * @param userId   The userId of given user.
-     * @param username The username of given user.
-     * @return Chat history data of given user.
-     * @throws Exception The exception when query in database.
-     */
-//    private static HashMap<ChatSession, List<ConnectionData>> generateChatData(int userId, String username) throws Exception {
-//        HashMap<ChatSession, List<ConnectionData>> result = new HashMap<>();
-//        HashSet<String> sessionNames = querySessionNames(userId);
-//        sessionNames.forEach(n -> {
-//            try {
-//                TreeSet<String> sessionMembers = generateSessionMembers(n, username);
-//                // TODO: fix group chat.
-//                ChatSession chatSession = new ChatSession(sessionMembers, true, true, ChatSession.PAIRWISE);
-//                List<ConnectionData> certainChatData = queryCertainChatData(n, username, chatSession);
-//                result.put(chatSession, certainChatData);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
-//        return result;
-//    }
-
-    /**
-     * Query all session names related to the given userId.
-     *
-     * @param userId The given userId.
-     * @return All related session names.
-     * @throws Exception The exception when query in database.
-     */
-    private static HashSet<String> querySessionNames(int userId) throws Exception {
-        HashSet<String> result = new HashSet<>();
-        ResultSet resultSet = inquire("select session_name from test_user_session where id=" + userId);
-        while (resultSet.next()) {
-            result.add(resultSet.getString("session_name"));
-        }
-        return result;
-    }
-
-    /**
-     * Query chat history data of certain session.
-     *
-     * @param sessionName The session name of given chatSession.
-     * @param currentUser The user who needs this info.
-     * @param chatSession The given chatSession;
-     * @return The chat history data of given session.
-     * @throws Exception The exception when query in database.
-     */
-//    private static List<ConnectionData> queryCertainChatData(String sessionName, String currentUser, ChatSession chatSession) throws Exception {
-//        List<ConnectionData> result = new ArrayList<>();
-//        ResultSet resultSet = inquire("select data_id, data_text, user_signature from test_connection_data where session_name='" + sessionName + "'");
-//        while (resultSet.next()) {
-//            result.add(new ConnectionData(resultSet.getString("data_text"), UUID.fromString(resultSet.getString("data_id")), resultSet.getString("user_signature"), chatSession));
-//        }
-//        return result;
-//    }
-
-    /**
-     * Store chat history data of all clients to database.
-     *
-     * @param clientsChatData Chat history data of all clients.
-     */
-//    public static void storeClientsChatData(HashMap<String, HashMap<ChatSession, List<ConnectionData>>> clientsChatData) {
-//        clientsChatData.forEach((k, v) -> {
-//            try {
-//                int userId = queryUserId(k);
-//                v.forEach((k1, v1) -> {
-//                    try {
-//                        String sessionName = Sender.generateChatName(k1.getMembers());
-//
-//                        storeSession(userId, sessionName);
-//                        v1.forEach(n -> {
-//                            try {
-//                                if (n.getType() == 1) {
-//                                    storeChatHistory(n.getUuid().toString(), n.getTextData(), n.getUserSignature(), sessionName);
-//                                }
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//                        });
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                });
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        });
-//    }
-
-    /**
-     * Insert chat history data of certain client.
-     *
-     * @param connectionData The connectionData needs to be inserted.
-     */
-//    public static void insertClientChatData(ConnectionData connectionData) {
-//        new InsertClientChatDataThread(connectionData).start();
-//    }
-
-    /**
      * Query userId according to the given user name.
      *
      * @param user The given user.
      * @return The userId of given user name.
      * @throws Exception The exception when query in database.
      */
-    static int queryUserId(User user) throws SQLException, IllegalArgumentException {
+    private static int queryUserId(User user) throws SQLException, IllegalArgumentException {
         ResultSet resultSet = inquire("select id from users where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
         if (resultSet.next()) {
             return resultSet.getInt("id");
@@ -411,63 +257,26 @@ public class JdbcUtil {
     }
 
     /**
-     * Store chat sessions of given userId.
-     *
-     * @param userId      The given userId.
-     * @param sessionName Chat sessions of given userId.
-     * @throws Exception The exception when query in database.
-     */
-    static void storeSession(int userId, String sessionName) throws Exception {
-        ResultSet resultSet = inquire("select count(*) as count from test_user_session where id=" + userId + " and session_name='" + sessionName + "'");
-        int rowCount = 0;
-        while (resultSet.next()) {
-            rowCount = resultSet.getInt("count");
-        }
-        if (rowCount < 1) {
-            insert("insert into test_user_session(id, session_name) values (" + userId + ", '" + sessionName + "')");
-        } else {
-            System.out.println("'" + sessionName + "' has already existed.");
-        }
-    }
-
-    /**
-     * Store chat history data of given chat session and given connectionData.
-     *
-     * @param dataId      The dataId of given connectionData.
-     * @param dataText    The dataText of given connectionData.
-     * @param sessionName The session name of given chat session.
-     * @throws Exception The exception when query in database.
-     */
-//    static void storeChatHistory(String dataId, String dataText, String userSignature, String sessionName) throws Exception {
-//        ResultSet resultSet = inquire("select count(*) as count from test_connection_data where data_id='" + dataId + "'");
-//        int rowCount = 0;
-//        while (resultSet.next()) {
-//            rowCount = resultSet.getInt("count");
-//        }
-//        if (rowCount < 1) {
-//            insert("insert into test_connection_data(data_id, data_text, user_signature, session_name) values ('" + dataId + "', '" + dataText + "', '" + userSignature + "', '" + sessionName + "')");
-//        } else {
-//            System.out.println("'" + dataText + "' has already existed.");
-//        }
-//    }
-
-    /**
      * @param user
      * @param password
      * @return
      */
     // TODO
-    synchronized public static int signUp(User user, String password) throws Exception {
+    synchronized public static TwoTuple<Integer, Boolean> signUp(User user, String password) throws Exception {
         if (userExists(user)) {
             throw new IllegalArgumentException("User already exists.");
         }
-        if (validateUserExist(user.getUsername()) && !validateUserPwd(user.getUsername(), password)) {
+        boolean isFresh = !validateUserExist(user.getUsername());
+        if (!isFresh && !validateUserPwd(user.getUsername(), password)) {
             throw new IllegalArgumentException("Password is not correct.");
         }
-        insert("insert into users(username, password, deviceid, active) values ('" + user.getUsername() + "', '" + password + "', " + user.getDeviceId() + ", " + false + ")");
+        if (!isFresh) {
+            insert("update users SET active=" + false + " where username='" + user.getUsername() + "'");
+        }
+        insert("insert into users(username, password, deviceid, active) values ('" + user.getUsername() + "', '" + password + "', " + user.getDeviceId() + ", " + true + ")");
         ResultSet resultSet = inquire("select id from users where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
         if (resultSet.next()) {
-            return resultSet.getInt("id");
+            return new TwoTuple<>(resultSet.getInt("id"), isFresh);
         }
         throw new IllegalStateException("Insertion not success.");
     }
