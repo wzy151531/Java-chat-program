@@ -95,6 +95,8 @@ public class ConnectionData implements Serializable {
 
     private boolean updated;
 
+    private HashMap<ChatSession, ArrayList<ConnectionData>> backUpMessages;
+
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
      *
@@ -107,7 +109,8 @@ public class ConnectionData implements Serializable {
 
     public ConnectionData(TreeSet<User> onlineUsers, ArrayList<ConnectionData> depositPairwiseData,
                           ArrayList<ConnectionData> depositSenderKeyData, ArrayList<ConnectionData> depositGroupData,
-                          ArrayList<ConnectionData> depositSwitchData) {
+                          ArrayList<ConnectionData> depositSwitchData,
+                          HashMap<ChatSession, ArrayList<ConnectionData>> backUpMessages, User userSignature) {
         this.type = -1;
         this.validated = true;
         this.onlineUsers = onlineUsers;
@@ -115,6 +118,15 @@ public class ConnectionData implements Serializable {
         this.depositSenderKeyData = depositSenderKeyData;
         this.depositGroupData = depositGroupData;
         this.depositSwitchData = depositSwitchData;
+        this.backUpMessages = backUpMessages;
+        this.userSignature = userSignature;
+    }
+
+    public ConnectionData(User receiverUsername, KeyBundle keyBundle) {
+        this.type = -1;
+        this.validated = true;
+        this.receiverUsername = receiverUsername;
+        this.keyBundle = keyBundle;
     }
 
     /**
@@ -127,16 +139,6 @@ public class ConnectionData implements Serializable {
         this.user = user;
         this.isOnline = isOnline;
     }
-
-    /**
-     * If connection data is about current online users, the connection data's type is -3.
-     *
-     * @param onlineUsers The current online users' name.
-     */
-//    public ConnectionData(TreeSet<User> onlineUsers) {
-//        this.type = -3;
-//        this.onlineUsers = onlineUsers;
-//    }
 
     /**
      * If connection data is about received hint, the connection data's type is -4.
@@ -347,6 +349,20 @@ public class ConnectionData implements Serializable {
         this.updated = updated;
     }
 
+    public ConnectionData(User receiverUsername, HashMap<ChatSession, ArrayList<ConnectionData>> backUpMessages, User userSignature) {
+        this.type = 15;
+        this.receiverUsername = receiverUsername;
+        this.backUpMessages = backUpMessages;
+        this.userSignature = userSignature;
+    }
+
+    public HashMap<ChatSession, ArrayList<ConnectionData>> getBackUpMessages() {
+        if (type != -1 && type != 15) {
+            throw new IllegalStateException("Type isn't -1 or 15, cannot get backUpMessages.");
+        }
+        return this.backUpMessages;
+    }
+
     public boolean isUpdated() {
         if (type != 14) {
             throw new IllegalStateException("Type isn't 14, cannot get updated.");
@@ -418,8 +434,8 @@ public class ConnectionData implements Serializable {
     }
 
     public KeyBundle getKeyBundle() {
-        if (type != 4 && type != 6) {
-            throw new IllegalStateException("Type isn't 4 or 6, cannot get keyBundle");
+        if (type != -1 && type != 4 && type != 6) {
+            throw new IllegalStateException("Type isn't -1 or 4 or 6, cannot get keyBundle");
         }
         return this.keyBundle;
     }
@@ -446,8 +462,8 @@ public class ConnectionData implements Serializable {
     }
 
     public User getReceiverUsername() {
-        if (type != -4 && type != 5 && type != 6 && type != 8) {
-            throw new IllegalStateException("Type isn't 5 or 6 or 8, cannot get receiverUsername");
+        if (type != -1 && type != -4 && type != 5 && type != 6 && type != 8 && type != 15) {
+            throw new IllegalStateException("Type isn't -1 or -4 or 5 or 6 or 8 or 15, cannot get receiverUsername");
         }
         return this.receiverUsername;
     }
@@ -594,8 +610,8 @@ public class ConnectionData implements Serializable {
      * @return The userSignature of the connection data.
      */
     public User getUserSignature() {
-        if (type != -2 && type != -4 && type != 1 && type != 2 && type != 3 && type != 5 && type != 7 && type != 8 && type != 9 && type != 13) {
-            throw new IllegalStateException("Type isn't -2 or -4 or 1 or 2 or 3 or 5 or 7 or 8 or 9 or 13, cannot get text data.");
+        if (type != -1 && type != -2 && type != -4 && type != 1 && type != 2 && type != 3 && type != 5 && type != 7 && type != 8 && type != 9 && type != 13 && type != 15) {
+            throw new IllegalStateException("Type isn't -1 or -2 or -4 or 1 or 2 or 3 or 5 or 7 or 8 or 9 or 13 or 15, cannot get text data.");
         }
         return userSignature;
     }

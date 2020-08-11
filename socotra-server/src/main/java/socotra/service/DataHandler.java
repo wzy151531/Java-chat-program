@@ -1,10 +1,12 @@
 package socotra.service;
 
 import socotra.Server;
+import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.KeyBundle;
 import socotra.common.User;
 import socotra.jdbc.JdbcUtil;
+import socotra.jdbc.TwoTuple;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -24,12 +26,12 @@ class DataHandler {
     }
 
     private void processOnline(int type, boolean isSwitch) {
-        serverThread.appendClient();
-        System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
         User user = serverThread.getUser();
         // user wants to login normally.
-        if (user.isActive()) {
-            try {
+        try {
+            if (user.isActive()) {
+                serverThread.appendClient();
+                System.out.println("Validated user. Current online users: " + Server.getClients().keySet());
                 Sender.broadcast(new ConnectionData(user, true), user);
                 if (type == LOGIN) {
                     TreeSet<User> onlineUsers = new TreeSet<>(Server.getClients().keySet());
@@ -38,14 +40,20 @@ class DataHandler {
                     ArrayList<ConnectionData> senderKeyData = Server.loadSenderKeyData(user);
                     ArrayList<ConnectionData> groupData = Server.loadGroupData(user);
                     ArrayList<ConnectionData> switchData = Server.loadSwitchData(user);
-                    serverThread.inform(new ConnectionData(onlineUsers, pairwiseData, senderKeyData, groupData, switchData));
+                    TwoTuple<User, HashMap<ChatSession, ArrayList<ConnectionData>>> backUpMessages = Server.loadBackUpMessages(user);
+                    serverThread.inform(new ConnectionData(onlineUsers, pairwiseData, senderKeyData, groupData, switchData, backUpMessages.getSecond(), backUpMessages.getFirst()));
                 }
                 if (isSwitch) {
                     processSwitchDevice(user);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } else {
+//                ArrayList<ConnectionData> switchData = Server.loadSwitchData(user);
+                User receiver = JdbcUtil.queryBackUpReceiver(user);
+                KeyBundle keyBundle = receiver != null ? JdbcUtil.queryKeyBundle(receiver) : null;
+                serverThread.inform(new ConnectionData(receiver, keyBundle));
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -75,9 +83,11 @@ class DataHandler {
 
     private boolean processLogout() {
         User user = serverThread.getUser();
-        Sender.broadcast(new ConnectionData(user, false), user);
-        Server.removeClient(user);
-        System.out.println("User log out. Current online users: " + Server.getClients().keySet());
+        if (Server.getClients().containsKey(user)) {
+            Sender.broadcast(new ConnectionData(user, false), user);
+            Server.removeClient(user);
+            System.out.println("User log out. Current online users: " + Server.getClients().keySet());
+        }
         return false;
     }
 
@@ -128,10 +138,18 @@ class DataHandler {
             case 11:
                 processDistributeSenderKey(connectionData);
                 break;
+            case 15:
+                processBackUpMessages(connectionData.getReceiverUsername(), connectionData.getBackUpMessages(), connectionData.getUserSignature());
+                break;
             default:
                 System.out.println("Unknown data.");
         }
         return true;
+    }
+
+    private void processBackUpMessages(User receiver, HashMap<ChatSession, ArrayList<ConnectionData>> backUpMessages, User userSignature) {
+        System.out.println("Rece back up messages.");
+        Server.storeBackUpMessages(receiver, backUpMessages, userSignature);
     }
 
     private void processDistributeSenderKey(ConnectionData connectionData) {

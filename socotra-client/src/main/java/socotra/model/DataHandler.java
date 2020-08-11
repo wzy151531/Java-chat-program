@@ -19,6 +19,7 @@ import socotra.util.SetOnlineUsers;
 import socotra.util.UpdateSenderKey;
 import socotra.util.Util;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
@@ -37,14 +38,31 @@ public class DataHandler {
     private void initClient(ConnectionData connectionData) {
         Client.showInitClientAlert();
         ControllerUtil controllerUtil = new ControllerUtil();
-        controllerUtil.loadHomePage();
-        Client.getLoginModel().loadChatData();
+        if (connectionData.getReceiverUsername() == null) {
+            controllerUtil.loadHomePage();
+            Client.getLoginModel().loadChatData();
 
-        processDepositData(connectionData);
-        processOnlineUsers(connectionData.getOnlineUsers());
-        processPairwiseData();
-        processSenderKeyData();
-//        Client.closeInitClientAlert();
+            processBackUpMessages(connectionData.getBackUpMessages(), connectionData.getUserSignature());
+
+            processDepositData(connectionData);
+            processOnlineUsers(connectionData.getOnlineUsers());
+            processPairwiseData();
+            processSenderKeyData();
+        } else {
+            Client.backUpReceiver = connectionData.getReceiverUsername();
+            Client.backUpKeyBundle = connectionData.getKeyBundle();
+            controllerUtil.loadBackUpPage();
+            Client.getLoginModel().loadChatData();
+            Client.closeInitClientAlert();
+        }
+    }
+
+    private void processBackUpMessages(HashMap<ChatSession, ArrayList<ConnectionData>> backUpMessages, User sender) {
+        backUpMessages.forEach((k, v) -> {
+            v.forEach(n -> {
+                handleBackUpMessage(n, sender);
+            });
+        });
     }
 
     private void processOnlineUsers(TreeSet<User> onlineUsers) {
@@ -223,6 +241,7 @@ public class DataHandler {
     private void processSwitchData() {
         if (switchData == null) {
             System.out.println("Switch data is null");
+
             return;
         }
         switchData.forEach(n -> {
@@ -282,6 +301,14 @@ public class DataHandler {
             Client.getHomeModel().appendChatData(connectionData);
         }
         new SendThread(new ConnectionData(connectionData.getUuid(), Client.getClientThread().getUser(), connectionData.getChatSession(), connectionData.getUserSignature())).start();
+    }
+
+    private void handleBackUpMessage(ConnectionData connectionData, User sender) {
+        try {
+            Client.getHomeModel().appendChatData(EncryptionHandler.decryptBackUpData(connectionData, sender));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -4,7 +4,7 @@ public class TwoTuple<A, B> {
     private final A first;
     private final B second;
 
-    TwoTuple(A first, B second) {
+    public TwoTuple(A first, B second) {
         this.first = first;
         this.second = second;
     }

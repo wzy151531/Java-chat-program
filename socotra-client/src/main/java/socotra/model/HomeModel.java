@@ -213,7 +213,9 @@ public class HomeModel {
     }
 
     private synchronized void updateChatData(ChatSession k, ObservableList<ConnectionData> v) {
-        chatData.put(k, v);
+        ObservableList<ConnectionData> pre = chatData.getOrDefault(k, FXCollections.observableArrayList(new ArrayList<>()));
+        pre.addAll(v);
+        chatData.put(k, pre);
     }
 
     private void updateRelatedChatData(User user) {

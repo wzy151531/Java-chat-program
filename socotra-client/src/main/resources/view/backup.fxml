@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.text.* ?>
+<?import javafx.scene.control.* ?>
+<?import javafx.scene.layout.* ?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="228.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="socotra.controller.BackUpController">
+    <children>
+        <Label layoutX="153.0" layoutY="23.0" prefHeight="80.0" prefWidth="134.0" text="BackUp">
+            <font>
+                <Font size="28.0" />
+            </font>
+        </Label>
+        <Label layoutX="45.0" layoutY="103.0" text="Back up messages to:">
+         <font>
+            <Font size="18.0" />
+         </font></Label>
+        <Label fx:id="receiverLabel" layoutX="227.0" layoutY="106.0" text="user">
+         <font>
+            <Font size="14.0" />
+         </font></Label>
+        <Button fx:id="confirmButton" defaultButton="true" layoutX="287.0" layoutY="163.0" mnemonicParsing="false" onAction="#confirm" text="confirm" />
+      <Button fx:id="logoutButton" layoutX="213.0" layoutY="163.0" mnemonicParsing="false" onAction="#logout" text="logout" />
+    </children>
+</AnchorPane>

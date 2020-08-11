@@ -35,6 +35,38 @@ public abstract class EncryptionHandler {
         return decryptData(connectionData);
     }
 
+    public static ConnectionData encryptBackUpData(byte[] data, ChatSession chatSession, int dataType, User receiver, User signature) throws UntrustedIdentityException, NoSessionException {
+        EncryptedClient encryptedClient = Client.getEncryptedClient();
+        SessionCipher sessionCipher = encryptedClient.getSessionCipher(receiver);
+        CiphertextMessage ciphertextMessage = sessionCipher.encrypt(data);
+        byte[] encryptedData = ciphertextMessage.serialize();
+        int cipherTextMessageType = ciphertextMessage.getType();
+        return new ConnectionData(encryptedData, signature, chatSession, cipherTextMessageType, dataType);
+    }
+
+    public static ConnectionData decryptBackUpData(ConnectionData connectionData, User sender) throws Exception {
+        SessionCipher sessionCipher = Client.getEncryptedClient().getSessionCipher(sender);
+        byte[] decryptedData;
+        switch (connectionData.getCipherType()) {
+            case 2:
+                decryptedData = sessionCipher.decrypt(new SignalMessage(connectionData.getCipherData()));
+                break;
+            case 3:
+                decryptedData = sessionCipher.decrypt(new PreKeySignalMessage(connectionData.getCipherData()));
+                break;
+            default:
+                throw new IllegalStateException("Bad chatSession type.");
+        }
+        switch (connectionData.getDataType()) {
+            case ConnectionData.ENCRYPTED_TEXT:
+                return new ConnectionData(new String(decryptedData), connectionData.getUuid(), connectionData.getUserSignature(), connectionData.getChatSession());
+            case ConnectionData.ENCRYPTED_AUDIO:
+                return new ConnectionData(decryptedData, connectionData.getUserSignature(), connectionData.getChatSession());
+            default:
+                throw new IllegalStateException("Bad data type.");
+        }
+    }
+
     private static ConnectionData encryptData(byte[] data, ChatSession chatSession, int dataType) throws UntrustedIdentityException, NoSessionException {
         EncryptedClient encryptedClient = Client.getEncryptedClient();
         byte[] encryptedData;
@@ -55,7 +87,6 @@ public abstract class EncryptionHandler {
                 throw new IllegalStateException("Bad chatSession type.");
         }
         return new ConnectionData(encryptedData, Client.getClientThread().getUser(), chatSession, cipherTextMessageType, dataType);
-
     }
 
     private static byte[] decryptData(ConnectionData connectionData) throws Exception {

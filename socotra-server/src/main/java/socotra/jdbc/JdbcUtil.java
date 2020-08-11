@@ -167,38 +167,18 @@ public class JdbcUtil {
         return resultSet.next();
     }
 
-    /**
-     * Return previous active status of user and set new active status of user.
-     *
-     * @param user
-     * @return
-     * @throws Exception
-     */
-//    public static boolean isActive(User user) throws Exception {
-//        ResultSet resultSet = inquire("select active from users where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
-//        boolean result;
-//        if (resultSet.next()) {
-//            result = resultSet.getBoolean("active");
-//            if (!result) {
-//                insert("update users SET active=" + false + " where username='" + user.getUsername() + "'");
-//                insert("update users SET active=" + true + " where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
-//            }
-//            return result;
-//        }
-//        throw new IllegalArgumentException("User does not exist.");
-//    }
-//
-//    public static boolean isFresh(User user) throws Exception {
-//        ResultSet resultSet = inquire("select count(*) as count from users where username='" + user.getUsername() + "'");
-//        int count = 0;
-//        if (resultSet.next()) {
-//            count = resultSet.getInt("count");
-//        }
-//        if (count == 0) {
-//            throw new IllegalStateException("Bad user.");
-//        }
-//        return count == 1;
-//    }
+    public static User queryBackUpReceiver(User user) throws Exception {
+        ResultSet resultSet = inquire("select username, deviceid from users where username='" + user.getUsername() + "' and active=" + true);
+        if (resultSet.next()) {
+            int deviceId = resultSet.getInt("deviceid");
+            if (deviceId == user.getDeviceId()) {
+                return null;
+            }
+            return new User(resultSet.getString("username"), deviceId, true);
+        }
+        throw new IllegalArgumentException("Bad user.");
+    }
+
     private static boolean userExists(User user) throws Exception {
         ResultSet resultSet = inquire("select * from users where username='" + user.getUsername() + "' and deviceid=" + user.getDeviceId());
         return resultSet.next();

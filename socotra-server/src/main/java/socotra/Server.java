@@ -4,6 +4,7 @@ import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.User;
 import socotra.jdbc.JdbcUtil;
+import socotra.jdbc.TwoTuple;
 import socotra.service.OutputHandler;
 import socotra.service.ServerThread;
 
@@ -36,6 +37,7 @@ public class Server {
     private static HashMap<User, ArrayList<ConnectionData>> depositSenderKeyData = new HashMap<>();
     private static HashMap<User, ArrayList<ConnectionData>> depositGroupData = new HashMap<>();
     private static HashMap<User, ArrayList<ConnectionData>> depositSwitchData = new HashMap<>();
+    private static HashMap<User, TwoTuple<User, HashMap<ChatSession, ArrayList<ConnectionData>>>> backUpMessages = new HashMap<>();
 
     private static Set<User> users = new HashSet<>();
 
@@ -199,6 +201,10 @@ public class Server {
         Server.depositSwitchData.put(receiver, des);
     }
 
+    public synchronized static void storeBackUpMessages(User receiver, HashMap<ChatSession, ArrayList<ConnectionData>> backUpMessages, User sender) {
+        Server.backUpMessages.put(receiver, new TwoTuple<>(sender, backUpMessages));
+    }
+
 
     public synchronized static ArrayList<ConnectionData> loadPairwiseData(User user) {
         ArrayList<ConnectionData> result = Server.depositPairwiseData.get(user);
@@ -230,4 +236,9 @@ public class Server {
         return result;
     }
 
+    public synchronized static TwoTuple<User, HashMap<ChatSession, ArrayList<ConnectionData>>> loadBackUpMessages(User user) {
+        TwoTuple<User, HashMap<ChatSession, ArrayList<ConnectionData>>> result = Server.backUpMessages.get(user);
+        Server.backUpMessages.remove(user);
+        return result;
+    }
 }

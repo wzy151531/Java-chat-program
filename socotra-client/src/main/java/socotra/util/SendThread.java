@@ -26,6 +26,8 @@ public class SendThread extends Thread {
      */
     private boolean logout = false;
 
+    private boolean backUp = false;
+
     /**
      * The constructor for normal information.
      *
@@ -44,6 +46,11 @@ public class SendThread extends Thread {
     public SendThread(ConnectionData connectionData, boolean logout) {
         this.connectionData = connectionData;
         this.logout = logout;
+    }
+
+    public SendThread(ConnectionData connectionData, boolean backUp, int type) {
+        this.connectionData = connectionData;
+        this.backUp = backUp;
     }
 
     /**
@@ -69,6 +76,9 @@ public class SendThread extends Thread {
                 System.out.println("Send data to: " + connectionData.getChatSession().getMembers());
             }
             clientThread.sendData(connectionData);
+            if (backUp) {
+                Util.generateAlert(Alert.AlertType.INFORMATION, "Back up", "Back up successfully.", "Switch account to see the back up messages.").show();
+            }
         }
     }
 }

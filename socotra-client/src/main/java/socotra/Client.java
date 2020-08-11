@@ -7,10 +7,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import socotra.common.ConnectionData;
-import socotra.controller.BoardController;
-import socotra.controller.HomeController;
-import socotra.controller.LoginController;
-import socotra.controller.SignUpController;
+import socotra.common.KeyBundle;
+import socotra.common.User;
+import socotra.controller.*;
 import socotra.model.*;
 import socotra.protocol.*;
 import socotra.util.SetOnlineUsers;
@@ -41,17 +40,15 @@ public class Client extends Application {
      * Controller of home page.
      */
     private static HomeController homeController;
+    private static BackUpController backUpController;
     /**
      * Model of home page.
      */
     private static HomeModel homeModel;
-
+    private static BackUpModel backUpModel;
     private static SignUpController signUpController;
-
     private static SignUpModel signUpModel;
-
     private static EncryptedClient encryptedClient;
-
     /**
      * Controller of SnakeGame page
      */
@@ -62,7 +59,6 @@ public class Client extends Application {
     private static socotra.model.Food Food;
     private static socotra.model.Snake Snake;
     private static SnakePart SnakePart;
-
     /**
      * Communication thread with server.
      */
@@ -75,17 +71,14 @@ public class Client extends Application {
      * Set chat data thread.
      */
     private static Alert waitingAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Connecting To Server.", "Please Be Patient.");
-
     private static Alert initClientAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Client.", "Please Be Patient.");
-
     private static Alert initGroupChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Group Chat.", "Please Be Patient.");
-
     private static Alert initPairwiseChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Pairwise Chat.", "Please Be Patient.");
-
     private static Alert reInitChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "ReInitializing Chat.", "Please Be Patient.");
-
-
     private static DataHandler dataHandler;
+
+    public static User backUpReceiver;
+    public static KeyBundle backUpKeyBundle;
 
     /**
      * Getter for loginController.
@@ -139,6 +132,10 @@ public class Client extends Application {
      */
     public static void setHomeController(HomeController homeController) {
         Client.homeController = homeController;
+    }
+
+    public static void setBackUpController(BackUpController backUpController) {
+        Client.backUpController = backUpController;
     }
 
     public static SignUpController getSignUpController() {
@@ -354,6 +351,14 @@ public class Client extends Application {
             e.printStackTrace();
         }
         System.exit(0);
+    }
+
+    public static BackUpModel getBackUpModel() {
+        return Client.backUpModel;
+    }
+
+    public static void setBackUpModel(BackUpModel backUpModel) {
+        Client.backUpModel = backUpModel;
     }
 
     /**

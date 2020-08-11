@@ -31,4 +31,23 @@ public class ControllerUtil {
         }
     }
 
+    public void loadBackUpPage() {
+        // Load .fxml file
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/backup.fxml"));
+        Pane tempPane = null;
+        try {
+            tempPane = loader.load();
+
+            Client.setBackUpController(loader.getController());
+
+            // Construct scene
+            Scene tempScene = new Scene(tempPane);
+            // Set scene
+            Client.setScene(tempScene);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Util.generateAlert(Alert.AlertType.ERROR, "Error", "Unexpected Error.", "Try again.").show();
+        }
+    }
+
 }

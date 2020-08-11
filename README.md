@@ -4,7 +4,7 @@ This java project is about a client-server mode and **E2EE** chat program based 
 
 ### Version
 
-Current Client Version: `4.5.4`, Server Version: `4.2.4`
+Current Client Version: `4.6.0`, Server Version: `4.3.0`
 
 ## Alias
 
@@ -34,7 +34,7 @@ The whole project is divided into two parts: server and client. Both projects ar
 - [x] Implement multi-device system.
 - [x] Implement switch device function.
 - [x] Implement asychronized switch info notification.
-- [ ] History messages backup from old device to new device.
+- [x] History messages backup from old device to new device.
 - [ ] Fingerprint verfication funciton.
 - [ ] Client appends pre keys to database.
 - [ ] Client updates signed pre key in database.
