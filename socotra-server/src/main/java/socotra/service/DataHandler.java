@@ -40,8 +40,10 @@ class DataHandler {
                     ArrayList<ConnectionData> senderKeyData = Server.loadSenderKeyData(user);
                     ArrayList<ConnectionData> groupData = Server.loadGroupData(user);
                     ArrayList<ConnectionData> switchData = Server.loadSwitchData(user);
-                    TwoTuple<User, HashMap<ChatSession, ArrayList<ConnectionData>>> backUpMessages = Server.loadBackUpMessages(user);
-                    serverThread.inform(new ConnectionData(onlineUsers, pairwiseData, senderKeyData, groupData, switchData, backUpMessages.getSecond(), backUpMessages.getFirst()));
+                    TwoTuple<User, HashMap<ChatSession, ArrayList<ConnectionData>>> backUpMessagesParts = Server.loadBackUpMessages(user);
+                    HashMap<ChatSession, ArrayList<ConnectionData>> backUpMessages = backUpMessagesParts == null ? null : backUpMessagesParts.getSecond();
+                    User sender = backUpMessagesParts == null ? null : backUpMessagesParts.getFirst();
+                    serverThread.inform(new ConnectionData(onlineUsers, pairwiseData, senderKeyData, groupData, switchData, backUpMessages, sender));
                 }
                 if (isSwitch) {
                     processSwitchDevice(user);

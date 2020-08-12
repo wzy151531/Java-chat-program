@@ -38,7 +38,7 @@ public class DataHandler {
     private void initClient(ConnectionData connectionData) {
         Client.showInitClientAlert();
         ControllerUtil controllerUtil = new ControllerUtil();
-        if (connectionData.getReceiverUsername() == null) {
+        if (!connectionData.isBackUp()) {
             controllerUtil.loadHomePage();
             Client.getLoginModel().loadChatData();
 
@@ -58,11 +58,13 @@ public class DataHandler {
     }
 
     private void processBackUpMessages(HashMap<ChatSession, ArrayList<ConnectionData>> backUpMessages, User sender) {
-        backUpMessages.forEach((k, v) -> {
-            v.forEach(n -> {
-                handleBackUpMessage(n, sender);
+        if (backUpMessages != null) {
+            backUpMessages.forEach((k, v) -> {
+                v.forEach(n -> {
+                    handleBackUpMessage(n, sender);
+                });
             });
-        });
+        }
     }
 
     private void processOnlineUsers(TreeSet<User> onlineUsers) {

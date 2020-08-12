@@ -4,7 +4,7 @@ This java project is about a client-server mode and **E2EE** chat program based 
 
 ### Version
 
-Current Client Version: `4.6.0`, Server Version: `4.3.0`
+Current Client Version: `4.6.1`, Server Version: `4.3.1`
 
 ## Alias
 

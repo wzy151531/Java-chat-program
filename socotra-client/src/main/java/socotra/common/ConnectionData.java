@@ -97,6 +97,8 @@ public class ConnectionData implements Serializable {
 
     private HashMap<ChatSession, ArrayList<ConnectionData>> backUpMessages;
 
+    private boolean isBackUp;
+
     /**
      * If connection data is about the result of user's validation, the connection data's type is -1.
      *
@@ -113,6 +115,7 @@ public class ConnectionData implements Serializable {
                           HashMap<ChatSession, ArrayList<ConnectionData>> backUpMessages, User userSignature) {
         this.type = -1;
         this.validated = true;
+        this.isBackUp = false;
         this.onlineUsers = onlineUsers;
         this.depositPairwiseData = depositPairwiseData;
         this.depositSenderKeyData = depositSenderKeyData;
@@ -124,6 +127,7 @@ public class ConnectionData implements Serializable {
 
     public ConnectionData(User receiverUsername, KeyBundle keyBundle) {
         this.type = -1;
+        this.isBackUp = true;
         this.validated = true;
         this.receiverUsername = receiverUsername;
         this.keyBundle = keyBundle;
@@ -354,6 +358,13 @@ public class ConnectionData implements Serializable {
         this.receiverUsername = receiverUsername;
         this.backUpMessages = backUpMessages;
         this.userSignature = userSignature;
+    }
+
+    public boolean isBackUp() {
+        if (type != -1) {
+            throw new IllegalStateException("Type isn't -1, cannot get isBackUp.");
+        }
+        return this.isBackUp;
     }
 
     public HashMap<ChatSession, ArrayList<ConnectionData>> getBackUpMessages() {
