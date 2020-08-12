@@ -206,6 +206,7 @@ public class HomeController {
      * @param item The item needs to show.
      */
     public void setChatListItems(ObservableList<ConnectionData> item) {
+        System.out.println("Set chat list Items.");
         Platform.runLater(() -> {
             chatList.setItems(item);
             scrollChatList();

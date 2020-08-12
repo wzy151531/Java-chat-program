@@ -77,7 +77,9 @@ public class SendThread extends Thread {
             }
             clientThread.sendData(connectionData);
             if (backUp) {
-                Util.generateAlert(Alert.AlertType.INFORMATION, "Back up", "Back up successfully.", "Switch account to see the back up messages.").show();
+                Platform.runLater(() -> {
+                    Util.generateAlert(Alert.AlertType.INFORMATION, "Back up", "Back up successfully.", "Switch account to see the back up messages.").show();
+                });
             }
         }
     }

@@ -89,7 +89,7 @@ public class BackUpController {
                 });
                 result.put(k, records);
             });
-            new SendThread(new ConnectionData(receiver, result, Client.getClientThread().getUser())).start();
+            new SendThread(new ConnectionData(receiver, result, Client.getClientThread().getUser()), true, 1).start();
             System.out.println("Back up success.");
         } catch (Exception e) {
             e.printStackTrace();

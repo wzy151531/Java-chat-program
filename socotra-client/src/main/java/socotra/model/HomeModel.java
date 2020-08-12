@@ -182,7 +182,7 @@ public class HomeModel {
                 certainChatData = FXCollections.observableArrayList(new ArrayList<>());
                 certainChatData.add(connectionData);
                 this.updateChatData(key, certainChatData);
-//                this.appendChatSessionList(key);
+                checkoutChatPanel(key);
                 key.setHint(true);
                 if (!chatSessionList.contains(key)) {
                     this.chatSessionList.add(key);
@@ -213,9 +213,13 @@ public class HomeModel {
     }
 
     private synchronized void updateChatData(ChatSession k, ObservableList<ConnectionData> v) {
-        ObservableList<ConnectionData> pre = chatData.getOrDefault(k, FXCollections.observableArrayList(new ArrayList<>()));
-        pre.addAll(v);
-        chatData.put(k, pre);
+        if (v.size() == 0) {
+            chatData.put(k, v);
+        } else {
+            ObservableList<ConnectionData> pre = chatData.getOrDefault(k, FXCollections.observableArrayList(new ArrayList<>()));
+            pre.addAll(v);
+            chatData.put(k, pre);
+        }
     }
 
     private void updateRelatedChatData(User user) {
@@ -429,6 +433,7 @@ public class HomeModel {
             if (currentChatSession.isEncrypted()) {
                 try {
                     connectionData = EncryptionHandler.encryptTextData(text, currentChatSession);
+                    System.out.println(text);
                     appendChatData(new ConnectionData(text, connectionData.getUuid(), connectionData.getUserSignature(), connectionData.getChatSession()));
                 } catch (UntrustedIdentityException | NoSessionException e) {
                     e.printStackTrace();
