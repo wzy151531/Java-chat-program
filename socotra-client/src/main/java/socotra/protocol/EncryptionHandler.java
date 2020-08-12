@@ -120,7 +120,7 @@ public abstract class EncryptionHandler {
                 decryptData(connectionData) : decryptGroupData(connectionData), connectionData.getUserSignature(), connectionData.getChatSession());
     }
 
-    private static User extractTheOtherName(ChatSession chatSession) throws IllegalStateException {
+    public static User extractTheOtherName(ChatSession chatSession) throws IllegalStateException {
         TreeSet<User> members = chatSession.getMembers();
         User caller = Client.getClientThread().getUser();
         if (members.size() != 2 || !members.contains(caller)) {

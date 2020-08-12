@@ -361,6 +361,11 @@ public class HomeModel {
      * @param chatSession The new chat session checkout to.
      */
     public void checkoutChatPanel(ChatSession chatSession) {
+        if (chatSession.getSessionType() == ChatSession.PAIRWISE) {
+            Client.getHomeController().setVerifyButtonVisible(true);
+        } else {
+            Client.getHomeController().setVerifyButtonVisible(false);
+        }
         this.currentChatSession = chatSession;
         Client.getHomeController().setChatListItems(getCertainChatData(chatSession));
     }

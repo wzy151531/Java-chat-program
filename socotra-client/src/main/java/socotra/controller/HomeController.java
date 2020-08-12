@@ -17,15 +17,20 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
+import org.whispersystems.libsignal.SignalProtocolAddress;
+import org.whispersystems.libsignal.fingerprint.Fingerprint;
+import org.whispersystems.libsignal.fingerprint.NumericFingerprintGenerator;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
 import socotra.common.User;
 import socotra.model.HomeModel;
 import socotra.protocol.EncryptedClient;
+import socotra.protocol.EncryptionHandler;
 import socotra.util.SendThread;
 import socotra.util.Util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.TreeSet;
 
@@ -74,6 +79,9 @@ public class HomeController {
      */
     @FXML
     private Button searchButton;
+
+    @FXML
+    private Button verifyButton;
     /**
      * Search chat message input.
      */
@@ -235,6 +243,7 @@ public class HomeController {
         cancelAddingButton.setManaged(false);
         confirmAddingButton.setVisible(false);
         confirmAddingButton.setVisible(false);
+        verifyButton.setVisible(false);
         configEmojiList();
         configChatList();
         configChatSessionList();
@@ -629,6 +638,29 @@ public class HomeController {
         EncryptedClient encryptedClient = Client.getEncryptedClient();
         encryptedClient.initGroupChat(chatSession, encryptedClient.createSenderKey(chatSession.generateChatIdCSV()), false);
         this.cancelAdding(event);
+    }
+
+    @FXML
+    public void verify(ActionEvent event) {
+        ChatSession chatSession = Client.getHomeModel().getCurrentChatSession();
+        if (chatSession.getSessionType() == ChatSession.GROUP) return;
+        Util.generateAlert(Alert.AlertType.INFORMATION, "Verify fingerprint",
+                "Please verify this pairwise chat fingerprint with the other one face to face.",
+                createFingerprint(chatSession).getDisplayableFingerprint().getDisplayText()).show();
+    }
+
+    private Fingerprint createFingerprint(ChatSession chatSession) {
+        NumericFingerprintGenerator nfg = new NumericFingerprintGenerator(5200);
+        EncryptedClient me = Client.getEncryptedClient();
+        User theOther = EncryptionHandler.extractTheOtherName(chatSession);
+        SignalProtocolAddress theOtherAddress = new SignalProtocolAddress(theOther.getUsername(), theOther.getDeviceId());
+        return nfg.createFor(1, me.getIdentifier(), me.getIdentityKeyPair().getPublicKey(),
+                theOtherAddress.toString().getBytes(StandardCharsets.UTF_8),
+                me.getIdentityKeyStore().getIdentity(theOtherAddress));
+    }
+
+    public void setVerifyButtonVisible(boolean visible) {
+        verifyButton.setVisible(visible);
     }
 
 }
