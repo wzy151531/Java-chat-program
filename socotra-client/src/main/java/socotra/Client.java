@@ -381,7 +381,7 @@ public class Client extends Application {
         primaryStage.show();
         stage = primaryStage;
 
-        TestProtocol.testGroup();
+//        TestProtocol.test();
     }
 
 }

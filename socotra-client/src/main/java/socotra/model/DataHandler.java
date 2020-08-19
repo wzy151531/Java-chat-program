@@ -94,7 +94,7 @@ public class DataHandler {
             // If connectionData is about users online information.
             case -2:
                 User user = connectionData.getUser();
-                System.out.println(user + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
+//                System.out.println(user + " is " + (connectionData.getIsOnline() ? "online" : "offline"));
                 if (connectionData.getIsOnline() && !Client.getHomeModel().clientsContains(user)) {
                     HomeModel homeModel = Client.getHomeModel();
                     homeModel.appendClientsList(user);

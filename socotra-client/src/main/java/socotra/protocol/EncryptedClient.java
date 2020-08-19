@@ -236,7 +236,7 @@ public class EncryptedClient {
     }
 
     public void processReceivedSenderKey(byte[] senderKey, ChatSession chatSession, User sender, boolean init) {
-        System.out.println("Process " + sender + " 's sender key in " + chatSession.generateChatIdCSV());
+//        System.out.println("Process " + sender + " 's sender key in " + chatSession.generateChatIdCSV());
         try {
             storeReceivedSenderKey(senderKey, chatSession.generateChatIdCSV(), sender);
 
@@ -246,7 +246,7 @@ public class EncryptedClient {
 
             DataHandler dataHandler = Client.getDataHandler();
             if (isFresh) {
-                System.out.println("Own sender key record of " + chatSession.generateChatIdCSV() + " is fresh");
+//                System.out.println("Own sender key record of " + chatSession.generateChatIdCSV() + " is fresh");
                 SenderKeyDistributionMessage SKDM = createSenderKey(chatSession.generateChatIdCSV());
                 initGroupChat(chatSession, SKDM, init);
             } else if (init && !dataHandler.isGroupDataNull()) {

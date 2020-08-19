@@ -194,7 +194,7 @@ public class HomeModel {
             if (currentChatSession == null || !key.equals(currentChatSession)) {
                 chatSessionList.forEach(n -> {
                     if (n.equals(key)) {
-                        System.out.println("Set hint true");
+//                        System.out.println("Set hint true");
                         n.setHint(true);
                         Client.getHomeController().refreshChatSessionList();
                     }
@@ -438,7 +438,7 @@ public class HomeModel {
             if (currentChatSession.isEncrypted()) {
                 try {
                     connectionData = EncryptionHandler.encryptTextData(text, currentChatSession);
-                    System.out.println(text);
+//                    System.out.println(text);
                     appendChatData(new ConnectionData(text, connectionData.getUuid(), connectionData.getUserSignature(), connectionData.getChatSession()));
                 } catch (UntrustedIdentityException | NoSessionException e) {
                     e.printStackTrace();

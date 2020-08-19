@@ -2,11 +2,14 @@ package socotra.protocol;
 
 import org.whispersystems.libsignal.NoSessionException;
 import org.whispersystems.libsignal.SessionCipher;
+import org.whispersystems.libsignal.SignalProtocolAddress;
 import org.whispersystems.libsignal.UntrustedIdentityException;
 import org.whispersystems.libsignal.groups.GroupCipher;
+import org.whispersystems.libsignal.groups.SenderKeyName;
 import org.whispersystems.libsignal.protocol.CiphertextMessage;
 import org.whispersystems.libsignal.protocol.PreKeySignalMessage;
 import org.whispersystems.libsignal.protocol.SignalMessage;
+import org.whispersystems.libsignal.state.SessionStore;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
@@ -71,6 +74,7 @@ public abstract class EncryptionHandler {
         EncryptedClient encryptedClient = Client.getEncryptedClient();
         byte[] encryptedData;
         int cipherTextMessageType = 0;
+        SignalProtocolAddress signalProtocolAddress;
         switch (chatSession.getSessionType()) {
             case ChatSession.PAIRWISE:
                 User receiver = extractTheOtherName(chatSession);
@@ -78,10 +82,32 @@ public abstract class EncryptionHandler {
                 CiphertextMessage ciphertextMessage = sessionCipher.encrypt(data);
                 encryptedData = ciphertextMessage.serialize();
                 cipherTextMessageType = ciphertextMessage.getType();
+
+                if (dataType == ConnectionData.ENCRYPTED_TEXT) {
+                    signalProtocolAddress = new SignalProtocolAddress(receiver.getUsername(), receiver.getDeviceId());
+                    System.out.println("After Encrypt: " + new String(data) + ", the sending chain key's new message key is: " +
+                            new String(encryptedClient.getSessionStore().loadSession(signalProtocolAddress).getSessionState().
+                                    getSenderChainKey().getMessageKeys().getCipherKey().getEncoded()));
+                }
+
                 break;
             case ChatSession.GROUP:
-                GroupCipher groupCipher = encryptedClient.getGroupCipher(Client.getClientThread().getUser(), chatSession);
+                User sender = Client.getClientThread().getUser();
+                GroupCipher groupCipher = encryptedClient.getGroupCipher(sender, chatSession);
                 encryptedData = groupCipher.encrypt(data);
+
+                if (dataType == ConnectionData.ENCRYPTED_TEXT) {
+                    try {
+                        signalProtocolAddress = new SignalProtocolAddress(sender.getUsername(), sender.getDeviceId());
+                        SenderKeyName senderKeyName = new SenderKeyName(chatSession.generateChatIdCSV(), signalProtocolAddress);
+                        System.out.println("After Encrypt group message: " + new String(data) + ", " + signalProtocolAddress + "'s sender key's new message key is: " +
+                                new String(encryptedClient.getSenderKeyStore().loadSenderKey(senderKeyName).getSenderKeyState().
+                                        getSenderChainKey().getSenderMessageKey().getCipherKey()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 break;
             default:
                 throw new IllegalStateException("Bad chatSession type.");
@@ -90,28 +116,59 @@ public abstract class EncryptionHandler {
     }
 
     private static byte[] decryptData(ConnectionData connectionData) throws Exception {
-        SessionCipher sessionCipher = Client.getEncryptedClient().getSessionCipher(connectionData.getUserSignature());
+        User sender = connectionData.getUserSignature();
+        SessionCipher sessionCipher = Client.getEncryptedClient().getSessionCipher(sender);
+        EncryptedClient encryptedClient = Client.getEncryptedClient();
+        SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(sender.getUsername(), sender.getDeviceId());
+        byte[] result;
         switch (connectionData.getCipherType()) {
             case 2:
-                return sessionCipher.decrypt(new SignalMessage(connectionData.getCipherData()));
+                SignalMessage signalMessage = new SignalMessage(connectionData.getCipherData());
+                result = sessionCipher.decrypt(signalMessage);
+
+                if (connectionData.getType() == 7 && connectionData.getDataType() == ConnectionData.ENCRYPTED_TEXT) {
+                    System.out.println("After Decrypt: " + new String(result) + ", the receiving chain key's new message key is: " +
+                            new String(encryptedClient.getSessionStore().loadSession(signalProtocolAddress).getSessionState().
+                                    getReceiverChainKey(signalMessage.getSenderRatchetKey()).getMessageKeys().getCipherKey().getEncoded()));
+                }
+
+                return result;
             case 3:
-                return sessionCipher.decrypt(new PreKeySignalMessage(connectionData.getCipherData()));
+                PreKeySignalMessage preKeySignalMessage = new PreKeySignalMessage(connectionData.getCipherData());
+                result = sessionCipher.decrypt(preKeySignalMessage);
+
+                if (connectionData.getType() == 7 && connectionData.getDataType() == ConnectionData.ENCRYPTED_TEXT) {
+                    System.out.println("After Decrypt: " + new String(result) + ", the receiving chain key's new message key is: " +
+                            new String(encryptedClient.getSessionStore().loadSession(signalProtocolAddress).getSessionState().
+                                    getReceiverChainKey(preKeySignalMessage.getWhisperMessage().getSenderRatchetKey()).getMessageKeys().getCipherKey().getEncoded()));
+                }
+
+                return result;
             default:
                 throw new IllegalStateException("Bad encrypted data.");
         }
     }
 
     private static byte[] decryptGroupData(ConnectionData connectionData) throws Exception {
-        System.out.println("decrypt group data");
-        GroupCipher groupCipher = Client.getEncryptedClient().getGroupCipher(connectionData.getUserSignature(),
-                connectionData.getChatSession());
-        return groupCipher.decrypt(connectionData.getCipherData());
+        EncryptedClient encryptedClient = Client.getEncryptedClient();
+        User sender = connectionData.getUserSignature();
+        ChatSession chatSession = connectionData.getChatSession();
+        GroupCipher groupCipher = encryptedClient.getGroupCipher(sender, chatSession);
+        byte[] result = groupCipher.decrypt(connectionData.getCipherData());
+
+        SignalProtocolAddress signalProtocolAddress = new SignalProtocolAddress(sender.getUsername(), sender.getDeviceId());
+        SenderKeyName senderKeyName = new SenderKeyName(chatSession.generateChatIdCSV(), signalProtocolAddress);
+        System.out.println("After Decrypt group message: " + new String(result) + ", " + signalProtocolAddress + "'s sender key's new message key is: " +
+                new String(encryptedClient.getSenderKeyStore().loadSenderKey(senderKeyName).getSenderKeyState().
+                        getSenderChainKey().getSenderMessageKey().getCipherKey()));
+
+        return result;
     }
 
     public static ConnectionData decryptTextData(ConnectionData connectionData) throws Exception {
         String plainText = new String(connectionData.getChatSession().getSessionType() == ChatSession.PAIRWISE ?
                 decryptData(connectionData) : decryptGroupData(connectionData));
-        System.out.println("Get plainText: " + plainText);
+//        System.out.println("Get plainText: " + plainText);
         return new ConnectionData(plainText, connectionData.getUuid(), connectionData.getUserSignature(), connectionData.getChatSession());
     }
 

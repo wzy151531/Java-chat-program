@@ -214,7 +214,7 @@ public class HomeController {
      * @param item The item needs to show.
      */
     public void setChatListItems(ObservableList<ConnectionData> item) {
-        System.out.println("Set chat list Items.");
+//        System.out.println("Set chat list Items.");
         Platform.runLater(() -> {
             chatList.setItems(item);
             scrollChatList();
@@ -234,6 +234,7 @@ public class HomeController {
     @FXML
     private void initialize() {
         Client.setHomeModel(new HomeModel());
+        System.out.println("Hello, " + Client.getClientThread().getUser().getUsername());
         usernameLabel.setText(Client.getClientThread().getUser().getUsername());
         stopButton.setDisable(true);
         sendAudioButton.setDisable(true);
@@ -624,7 +625,7 @@ public class HomeController {
      */
     @FXML
     public void confirmAdding(ActionEvent event) {
-        System.out.println(this.newGroup);
+//        System.out.println(this.newGroup);
         if (newGroup.size() <= 1) {
             Util.generateAlert(Alert.AlertType.WARNING, "Warning", "Cannot create a group chat with less two people.", "Try again.").show();
             return;

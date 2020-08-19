@@ -72,9 +72,9 @@ public class SendThread extends Thread {
                 warningAlert.show();
             });
         } else {
-            if (connectionData.getType() == 7) {
-                System.out.println("Send data to: " + connectionData.getChatSession().getMembers());
-            }
+//            if (connectionData.getType() == 7) {
+//                System.out.println("Send data to: " + connectionData.getChatSession().getMembers());
+//            }
             clientThread.sendData(connectionData);
             if (backUp) {
                 Platform.runLater(() -> {

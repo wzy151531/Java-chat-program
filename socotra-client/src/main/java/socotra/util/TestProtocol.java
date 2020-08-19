@@ -66,12 +66,22 @@ public class TestProtocol {
 
         SessionCipher sessionCipher1To2 = new SessionCipher(tc1.getSessionStore(), tc1.getPreKeyStore(), tc1.getSignedPreKeyStore(),
                 tc1.getIdentityKeyStore(), signalProtocolAddress2);
+
         SessionCipher sessionCipher2To1 = new SessionCipher(tc2.getSessionStore(), tc2.getPreKeyStore(), tc2.getSignedPreKeyStore(),
                 tc2.getIdentityKeyStore(), signalProtocolAddress1);
 
         CiphertextMessage message1To2_1 = sessionCipher1To2.encrypt("Hello world!".getBytes(StandardCharsets.UTF_8));
 
-        byte[] result1To2_1 = sessionCipher2To1.decrypt(new PreKeySignalMessage(message1To2_1.serialize()));
+        System.out.println("After Encrypt: ");
+        System.out.println(new String(tc1.getSessionStore().loadSession(signalProtocolAddress2).getSessionState().getSenderChainKey().getMessageKeys().getCipherKey().getEncoded()));
+
+
+        PreKeySignalMessage temp = new PreKeySignalMessage(message1To2_1.serialize());
+        byte[] result1To2_1 = sessionCipher2To1.decrypt(temp);
+
+        System.out.println("After Decrypt: ");
+        System.out.println(new String(tc2.getSessionStore().loadSession(signalProtocolAddress1).getSessionState().getReceiverChainKey(temp.getWhisperMessage().getSenderRatchetKey()).getMessageKeys().getCipherKey().getEncoded()));
+
         System.out.println(new String(result1To2_1));
 
         CiphertextMessage message2To1_1 = sessionCipher2To1.encrypt("Hello world back.".getBytes(StandardCharsets.UTF_8));
