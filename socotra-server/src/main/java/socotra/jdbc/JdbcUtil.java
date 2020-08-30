@@ -200,25 +200,6 @@ public class JdbcUtil {
     }
 
     /**
-     * Generate chat session members according to the sessionName and currentUser.
-     *
-     * @param sessionName The session name of chat session.
-     * @param currentUser The user who wants this session info.
-     * @return Chat session members.
-     */
-    public static TreeSet<String> generateSessionMembers(String sessionName, String currentUser) {
-        String[] usernames = sessionName.split(",");
-        TreeSet<String> result = new TreeSet<>();
-        for (String username : usernames) {
-            result.add(username);
-        }
-        if (!sessionName.equals("all")) {
-            result.add(currentUser);
-        }
-        return result;
-    }
-
-    /**
      * Query userId according to the given user name.
      *
      * @param user The given user.

@@ -3,6 +3,7 @@ package socotra.jdbc;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import socotra.common.User;
 import socotra.util.SenderTest;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,8 +12,12 @@ import java.util.TreeSet;
 
 public class JdbcSenderTest {
 
+    private static User user1, user2;
+
     @BeforeAll
     public static void init() throws Exception {
+        user1 = new User("admin", 1, true);
+        user2 = new User("testInsert", 1, true);
         JdbcUtil.init();
         JdbcUtil.connect();
     }
@@ -22,48 +27,33 @@ public class JdbcSenderTest {
         JdbcUtil.end();
     }
 
-    private void deleteFromTestUser(String username) throws Exception {
-        JdbcUtil.insert("delete from test_user where username='" + username + "'");
+    private void deleteFromTestUser(User user) throws Exception {
+        JdbcUtil.insert("delete from users where username='" + user.getUsername() + "'");
     }
 
     @Test
     public void testValidateUser() throws Exception {
-        boolean actual = JdbcUtil.validateUser("admin", "admin");
-        assertTrue(actual);
+        JdbcUtil.insert("insert into users(username, password, deviceid, active) values ('admin', 'admin', 1, true)");
 
-        actual = JdbcUtil.validateUser("admin1", "admin2");
+        boolean actual = JdbcUtil.validateUser(user1, "admin");
         assertFalse(actual);
-    }
 
-    @Test
-    public void testGenerateSessionMembers() {
-        TreeSet<String> expected = SenderTest.generateTreeSet("admin", "admin1");
-        TreeSet<String> actual = JdbcUtil.generateSessionMembers("admin", "admin1");
-        assertEquals(expected, actual);
+        assertThrows(IllegalArgumentException.class, () -> {
+            JdbcUtil.validateUser(user1, "admin2");
+        });
 
-        expected = SenderTest.generateTreeSet("admin", "admin1", "admin2");
-        actual = JdbcUtil.generateSessionMembers("admin,admin1", "admin2");
-        assertEquals(expected, actual);
-
-        actual = JdbcUtil.generateSessionMembers("admin,admin2", "admin1");
-        assertEquals(expected, actual);
-
-        actual = JdbcUtil.generateSessionMembers("admin1,admin2", "admin");
-        assertEquals(expected, actual);
-
-        expected = SenderTest.generateTreeSet("all");
-        actual = JdbcUtil.generateSessionMembers("all", "admin");
-        assertEquals(expected, actual);
+        deleteFromTestUser(user1);
     }
 
     @Test
     public void testInsert() throws Exception {
-        boolean actual = JdbcUtil.validateUser("testInsert", "testInsert");
+        assertThrows(IllegalArgumentException.class, () -> {
+            JdbcUtil.validateUser(user2, "testInsert");
+        });
+        JdbcUtil.insert("insert into users(username, password, deviceid, active) values ('testInsert', 'testInsert', 1, true)");
+        boolean actual = JdbcUtil.validateUser(user2, "testInsert");
         assertFalse(actual);
-        JdbcUtil.insert("insert into test_user(username, password) values ('testInsert', 'testInsert')");
-        actual = JdbcUtil.validateUser("testInsert", "testInsert");
-        assertTrue(actual);
-        deleteFromTestUser("testInsert");
+        deleteFromTestUser(user2);
     }
 
 }

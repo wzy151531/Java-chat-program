@@ -1,9 +1,13 @@
 package socotra;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import socotra.common.ChatSession;
+import socotra.common.User;
+import socotra.service.OutputHandler;
 import socotra.util.SenderTest;
 
 import java.io.ObjectOutputStream;
@@ -11,14 +15,23 @@ import java.util.HashMap;
 
 public class ServerTest {
 
+    private static User user1, user2, user3;
+
+    @BeforeAll
+    public static void init() {
+        user1 = new User("admin", 1, true);
+        user2 = new User("admin1", 1, true);
+        user3 = new User("admin2", 1, true);
+    }
+
     @Test
     public void testGetClient() {
-        HashMap<String, ObjectOutputStream> expected = SenderTest.generateHashMap("admin", "admin1", "admin2");
+        HashMap<User, OutputHandler> expected = SenderTest.generateHashMap("admin", "admin1", "admin2");
         Server.getClients().clear();
         expected.forEach((k, v) -> {
             Server.addClient(k, v);
         });
-        HashMap<String, ObjectOutputStream> actual = Server.getClients();
+        HashMap<User, OutputHandler> actual = Server.getClients();
         assertEquals(expected, actual);
 
         expected = SenderTest.generateHashMap("admin");
@@ -32,32 +45,32 @@ public class ServerTest {
 
     @Test
     public void testAddClient() {
-        HashMap<String, ObjectOutputStream> expected = SenderTest.generateHashMap("admin", "admin1");
+        HashMap<User, OutputHandler> expected = SenderTest.generateHashMap("admin", "admin1");
         Server.getClients().clear();
-        Server.getClients().put("admin", null);
-        Server.addClient("admin1", null);
-        HashMap<String, ObjectOutputStream> actual = Server.getClients();
+        Server.getClients().put(user1, null);
+        Server.addClient(user2, null);
+        HashMap<User, OutputHandler> actual = Server.getClients();
         assertEquals(expected, actual);
 
         expected = SenderTest.generateHashMap("admin", "admin1");
         Server.getClients().clear();
-        Server.getClients().put("admin", null);
-        Server.getClients().put("admin1", null);
-        Server.addClient("admin1", null);
+        Server.getClients().put(user1, null);
+        Server.getClients().put(user2, null);
+        Server.addClient(user2, null);
         actual = Server.getClients();
         assertEquals(expected, actual);
     }
 
     @Test
     public void testRemoveClient() {
-        HashMap<String, ObjectOutputStream> expected = SenderTest.generateHashMap("admin", "admin1");
+        HashMap<User, OutputHandler> expected = SenderTest.generateHashMap("admin", "admin1");
         Server.getClients().clear();
         expected.forEach((k, v) -> {
             Server.addClient(k, v);
         });
-        Server.addClient("admin2", null);
-        Server.removeClient("admin2");
-        HashMap<String, ObjectOutputStream> actual = Server.getClients();
+        Server.addClient(user3, null);
+        Server.removeClient(user3);
+        HashMap<User, OutputHandler> actual = Server.getClients();
         assertEquals(expected, actual);
 
         expected = SenderTest.generateHashMap("admin");
@@ -65,7 +78,7 @@ public class ServerTest {
         expected.forEach((k, v) -> {
             Server.addClient(k, v);
         });
-        Server.removeClient("admin1");
+        Server.removeClient(user2);
         actual = Server.getClients();
         assertEquals(expected, actual);
     }

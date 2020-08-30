@@ -1,5 +1,7 @@
 package socotra.model;
 
+import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.junit.jupiter.api.BeforeAll;
@@ -7,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import socotra.Client;
 import socotra.common.ChatSession;
 import socotra.common.ConnectionData;
+import socotra.common.User;
 import socotra.util.SetOnlineUsers;
 import socotra.util.UtilTest;
 
@@ -25,32 +28,34 @@ public class HomeModelTest {
     private static ConnectionData connectionData2;
     private static ConnectionData connectionData3;
     private static ConnectionData connectionData4;
+    private static User user1, user2;
 
     @BeforeAll
     public static void init() throws Exception {
-        mockChatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true, true);
-        mockChatSession2 = new ChatSession(UtilTest.generateTreeSet("admin", "admin2"), true, true);
-        connectionData1 = new ConnectionData("test", "admin", mockChatSession1);
-        connectionData2 = new ConnectionData("test1", "admin", mockChatSession1);
-        connectionData3 = new ConnectionData("test2", "admin1", mockChatSession2);
-        connectionData4 = new ConnectionData("test3", "admin1", mockChatSession2);
+        user1 = new User("admin", 1, true);
+        user2 = new User("admin1", 1, true);
+        mockChatSession1 = new ChatSession(UtilTest.generateTreeSet("admin", "admin1"), true, true, ChatSession.PAIRWISE);
+        mockChatSession2 = new ChatSession(UtilTest.generateTreeSet("admin", "admin2"), true, true, ChatSession.PAIRWISE);
+        connectionData1 = new ConnectionData("test", user1, mockChatSession1);
+        connectionData2 = new ConnectionData("test1", user1, mockChatSession1);
+        connectionData3 = new ConnectionData("test2", user2, mockChatSession2);
+        connectionData4 = new ConnectionData("test3", user2, mockChatSession2);
 
         new ClientThread().start();
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         Client.setHomeModel(new HomeModel());
     }
 
     @Test
     public void testSetOnlineUsers() throws Exception {
-        TreeSet<String> onlineUsers = UtilTest.generateTreeSet("admin", "admin1");
+        TreeSet<User> onlineUsers = UtilTest.generateTreeSet("admin", "admin1");
         new SetOnlineUsers(onlineUsers).start();
-        Thread.sleep(500);
-        ArrayList<String> temp = new ArrayList<>();
-        temp.add("all");
-        temp.add("admin");
-        temp.add("admin1");
-        ObservableList<String> expected = FXCollections.observableArrayList(temp);
-        ObservableList<String> actual = Client.getHomeModel().getClientsList();
+        Thread.sleep(1000);
+        ArrayList<User> temp = new ArrayList<>();
+        temp.add(user1);
+        temp.add(user2);
+        ObservableList<User> expected = FXCollections.observableArrayList(temp);
+        ObservableList<User> actual = Client.getHomeModel().getClientsList();
         assertEquals(expected, actual);
     }
 
@@ -66,8 +71,7 @@ public class HomeModelTest {
         chatData.put(mockChatSession1, mockList1);
         chatData.put(mockChatSession2, mockList2);
 
-        new SetChatData(chatData).start();
-        Thread.sleep(500);
+        Client.getHomeModel().setChatData(chatData);
 
         HashMap<ChatSession, ObservableList<ConnectionData>> expected = new HashMap<>();
         ObservableList<ConnectionData> mockList3 = FXCollections.observableArrayList(new ArrayList<>());

@@ -1,6 +1,7 @@
 package socotra.util;
 
 import org.junit.jupiter.api.Test;
+import socotra.common.User;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -10,18 +11,10 @@ import java.util.TreeSet;
 
 public class UtilTest {
 
-    public static TreeSet<String> generateTreeSet(String... toUsernames) {
-        TreeSet<String> result = new TreeSet<>();
+    public static TreeSet<User> generateTreeSet(String... toUsernames) {
+        TreeSet<User> result = new TreeSet<>();
         for (String toUsername : toUsernames) {
-            result.add(toUsername);
-        }
-        return result;
-    }
-
-    public static HashMap<String, ObjectOutputStream> generateHashMap(String... clients) {
-        HashMap<String, ObjectOutputStream> result = new HashMap<>();
-        for (String client : clients) {
-            result.put(client, null);
+            result.add(new User(toUsername, 1, true));
         }
         return result;
     }

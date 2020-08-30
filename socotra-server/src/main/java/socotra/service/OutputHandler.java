@@ -9,7 +9,7 @@ public class OutputHandler {
 
     private final ObjectOutputStream oos;
 
-    OutputHandler(ObjectOutputStream oos) {
+    public OutputHandler(ObjectOutputStream oos) {
         this.oos = oos;
     }
 

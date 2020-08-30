@@ -4,57 +4,40 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import socotra.util.SenderTest;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConnectionDataTest {
 
     private static ConnectionData typeNegativeOne;
     private static ConnectionData typeNegativeTwo;
-    private static ConnectionData typeNegativeThree;
     private static ConnectionData typeNegativeFour;
     private static ConnectionData typeZero;
     private static ConnectionData typeOne1;
     private static ConnectionData typeOne2;
     private static ConnectionData typeTwo;
-    private static ConnectionData typeThree;
     private static UUID uuid;
-    private static TreeSet<String> onlineUsers;
+    private static TreeSet<User> onlineUsers;
     private static ChatSession chatSession;
     private static byte[] audioData;
-    private static HashMap<ChatSession, List<ConnectionData>> chatData;
+    private static User user1, user2;
 
     @BeforeAll
     public static void init() {
+        user1 = new User("admin", 1, true);
+        user2 = new User("admin1", 1, true);
         uuid = UUID.randomUUID();
         onlineUsers = SenderTest.generateTreeSet("admin", "admin1", "admin2");
-        chatSession = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), true);
+        chatSession = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), true, true, ChatSession.PAIRWISE);
         audioData = "audio".getBytes();
-        chatData = generateMockChatData();
-        typeNegativeOne = new ConnectionData(true);
-        typeNegativeTwo = new ConnectionData("admin", true);
-        typeNegativeThree = new ConnectionData(onlineUsers);
-        typeNegativeFour = new ConnectionData(uuid, "admin", chatSession);
-        typeZero = new ConnectionData(0, "admin", "admin");
-        typeOne1 = new ConnectionData("test", "admin", chatSession);
-        typeOne2 = new ConnectionData("test", uuid, "admin", chatSession);
-        typeTwo = new ConnectionData(audioData, "admin", chatSession);
-        typeThree = new ConnectionData(chatData, "admin");
-    }
-
-    private static HashMap<ChatSession, List<ConnectionData>> generateMockChatData() {
-        HashMap<ChatSession, List<ConnectionData>> result = new HashMap<>();
-        ChatSession mockChatSession1 = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), true);
-        List<ConnectionData> mockList1 = new ArrayList<>();
-        mockList1.add(new ConnectionData("test", "admin", mockChatSession1));
-        mockList1.add(new ConnectionData("test1", "admin", mockChatSession1));
-        ChatSession mockChatSession2 = new ChatSession(SenderTest.generateTreeSet("admin", "admin1"), true);
-        List<ConnectionData> mockList2 = new ArrayList<>();
-        mockList2.add(new ConnectionData("test2", "admin1", mockChatSession2));
-        mockList2.add(new ConnectionData("test3", "admin1", mockChatSession2));
-        result.put(mockChatSession2, mockList2);
-        return result;
+        typeNegativeOne = new ConnectionData(onlineUsers, null, null, null, null, null, user1);
+        typeNegativeTwo = new ConnectionData(user1, true);
+        typeNegativeFour = new ConnectionData(uuid, user1, chatSession, user2);
+        typeZero = new ConnectionData(0, user1, "admin");
+        typeOne1 = new ConnectionData("test", user1, chatSession);
+        typeOne2 = new ConnectionData("test", uuid, user1, chatSession);
+        typeTwo = new ConnectionData(audioData, user1, chatSession);
     }
 
     @Test
@@ -63,8 +46,6 @@ public class ConnectionDataTest {
         assertEquals(actual, -1);
         actual = typeNegativeTwo.getType();
         assertEquals(actual, -2);
-        actual = typeNegativeThree.getType();
-        assertEquals(actual, -3);
         actual = typeNegativeFour.getType();
         assertEquals(actual, -4);
         actual = typeZero.getType();
@@ -73,8 +54,6 @@ public class ConnectionDataTest {
         assertEquals(actual, 1);
         actual = typeTwo.getType();
         assertEquals(actual, 2);
-        actual = typeThree.getType();
-        assertEquals(actual, 3);
     }
 
     @Test
@@ -89,13 +68,7 @@ public class ConnectionDataTest {
             typeNegativeTwo.getUuid();
         });
         assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getUuid();
-        });
-        assertThrows(IllegalStateException.class, () -> {
             typeZero.getUuid();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.getUuid();
         });
     }
 
@@ -114,16 +87,10 @@ public class ConnectionDataTest {
             typeNegativeTwo.getIsSent();
         });
         assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getIsSent();
-        });
-        assertThrows(IllegalStateException.class, () -> {
             typeNegativeFour.getIsSent();
         });
         assertThrows(IllegalStateException.class, () -> {
             typeZero.getIsSent();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.getIsSent();
         });
     }
 
@@ -142,44 +109,31 @@ public class ConnectionDataTest {
             typeNegativeTwo.setIsSent(true);
         });
         assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.setIsSent(true);
-        });
-        assertThrows(IllegalStateException.class, () -> {
             typeNegativeFour.setIsSent(true);
         });
         assertThrows(IllegalStateException.class, () -> {
             typeZero.setIsSent(true);
         });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.setIsSent(true);
-        });
     }
 
     @Test
-    public void testGetUsername() {
-        String expected = "admin";
-        String actual = typeZero.getUsername();
+    public void testGetUser() {
+        User expected = new User("admin", 1, true);
+        User actual = typeZero.getUser();
         assertEquals(expected, actual);
         assertThrows(IllegalStateException.class, () -> {
-            typeNegativeOne.getUsername();
+            typeNegativeOne.getUser();
+        });
+        actual = typeNegativeTwo.getUser();
+        assertEquals(expected, actual);
+        assertThrows(IllegalStateException.class, () -> {
+            typeNegativeFour.getUser();
         });
         assertThrows(IllegalStateException.class, () -> {
-            typeNegativeTwo.getUsername();
+            typeOne1.getUser();
         });
         assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getUsername();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeNegativeFour.getUsername();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeOne1.getUsername();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeTwo.getUsername();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.getUsername();
+            typeTwo.getUser();
         });
     }
 
@@ -195,9 +149,6 @@ public class ConnectionDataTest {
             typeNegativeTwo.getPassword();
         });
         assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getPassword();
-        });
-        assertThrows(IllegalStateException.class, () -> {
             typeNegativeFour.getPassword();
         });
         assertThrows(IllegalStateException.class, () -> {
@@ -205,9 +156,6 @@ public class ConnectionDataTest {
         });
         assertThrows(IllegalStateException.class, () -> {
             typeTwo.getPassword();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.getPassword();
         });
     }
 
@@ -217,9 +165,6 @@ public class ConnectionDataTest {
         assertTrue(actual);
         assertThrows(IllegalStateException.class, () -> {
             typeNegativeOne.getIsOnline();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getIsOnline();
         });
         assertThrows(IllegalStateException.class, () -> {
             typeNegativeFour.getIsOnline();
@@ -233,19 +178,17 @@ public class ConnectionDataTest {
         assertThrows(IllegalStateException.class, () -> {
             typeTwo.getIsOnline();
         });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.getIsOnline();
-        });
     }
 
     @Test
     public void testGetOnlineUsers() {
-        TreeSet<String> expected = SenderTest.generateTreeSet("admin", "admin1", "admin2");
-        TreeSet<String> actual = typeNegativeThree.getOnlineUsers();
+        TreeSet<User> expected = new TreeSet<>();
+        expected.add(new User("admin", 1, true));
+        expected.add(new User("admin1", 1, true));
+        expected.add(new User("admin2", 1, true));
+        TreeSet<User> actual = typeNegativeOne.getOnlineUsers();
         assertEquals(expected, actual);
-        assertThrows(IllegalStateException.class, () -> {
-            typeNegativeOne.getOnlineUsers();
-        });
+
         assertThrows(IllegalStateException.class, () -> {
             typeNegativeTwo.getOnlineUsers();
         });
@@ -261,9 +204,6 @@ public class ConnectionDataTest {
         assertThrows(IllegalStateException.class, () -> {
             typeTwo.getOnlineUsers();
         });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.getOnlineUsers();
-        });
     }
 
     @Test
@@ -272,9 +212,6 @@ public class ConnectionDataTest {
         assertTrue(actual);
         assertThrows(IllegalStateException.class, () -> {
             typeNegativeTwo.getValidated();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getValidated();
         });
         assertThrows(IllegalStateException.class, () -> {
             typeNegativeFour.getValidated();
@@ -287,9 +224,6 @@ public class ConnectionDataTest {
         });
         assertThrows(IllegalStateException.class, () -> {
             typeTwo.getValidated();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.getValidated();
         });
     }
 
@@ -305,9 +239,6 @@ public class ConnectionDataTest {
             typeNegativeTwo.getAudioData();
         });
         assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getAudioData();
-        });
-        assertThrows(IllegalStateException.class, () -> {
             typeNegativeFour.getAudioData();
         });
         assertThrows(IllegalStateException.class, () -> {
@@ -315,9 +246,6 @@ public class ConnectionDataTest {
         });
         assertThrows(IllegalStateException.class, () -> {
             typeOne1.getAudioData();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.getAudioData();
         });
     }
 
@@ -333,9 +261,6 @@ public class ConnectionDataTest {
             typeNegativeTwo.getTextData();
         });
         assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getTextData();
-        });
-        assertThrows(IllegalStateException.class, () -> {
             typeNegativeFour.getTextData();
         });
         assertThrows(IllegalStateException.class, () -> {
@@ -344,30 +269,19 @@ public class ConnectionDataTest {
         assertThrows(IllegalStateException.class, () -> {
             typeTwo.getTextData();
         });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.getTextData();
-        });
     }
 
     @Test
     public void testGetUserSignature() {
-        String expected = "admin";
-        String actual = typeNegativeTwo.getUserSignature();
-        assertEquals(expected, actual);
-        actual = typeNegativeFour.getUserSignature();
+        User expected = new User("admin", 1, true);
+        User actual = typeNegativeFour.getUserSignature();
         assertEquals(expected, actual);
         actual = typeOne1.getUserSignature();
         assertEquals(expected, actual);
         actual = typeTwo.getUserSignature();
         assertEquals(expected, actual);
-        actual = typeThree.getUserSignature();
+        actual = typeNegativeOne.getUserSignature();
         assertEquals(expected, actual);
-        assertThrows(IllegalStateException.class, () -> {
-            typeNegativeOne.getUserSignature();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getUserSignature();
-        });
         assertThrows(IllegalStateException.class, () -> {
             typeZero.getUserSignature();
         });
@@ -389,41 +303,7 @@ public class ConnectionDataTest {
             typeNegativeTwo.getChatSession();
         });
         assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getChatSession();
-        });
-        assertThrows(IllegalStateException.class, () -> {
             typeZero.getChatSession();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeThree.getChatSession();
-        });
-    }
-
-    @Test
-    public void testGetChatData() {
-        HashMap<ChatSession, List<ConnectionData>> expected = chatData;
-        HashMap<ChatSession, List<ConnectionData>> actual = typeThree.getChatData();
-        assertEquals(expected, actual);
-        assertThrows(IllegalStateException.class, () -> {
-            typeNegativeOne.getChatData();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeNegativeTwo.getChatData();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeNegativeThree.getChatData();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeNegativeFour.getChatData();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeZero.getChatData();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeOne1.getChatData();
-        });
-        assertThrows(IllegalStateException.class, () -> {
-            typeTwo.getChatData();
         });
     }
 

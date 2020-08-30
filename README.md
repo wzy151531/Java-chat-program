@@ -36,9 +36,9 @@ The whole project is divided into two parts: server and client. Both projects ar
 - [x] Implement asychronized switch info notification.
 - [x] History messages backup from old device to new device.
 - [x] Fingerprint verfication funciton.
+- [x] Update tests
 - [ ] Client appends pre keys to database.
 - [ ] Client updates signed pre key in database.
-- [ ] Update tests
 - [ ] ~~Further encrypted group chat operations(add/leave memebers).~~
 - [ ] ~~Store symmetric encryption key that encrypts the history messages in client OP-TEE.~~
 

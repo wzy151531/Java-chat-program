@@ -1,11 +1,7 @@
 package socotra.util;
 
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import socotra.Server;
-import socotra.service.Sender;
+import socotra.common.User;
+import socotra.service.OutputHandler;
 
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
@@ -13,63 +9,20 @@ import java.util.TreeSet;
 
 public class SenderTest {
 
-    public static TreeSet<String> generateTreeSet(String... toUsernames) {
-        TreeSet<String> result = new TreeSet<>();
+    public static TreeSet<User> generateTreeSet(String... toUsernames) {
+        TreeSet<User> result = new TreeSet<>();
         for (String toUsername : toUsernames) {
-            result.add(toUsername);
+            result.add(new User(toUsername, 1, true));
         }
         return result;
     }
 
-    public static HashMap<String, ObjectOutputStream> generateHashMap(String... clients) {
-        HashMap<String, ObjectOutputStream> result = new HashMap<>();
+    public static HashMap<User, OutputHandler> generateHashMap(String... clients) {
+        HashMap<User, OutputHandler> result = new HashMap<>();
         for (String client : clients) {
-            result.put(client, null);
+            result.put(new User(client, 1, true), null);
         }
         return result;
-    }
-
-    @Test
-    public void testGenerateChatName() {
-        TreeSet<String> toUsernames = generateTreeSet("admin");
-        String expected = "admin";
-        String actual = Sender.generateChatName(toUsernames);
-        assertEquals(expected, actual);
-
-        toUsernames = generateTreeSet("admin", "admin1", "admin2");
-        expected = "admin,admin1,admin2";
-        actual = Sender.generateChatName(toUsernames);
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void testIsAnyOnline() {
-        HashMap<String, ObjectOutputStream> onlineUsers = generateHashMap("admin", "admin1", "admin2");
-        Server.getClients().clear();
-        onlineUsers.forEach((k, v) -> {
-            Server.addClient(k, v);
-        });
-        TreeSet<String> users = generateTreeSet("admin");
-        boolean actual = Sender.isAnyOnline(users);
-        assertTrue(actual);
-
-        onlineUsers = generateHashMap("admin", "admin1");
-        Server.getClients().clear();
-        onlineUsers.forEach((k, v) -> {
-            Server.addClient(k, v);
-        });
-        users = generateTreeSet("admin1", "admin2");
-        actual = Sender.isAnyOnline(users);
-        assertTrue(actual);
-
-        onlineUsers = generateHashMap("admin", "admin1");
-        Server.getClients().clear();
-        onlineUsers.forEach((k, v) -> {
-            Server.addClient(k, v);
-        });
-        users = generateTreeSet("admin2", "admin3");
-        actual = Sender.isAnyOnline(users);
-        assertFalse(actual);
     }
 
 }

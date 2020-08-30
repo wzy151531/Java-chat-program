@@ -24,6 +24,8 @@ import java.io.IOException;
 
 public class Client extends Application {
 
+    public static User backUpReceiver;
+    public static KeyBundle backUpKeyBundle;
     /**
      * The stage to show in the screen.
      */
@@ -70,15 +72,12 @@ public class Client extends Application {
     /**
      * Set chat data thread.
      */
-    private static Alert waitingAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Connecting To Server.", "Please Be Patient.");
-    private static Alert initClientAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Client.", "Please Be Patient.");
-    private static Alert initGroupChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Group Chat.", "Please Be Patient.");
-    private static Alert initPairwiseChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Pairwise Chat.", "Please Be Patient.");
-    private static Alert reInitChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "ReInitializing Chat.", "Please Be Patient.");
+    private static Alert waitingAlert;
+    private static Alert initClientAlert;
+    private static Alert initGroupChatAlert;
+    private static Alert initPairwiseChatAlert;
+    private static Alert reInitChatAlert;
     private static DataHandler dataHandler;
-
-    public static User backUpReceiver;
-    public static KeyBundle backUpKeyBundle;
 
     /**
      * Getter for loginController.
@@ -283,6 +282,9 @@ public class Client extends Application {
     }
 
     public static void showWaitingAlert() {
+        if (waitingAlert == null) {
+            waitingAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Connecting To Server.", "Please Be Patient.");
+        }
         waitingAlert.setAlertType(Alert.AlertType.NONE);
         waitingAlert.show();
     }
@@ -293,6 +295,9 @@ public class Client extends Application {
     }
 
     public static void showInitGroupChatAlert() {
+        if (initGroupChatAlert == null) {
+            initGroupChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Group Chat.", "Please Be Patient.");
+        }
         initGroupChatAlert.setAlertType(Alert.AlertType.NONE);
         initGroupChatAlert.show();
     }
@@ -303,6 +308,9 @@ public class Client extends Application {
     }
 
     public static void showInitPairwiseChatAlert() {
+        if (initPairwiseChatAlert == null) {
+            initPairwiseChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Pairwise Chat.", "Please Be Patient.");
+        }
         initPairwiseChatAlert.setAlertType(Alert.AlertType.NONE);
         initPairwiseChatAlert.show();
     }
@@ -313,6 +321,9 @@ public class Client extends Application {
     }
 
     public static void showReInitChatAlert() {
+        if (reInitChatAlert == null) {
+            reInitChatAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "ReInitializing Chat.", "Please Be Patient.");
+        }
         reInitChatAlert.setAlertType(Alert.AlertType.NONE);
         reInitChatAlert.show();
     }
@@ -323,6 +334,9 @@ public class Client extends Application {
     }
 
     public static void showInitClientAlert() {
+        if (initClientAlert == null) {
+            initClientAlert = Util.generateAlert(Alert.AlertType.NONE, "Waiting", "Initializing Client.", "Please Be Patient.");
+        }
         initClientAlert.setAlertType(Alert.AlertType.NONE);
         initClientAlert.show();
     }
